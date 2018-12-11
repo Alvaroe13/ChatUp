@@ -13,6 +13,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
+import com.example.alvar.chatapp.Fragments.ChatsFragment;
+import com.example.alvar.chatapp.Fragments.ContactsFragment;
+import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.i(TAG, "onCreate: init");
         //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
         // we get firebase current user
@@ -45,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
         //init toolbar and set title
         setToolbar(getString(R.string.chatRoom));
         // viewPagerAdapter init
-        Log.i(TAG, "onCreate: init");
-        initPageAdapter();
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        initPageAdapter(viewPager);
+        tabLayout.setupWithViewPager(viewPager);
     }
-
     /**
      * bind UI elements
      */
@@ -56,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private void bindUI(){
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewPager);
     }
 
     private void setToolbar(String title){
@@ -98,11 +103,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initPageAdapter(){
+    private void initPageAdapter(ViewPager viewPager ){
 
-        new ViewPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(viewPagerAdapter);
-        tabLayout.setupWithViewPager(viewPager);
+        ViewPagerAdapter Adapter  = new ViewPagerAdapter(getSupportFragmentManager());
+        Adapter.addFragment(new  RequestsFragment(), "Requests");
+        Adapter.addFragment(new  ChatsFragment(), "chat" );
+        Adapter.addFragment(new  ContactsFragment(),"Friends"  );
+        viewPager.setAdapter(Adapter);
+
     }
 
     private FirebaseUser getCurrentUser(){

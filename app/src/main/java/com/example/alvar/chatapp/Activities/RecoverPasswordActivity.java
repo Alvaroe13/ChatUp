@@ -51,12 +51,14 @@ public class RecoverPasswordActivity extends AppCompatActivity {
     }
 
     private void sendEmailrecovery() {
-        String emailtxt = recoverPassword.getEditText().getText().toString();
-        if (emailtxt.equals("")) {
+        //we capture email enter by user
+        String emailtext = recoverPassword.getEditText().getText().toString();
+
+        if (emailtext.equals("")) {
 
             Toast.makeText(this, "You must insert your email address", Toast.LENGTH_SHORT).show();
         } else{
-            mAuth.sendPasswordResetEmail(emailtxt).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mAuth.sendPasswordResetEmail(emailtext).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()){
