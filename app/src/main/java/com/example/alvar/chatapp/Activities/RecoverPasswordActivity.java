@@ -25,6 +25,8 @@ public class RecoverPasswordActivity extends AppCompatActivity {
     private TextInputLayout recoverPassword;
     private Button recoverPasswordBtn;
 
+    //this is just a test for the new branch and old branch check out
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
