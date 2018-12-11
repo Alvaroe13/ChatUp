@@ -25,7 +25,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.HashMap;
+
 
 public class RegisterActivity extends AppCompatActivity {
     //Log
@@ -64,8 +64,6 @@ public class RegisterActivity extends AppCompatActivity {
         setToolbar(getString(R.string.register));
         //execute registration process.
         registerBtnPress();
-
-
     }
 
     /**

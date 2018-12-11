@@ -35,25 +35,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
      */
     @Override
     public Fragment getItem(int position) {
-
-//        //Inicializamos los fragments del viewPager
-//        switch (position){
-//                case 0:
-//                Log.i(TAG, " requestsFragment ");
-//                RequestsFragment requestsFragment = new RequestsFragment();
-//                return requestsFragment;
-//                case 1:
-//                Log.i(TAG, " chatsFragment ");
-//                ChatsFragment chatsFragment = new ChatsFragment();
-//                return chatsFragment;
-//                case 2:
-//                Log.i(TAG, " contactsFragment ");
-//                ContactsFragment contactsFragment = new ContactsFragment();
-//                return contactsFragment;
-//            default:
-//        return null;
-//        }
-        return fragmentList.get(position);
+     return fragmentList.get(position);
     }
 
     /**

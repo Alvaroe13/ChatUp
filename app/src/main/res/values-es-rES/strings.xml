@@ -26,7 +26,11 @@
     <string name="email_exist">Email ya en uso</string>
     <string name="changeImage">Cambiar foto</string>
     <string name="updateStatus">Actualizar Estado</string>
-    <string name="user_status">Estado usuario/string</string>
-    <string name="user_displayname">Tu nombre/string</string>
-    <string name="enterEmail">Enter your email address</string>
+    <string name="user_status">Estado usuario </string>
+    <string name="user_displayname">Tu nombre </string>
+    <string name="enterEmail">Ingresa tu correo electrónico</string>
+    <string name="recoverPassword">Por favor mira tu correo electrónico</string>
+    <string name="enterEmailForRecovery">Debes ingresar un email valido</string>
+    <string name="toolbarRecoveryPasswordTitle">Recuperar Contraseña</string>
+
 </resources>

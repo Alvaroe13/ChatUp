@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -24,8 +25,8 @@ public class RecoverPasswordActivity extends AppCompatActivity {
     //ui elements
     private TextInputLayout recoverPassword;
     private Button recoverPasswordBtn;
+    private Toolbar toolbarRecovery;
 
-    //this is just a test for the new branch and old branch check out
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,19 +36,32 @@ public class RecoverPasswordActivity extends AppCompatActivity {
         //init firebase auth
         mAuth = FirebaseAuth.getInstance();
 
+        //init toolbar
+        setToolbar(getString(R.string.toolbarRecoveryPasswordTitle));
+
         recoverPasswordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendEmailrecovery();
             }
-
-
         });
     }
 
     private void bindUI(){
         recoverPassword = findViewById(R.id.recoverPassword);
         recoverPasswordBtn = findViewById(R.id.recoverPasswordBtn);
+        toolbarRecovery = findViewById(R.id.toolbarRecovery);
+    }
+
+    private void setToolbar(String title){
+        //create toolbar
+        toolbarRecovery = findViewById(R.id.toolbarRecovery);
+        //we set the toolbar
+        setSupportActionBar(toolbarRecovery);
+        //we pass the title
+        getSupportActionBar().setTitle(title);
+        //enable back button
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void sendEmailrecovery() {
@@ -56,15 +70,13 @@ public class RecoverPasswordActivity extends AppCompatActivity {
 
         if (emailtext.equals("")) {
 
-            Toast.makeText(this, "You must insert your email address", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.enterEmailForRecovery), Toast.LENGTH_SHORT).show();
         } else{
             mAuth.sendPasswordResetEmail(emailtext).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()){
-                        Toast.makeText(RecoverPasswordActivity.this, "Watch you mailbox", Toast.LENGTH_SHORT).show();
-//                        Intent i = new Intent(RecoverPasswordActivity.this, LoginActivity.class);
-//                        startActivity(i);
+                        Toast.makeText(RecoverPasswordActivity.this, getString(R.string.recoverPassword), Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
                         String error = task.getException().getMessage();
