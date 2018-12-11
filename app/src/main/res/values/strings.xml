@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">ChatUp</string>
+    <string name="register">Register</string>
+    <string name="signOut">Sign out</string>
+    <string name="allUsers">All users</string>
+    <string name="createNewAccount">Create Account</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="Login">Login</string>
+    <string name="noEmptyField">Every field must filled</string>
+    <string name="loginError">Error, check your credentials</string>
+    <string name="accountSetting">Account Settings</string>
+    <string name="requests">Requests</string>
+    <string name="chats">Chats</string>
+    <string name="contacts">Contacts</string>
+    <string name="chatRoom">Chat Room</string>
+    <string name="signing_Out">See you later!</string>
+    <string name="password_Length">Password must have at least 7 characters</string>
+    <string name="password_check">Verify your password</string>
+    <string name="account_created">Account created!</string>
+    <string name="welcome">Welcome!</string>
+    <string name="server_error">Server error, try again later!</string>
+    <string name="dontHaveAccount">Don\'t have account yet?</string>
+    <string name="createAccount">create one here!</string>
+    <string name="email_exist">Email already in use</string>
+    <string name="changeImage">Change Image</string>
+    <string name="updateStatus">Update Status</string>
+    <string name="user_status">User Status</string>
+    <string name="user_displayname">Your displayname</string>
+    <string name="enterEmail">Enter your email address</string>
+
+
+</resources>

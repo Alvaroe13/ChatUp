@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ChatUp</string>
+    <string name="register">Registrar</string>
+    <string name="signOut">Cerrar Sesion</string>
+    <string name="allUsers">Usuarios</string>
+    <string name="createNewAccount">Crear Cuenta</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="Login">Iniciar Sesion</string>
+    <string name="noEmptyField">No puede haber campo vacio</string>
+    <string name="loginError">Error, verifica tus credenciales</string>
+    <string name="accountSetting">Configuracion </string>
+    <string name="requests">Solicitudes</string>
+    <string name="chats">Chats</string>
+    <string name="contacts">Contactos</string>
+    <string name="chatRoom">Chat</string>
+    <string name="signing_Out">Hasta pronto!</string>
+    <string name="password_Length">Contraseña debe tener mínimo 7 caracteres</string>
+    <string name="password_check">Verifica contraseña</string>
+    <string name="account_created">Cuenta Creada</string>
+    <string name="welcome">Bienvenido!</string>
+    <string name="server_error">Error en sistems, intentalo de nuevo luego!</string>
+    <string name="dontHaveAccount">No tienes cuenta aun?</string>
+    <string name="createAccount">Crea una aquí!</string>
+    <string name="email_exist">Email ya en uso</string>
+    <string name="changeImage">Cambiar foto</string>
+    <string name="updateStatus">Actualizar Estado</string>
+    <string name="user_status">Estado usuario/string</string>
+    <string name="user_displayname">Tu nombre/string</string>
+    <string name="enterEmail">Enter your email address</string>
+</resources>
