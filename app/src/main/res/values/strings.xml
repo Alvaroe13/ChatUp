@@ -26,11 +26,14 @@
     <string name="changeImage">Change Image</string>
     <string name="updateStatus">Update Status</string>
     <string name="user_status">User Status</string>
-    <string name="user_displayname">Your displayname</string>
+    <string name="user_displayname">Your display name</string>
     <string name="enterEmail">Enter your email address</string>
     <string name="recoverPassword">Please check you mailbox</string>
     <string name="enterEmailForRecovery">You must enter a valid email address</string>
     <string name="toolbarRecoveryPasswordTitle">Password Recovery</string>
+    <string name="passwordForgot">Forgot your password?</string>
+    <string name="username">Username</string>
+    <string name="repeatPassword">Repeat password</string>
 
 
 </resources>

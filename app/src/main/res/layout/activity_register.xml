@@ -8,8 +8,17 @@
     tools:context=".Activities.RegisterActivity"
     tools:layout_editor_absoluteY="25dp">
 
-    <include layout="@layout/toolbar"
-        android:id="@+id/toolbarRegister"/>
+
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include layout="@layout/toolbar"
+            android:id="@+id/toolbarRegister"/>
+
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/nameTextInput"
@@ -23,12 +32,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarRegister">
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username"
+            android:hint="@string/username"
             android:inputType="text"/>
 
     </android.support.design.widget.TextInputLayout>
@@ -50,7 +59,7 @@
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="email"
+            android:hint="@string/email"
             android:inputType="textEmailAddress"/>
     </android.support.design.widget.TextInputLayout>
 
@@ -72,7 +81,7 @@
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="password"
+            android:hint="@string/password"
             android:inputType="textPassword"/>
 
     </android.support.design.widget.TextInputLayout>
@@ -96,7 +105,7 @@
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Repeat password"
+            android:hint="@string/repeatPassword"
             android:inputType="textPassword"/>
     </android.support.design.widget.TextInputLayout>
 

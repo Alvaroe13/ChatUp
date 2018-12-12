@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         //init UI elements
         bindUI();
         //init toolbar and set title
-        setToolbar(getString(R.string.chatRoom));
+        setToolbar(getString(R.string.app_name));
         // viewPagerAdapter init
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         initPageAdapter(viewPager);
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Metohod in charge of take user's to pages from option menu
+     * Metohod in charge of taking the user to pages from option menu
      * @param item
      * @return
      */
@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
     private void goToSettingAccount(){
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
-
     }
 }
 

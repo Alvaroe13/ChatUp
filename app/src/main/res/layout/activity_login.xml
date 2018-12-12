@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.LoginActivity"
+    android:background="@color/colorPrimary"
     tools:layout_editor_absoluteY="25dp">
 
 
@@ -18,8 +19,9 @@
         android:layout_marginTop="77dp"
         android:layout_marginEnd="164dp"
         android:layout_marginRight="164dp"
-        android:text="Login!"
+        android:text="@string/app_name"
         android:textSize="55dp"
+        android:textColor="@color/color_white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -40,7 +42,8 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:hint="@string/email"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textColor="@color/color_white"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -52,7 +55,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loginName"
-        app:passwordToggleEnabled="true">
+        app:passwordToggleEnabled="true"
+        android:textColor="@color/color_white">
 
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
@@ -60,17 +64,10 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:hint="@string/password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:textColor="@color/color_white"/>
     </android.support.design.widget.TextInputLayout>
 
-
-    <!--<Button-->
-    <!--android:id="@+id/btnGoToRegister"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/register"-->
-    <!--tools:layout_editor_absoluteX="280dp"-->
-    <!--tools:layout_editor_absoluteY="29dp" />-->
 
     <Button
         android:id="@+id/btnLogin"
@@ -130,6 +127,7 @@
         android:layout_marginStart="60dp"
         android:layout_marginLeft="60dp"
         android:layout_marginBottom="8dp"
+        android:textColor="@color/color_white"
         android:text="@string/dontHaveAccount"
         app:layout_constraintBottom_toTopOf="@+id/btnLogin"
         app:layout_constraintStart_toStartOf="parent" />
@@ -141,6 +139,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
+        android:textColor="@color/color_white"
         android:clickable="true"
         android:focusable="true"
         android:text="@string/createAccount"
@@ -155,10 +154,11 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="47dp"
         android:layout_marginRight="47dp"
-        android:text="Forgot your password?"
+        android:text="@string/passwordForgot"
         app:layout_constraintEnd_toEndOf="parent"
         android:clickable="true"
-        app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
+        app:layout_constraintTop_toBottomOf="@+id/btnLogin"
+        android:textColor="@color/color_white"/>
 
 </android.support.constraint.ConstraintLayout>
 

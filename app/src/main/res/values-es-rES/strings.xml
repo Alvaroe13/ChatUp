@@ -32,5 +32,8 @@
     <string name="recoverPassword">Por favor mira tu correo electrónico</string>
     <string name="enterEmailForRecovery">Debes ingresar un email valido</string>
     <string name="toolbarRecoveryPasswordTitle">Recuperar Contraseña</string>
+    <string name="passwordForgot">Olvidaste tu contraseña?</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="repeatPassword">Repetir contraseña</string>
 
 </resources>

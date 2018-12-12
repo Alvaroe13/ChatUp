@@ -7,13 +7,12 @@ public class ProgressBarHelper {
 
     //Methods to call progressbar in different views
 
-    public static  ProgressBar showProgressBar(ProgressBar progressBar ){
+    public static ProgressBar showProgressBar(ProgressBar progressBar ){
         progressBar.setVisibility(View.VISIBLE);
-
         return  progressBar;
     }
 
-    public static  ProgressBar  hideProgressBar(ProgressBar progressBar){
+    public static ProgressBar  hideProgressBar(ProgressBar progressBar){
         progressBar.setVisibility(View.INVISIBLE);
         return  progressBar;
     }
