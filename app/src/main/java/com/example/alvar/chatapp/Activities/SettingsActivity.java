@@ -1,30 +1,25 @@
 package com.example.alvar.chatapp.Activities;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.Utils.ProgressBarHelper;
+import com.example.alvar.chatapp.StatusChangeActivity;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -83,14 +78,17 @@ public class SettingsActivity extends AppCompatActivity {
         fabOption1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(SettingsActivity.this, "prueba fab 1", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SettingsActivity.this, "prueba fab 2", Toast.LENGTH_SHORT).show();
             }
         });
 
         fabOption2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(SettingsActivity.this, "prueba fab 2", Toast.LENGTH_SHORT).show();
+                String currentStatus = textStatus.getText().toString();
+                Intent intent = new Intent(SettingsActivity.this, StatusChangeActivity.class);
+                intent.putExtra("currentStatus", currentStatus);
+                startActivity(intent);
             }
         });
     }
@@ -102,14 +100,12 @@ public class SettingsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         //we get current user logged in
         currentUser = mAuth.getCurrentUser();
-        //init Firebase database
-        database = FirebaseDatabase.getInstance();
         //save unique UID from user logged-in to a var type String named "userID"
         userID = currentUser.getUid();
-
-        //init database reference
+        //init Firebase database
+        database = FirebaseDatabase.getInstance();
+        //init database reference and we aim to the users data by passing "userID" as child.
         mRef = database.getReference(DATABASE_NODE).child(userID);
-
         Log.i(TAG, "initFirebase: userid: " + userID);
     }
 

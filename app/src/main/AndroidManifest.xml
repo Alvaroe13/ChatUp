@@ -23,9 +23,11 @@
             android:name=".Activities.RegisterActivity"
             android:parentActivityName=".Activities.LoginActivity" />
         <activity android:name=".Activities.SettingsActivity" />
-        <activity android:name=".Activities.RecoverPasswordActivity"
-                  android:parentActivityName=".Activities.LoginActivity">
-        </activity>
+        <activity
+            android:name=".Activities.RecoverPasswordActivity"
+            android:parentActivityName=".Activities.LoginActivity"></activity>
+        <activity android:name=".StatusChangeActivity"
+                  android:parentActivityName=".Activities.LoginActivity"></activity>
     </application>
 
 </manifest>

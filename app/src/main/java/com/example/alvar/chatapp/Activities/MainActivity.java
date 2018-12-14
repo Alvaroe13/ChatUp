@@ -32,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private TabLayout tabLayout;
 
-    //vars
-    private ViewPagerAdapter viewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         //init toolbar and set title
         setToolbar(getString(R.string.app_name));
         // viewPagerAdapter init
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
     }

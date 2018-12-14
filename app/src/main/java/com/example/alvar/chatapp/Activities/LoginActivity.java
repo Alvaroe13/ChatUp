@@ -125,9 +125,11 @@ public class LoginActivity extends AppCompatActivity {
                             goToMain();
                         } else {
                             // If sign in fails, display a message to the user.
-                            Log.i(TAG, "signInWithEmail:failure : " + task.getException());
+                            String error = task.getException().getMessage();
+                            Log.i(TAG, "signInWithEmail:failure : " + error);
+                            Toast.makeText(LoginActivity.this, error , Toast.LENGTH_LONG).show();
                             //indicates wonrg credentials
-                            SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.loginError));
+                         //   SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.loginError));
                             //dismiss progressBar
                             ProgressBarHelper.hideProgressBar(loginProgressBar);
 

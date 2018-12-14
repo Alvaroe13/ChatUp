@@ -34,6 +34,9 @@
     <string name="passwordForgot">Forgot your password?</string>
     <string name="username">Username</string>
     <string name="repeatPassword">Repeat password</string>
+    <string name="save">Save</string>
+    <string name="statusToolbar">Status</string>
+    <string name="status_updated">Status updated!</string>
 
 
 </resources>

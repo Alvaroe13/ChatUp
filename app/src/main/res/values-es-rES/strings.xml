@@ -35,5 +35,8 @@
     <string name="passwordForgot">Olvidaste tu contraseña?</string>
     <string name="username">Nombre de usuario</string>
     <string name="repeatPassword">Repetir contraseña</string>
+    <string name="save">Guardar</string>
+    <string name="statusToolbar">Estado</string>
+    <string name="status_updated">Estado actualizado!</string>
 
 </resources>
