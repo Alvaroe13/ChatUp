@@ -39,6 +39,7 @@
     <string name="status_updated">Status updated!</string>
     <string name="send">Send</string>
     <string name="sendPassword">Send Password</string>
+    <string name="error">Error</string>
 
 
 </resources>
