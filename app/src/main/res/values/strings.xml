@@ -37,6 +37,8 @@
     <string name="save">Save</string>
     <string name="statusToolbar">Status</string>
     <string name="status_updated">Status updated!</string>
+    <string name="send">Send</string>
+    <string name="sendPassword">Send Password</string>
 
 
 </resources>

@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp;
+package com.example.alvar.chatapp.Activities;
 
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -7,13 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 
-import com.example.alvar.chatapp.Utils.ProgressBarHelper;
+import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

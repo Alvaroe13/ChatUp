@@ -7,10 +7,21 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-
+        <!--fab buttons-->
     <style name="fab_buttons_style">
         <item name="android:background">@drawable/fab_buttons_background</item>
         <item name="android:textColor">@color/color_white</item>
+    </style>
+
+            <!--text input edit text-->
+    <style name="TextLabel" parent="TextAppearance.AppCompat">
+        <!-- Hint color and label color in FALSE state -->
+        <item name="android:textColorHint">@color/color_white</item>
+        <item name="android:textSize">20sp</item>
+        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
+        <item name="colorAccent">@color/color_white</item>
+        <item name="colorControlNormal">@color/color_white</item>
+        <item name="colorControlActivated">@color/color_white</item>
     </style>
 
 </resources>
