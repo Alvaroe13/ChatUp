@@ -41,5 +41,8 @@
     <string name="send">Enviar</string>
     <string name="sendPassword">Enviar Contraseña</string>
     <string name="error">Error</string>
+    <string name="check_your_email">Por favor revisa tu email</string>
+    <string name="profile">Profile</string>
+
 
 </resources>

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -50,8 +50,8 @@ public class SettingsActivity extends AppCompatActivity {
     //UI elements
     private CircleImageView imageProfile;
     private TextView textStatus, textUsername;
-    private FloatingActionButton fabOption1, fabOption2;
     private ProgressBar progressBar;
+    private Button btnImage, btnStatus;
     //Vars
     private String userID;
     private String name, status, image, imageThumbnail, email;
@@ -85,8 +85,8 @@ public class SettingsActivity extends AppCompatActivity {
         imageProfile    = findViewById(R.id.settingImgProfile);
         textStatus     = findViewById(R.id.settingsUserStatus);
         textUsername    = findViewById(R.id.settingsUsername);
-        fabOption1      = findViewById(R.id.fabOption1);
-        fabOption2      = findViewById(R.id.fabOption2);
+        btnImage = findViewById(R.id.buttonImage);
+        btnStatus = findViewById(R.id.buttonStatus);
         progressBar = findViewById(R.id.settingsProgressBar);
     }
 
@@ -94,14 +94,14 @@ public class SettingsActivity extends AppCompatActivity {
      * Method in charge of event when fab buttons are clicked
      */
     private void fabButtonClicked(){
-        fabOption1.setOnClickListener(new View.OnClickListener() {
+        btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGallery();
             }
         });
 
-        fabOption2.setOnClickListener(new View.OnClickListener() {
+        btnStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String currentStatus = textStatus.getText().toString();

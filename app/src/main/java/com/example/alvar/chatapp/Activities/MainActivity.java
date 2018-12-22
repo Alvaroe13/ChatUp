@@ -53,13 +53,16 @@ public class MainActivity extends AppCompatActivity {
     /**
      * bind UI elements
      */
-
     private void bindUI(){
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
     }
 
+    /**
+     * this method sets toolbar and it details
+     * @param title
+     */
     private void setToolbar(String title){
         //create toolbar
         toolbarMain = findViewById(R.id.toolbarMain);
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, getString(R.string.signing_Out) , Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.allUsers:
-                allUsers();
+                Toast.makeText(this, "all users pressed", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.settingsAccount:
                 goToSettingAccount();
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
 
     private void initPageAdapter(ViewPager viewPager ){
 
@@ -126,13 +130,12 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void allUsers(){
-        Toast.makeText(this, "Show all users", Toast.LENGTH_SHORT).show();
-    }
-
+    /**
+     * this method is in charge of taking the user to settings page
+     */
     private void goToSettingAccount(){
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
-    }
+    } 
 }
 

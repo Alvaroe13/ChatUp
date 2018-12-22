@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Activities.SettingsActivity"
-    android:background="@color/colorPrimary">
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".Activities.SettingsActivity"
+android:background="@color/colorPrimary">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/settingImgProfile"
@@ -33,7 +33,7 @@
         android:layout_marginRight="164dp"
         android:text="@string/user_displayname"
         android:textColor="@color/color_white"
-        android:textSize="18sp"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingImgProfile" />
@@ -55,37 +55,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsUsername" />
 
-    <com.getbase.floatingactionbutton.FloatingActionsMenu
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:fab_labelStyle="@drawable/fab_buttons_background">
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabOption1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_size="mini"
-            app:fab_icon="@drawable/ic_photo_library"
-            app:fab_colorNormal="@color/color_white"
-            app:fab_colorPressed="@color/color_blue_light"
-            app:fab_title="@string/changeImage"/>
-
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabOption2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_icon="@drawable/ic_status"
-            app:fab_colorNormal="@color/color_blue_light"
-            app:fab_colorPressed="@color/color_white"
-            app:fab_size="mini"
-            app:fab_title="@string/updateStatus"/>
-
-    </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -112,8 +82,40 @@
 
     </FrameLayout>
 
+    <Button
+        android:id="@+id/buttonImage"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="24dp"
+        android:background="@color/colorPrimaryDark"
+        android:text="Change image profile"
+        android:textColor="@color/color_white"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
+    <Button
+        android:id="@+id/buttonStatus"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="32dp"
+        android:background="@color/colorPrimaryDark"
+        android:text="Change status"
+        android:textColor="@color/color_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 

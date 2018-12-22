@@ -40,6 +40,8 @@
     <string name="send">Send</string>
     <string name="sendPassword">Send Password</string>
     <string name="error">Error</string>
+    <string name="check_your_email">Please check your email</string>
+    <string name="profile">Profile</string>
 
 
 </resources>

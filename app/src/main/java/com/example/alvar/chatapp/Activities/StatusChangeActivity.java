@@ -1,5 +1,6 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
@@ -7,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
@@ -107,6 +109,10 @@ public class StatusChangeActivity extends AppCompatActivity {
         mRef = database.getReference(DATABASE_NODE).child(userID);
         Log.i(TAG, "initFirebase: userid: " + userID);
     }
+
+    /**
+     * method in charge of setting new status text in the UI
+     */
     private void statusChanged() {
 
         String status = statusChangeTxt.getEditText().getText().toString();
@@ -116,6 +122,7 @@ public class StatusChangeActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()){
                     Log.i(TAG, "onComplete: change done correctly");
+                    closeKeyboard();
                     //show confirmation message to user
                     SnackbarHelper.showSnackBarLong(statusCoordinatorLayout, getString(R.string.status_updated));
                 } else{
@@ -127,5 +134,16 @@ public class StatusChangeActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * method in charge of closing keyboard
+     */
+    private void closeKeyboard(){
+        View view = this.getCurrentFocus();
+        if (view != null){
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(),0);
+        }
     }
 }
