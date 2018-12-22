@@ -42,6 +42,13 @@
     <string name="error">Error</string>
     <string name="check_your_email">Please check your email</string>
     <string name="profile">Profile</string>
+    <string name="createGroup">Create group</string>
+    <string name="exampleHint">e.g : Best friends</string>
+    <string name="create">Create</string>
+    <string name="enterGroupName">You must enter a group name</string>
+    <string name="cancel">Cancel</string>
+    <string name="groupCreated">Group created</string>
+
 
 
 </resources>

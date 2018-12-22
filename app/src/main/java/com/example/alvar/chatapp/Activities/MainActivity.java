@@ -1,8 +1,11 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
@@ -17,8 +21,12 @@ import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.ContactsFragment;
 import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
+    private FirebaseDatabase database;
+    private DatabaseReference dbRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -38,18 +48,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate: init");
-        //Firebase auth init
-        mAuth = FirebaseAuth.getInstance();
-        // we get firebase current user
-        getCurrentUser();
+
         //init UI elements
         bindUI();
         //init toolbar and set title
         setToolbar(getString(R.string.app_name));
+        //init firebase
+        initFirebase();
         // viewPagerAdapter init
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
     }
+
+
     /**
      * bind UI elements
      */
@@ -93,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 signOut();
                 Toast.makeText(this, getString(R.string.signing_Out) , Toast.LENGTH_SHORT).show();
                 return true;
-            case R.id.allUsers:
-                Toast.makeText(this, "all users pressed", Toast.LENGTH_SHORT).show();
+            case R.id.createGroup:
+                createGroupRequest();
                 return true;
             case R.id.settingsAccount:
                 goToSettingAccount();
@@ -102,6 +113,17 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+    private void initFirebase() {
+        //Firebase auth init
+        mAuth = FirebaseAuth.getInstance();
+        //database init
+        database = FirebaseDatabase.getInstance();
+        //database ref init
+        dbRef = database.getReference();
+    }
+
 
 
     private void initPageAdapter(ViewPager viewPager ){
@@ -112,11 +134,6 @@ public class MainActivity extends AppCompatActivity {
         Adapter.addFragment(new  ContactsFragment(),"Friends"  );
         viewPager.setAdapter(Adapter);
 
-    }
-
-    private FirebaseUser getCurrentUser(){
-        // we get current firebase user information
-        return currentUser = mAuth.getCurrentUser();
     }
 
     /**
@@ -136,6 +153,66 @@ public class MainActivity extends AppCompatActivity {
     private void goToSettingAccount(){
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
-    } 
+    }
+
+    /**
+     * Pop up message in charge of setting group name
+     */
+    private void createGroupRequest() {
+        AlertDialog.Builder requestPopUp = new AlertDialog.Builder(MainActivity.this);
+        requestPopUp.setTitle(getString(R.string.createGroup));
+
+        final EditText groupNameField = new EditText(MainActivity.this);
+        groupNameField.setHint(getString(R.string.exampleHint));
+        requestPopUp.setView(groupNameField);
+
+        //positive button
+        requestPopUp.setPositiveButton( getString(R.string.create), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                String groupName =  groupNameField.getText().toString();
+
+                if (groupName.equals("")){
+
+                    Toast.makeText(MainActivity.this, getString(R.string.enterGroupName), Toast.LENGTH_SHORT).show();
+
+                } else {
+                    createGroupChat(groupName);
+                }
+
+
+
+            }
+        });     //negative button
+        requestPopUp.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                dialog.cancel();
+            }
+        });
+
+        requestPopUp.show();
+    }
+
+    /**
+     * this method create new database node in Firebase
+     * @param groupName
+     */
+    private void createGroupChat(String groupName) {
+
+        dbRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+
+                    Toast.makeText(MainActivity.this, getString(R.string.groupCreated), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }
 }
 

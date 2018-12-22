@@ -43,6 +43,11 @@
     <string name="error">Error</string>
     <string name="check_your_email">Por favor revisa tu email</string>
     <string name="profile">Profile</string>
-
+    <string name="createGroup">Create group</string>
+    <string name="exampleHint">ej : Mejores Amigos</string>
+    <string name="create">Crear</string>
+    <string name="enterGroupName">Debes elegir un nombre de grupo</string>
+    <string name="cancel">Cancelar</string>
+    <string name="groupCreated">Grupo creado</string>
 
 </resources>
