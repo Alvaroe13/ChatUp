@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,7 +52,7 @@ public class SettingsActivity extends AppCompatActivity {
     private CircleImageView imageProfile;
     private TextView textStatus, textUsername;
     private ProgressBar progressBar;
-    private Button btnImage, btnStatus;
+    private FloatingActionButton fabImage, fabStatus;
     //Vars
     private String userID;
     private String name, status, image, imageThumbnail, email;
@@ -85,8 +86,8 @@ public class SettingsActivity extends AppCompatActivity {
         imageProfile    = findViewById(R.id.settingImgProfile);
         textStatus     = findViewById(R.id.settingsUserStatus);
         textUsername    = findViewById(R.id.settingsUsername);
-        btnImage = findViewById(R.id.buttonImage);
-        btnStatus = findViewById(R.id.buttonStatus);
+        fabImage = findViewById(R.id.fabImage);
+        fabStatus = findViewById(R.id.fabStatus);
         progressBar = findViewById(R.id.settingsProgressBar);
     }
 
@@ -94,14 +95,14 @@ public class SettingsActivity extends AppCompatActivity {
      * Method in charge of event when fab buttons are clicked
      */
     private void fabButtonClicked(){
-        btnImage.setOnClickListener(new View.OnClickListener() {
+        fabImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGallery();
             }
         });
 
-        btnStatus.setOnClickListener(new View.OnClickListener() {
+        fabStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String currentStatus = textStatus.getText().toString();
