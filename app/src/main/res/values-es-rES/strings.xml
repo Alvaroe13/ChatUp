@@ -49,5 +49,8 @@
     <string name="enterGroupName">Debes elegir un nombre de grupo</string>
     <string name="cancel">Cancelar</string>
     <string name="groupCreated">Grupo creado</string>
+    <string name="groups">Grupos</string>
+    <string name="chat">Chats</string>
+    <string name="friends">Amigos</string>
 
 </resources>

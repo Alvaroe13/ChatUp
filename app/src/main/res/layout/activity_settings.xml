@@ -87,26 +87,28 @@ android:background="@color/colorPrimary">
         android:id="@+id/fabStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="15dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_status"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:fabSize="normal"/>
 
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:layout_marginBottom="105dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="85dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_photo_library"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:fabSize="normal"/>
 
     <TextView
         android:id="@+id/textView3"
@@ -114,7 +116,7 @@ android:background="@color/colorPrimary">
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="55dp"
+        android:layout_marginBottom="42dp"
         android:text="Change image"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
@@ -126,7 +128,7 @@ android:background="@color/colorPrimary">
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="28dp"
         android:text="Update status"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"

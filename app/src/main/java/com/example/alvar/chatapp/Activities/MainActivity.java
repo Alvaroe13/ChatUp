@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.ContactsFragment;
-import com.example.alvar.chatapp.Fragments.RequestsFragment;
+import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -104,9 +104,6 @@ public class MainActivity extends AppCompatActivity {
                 signOut();
                 Toast.makeText(this, getString(R.string.signing_Out) , Toast.LENGTH_SHORT).show();
                 return true;
-            case R.id.createGroup:
-                createGroupRequest();
-                return true;
             case R.id.settingsAccount:
                 goToSettingAccount();
             default:
@@ -125,13 +122,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * this method is in charge of creating the tabs and setting it's title
+     * @param viewPager
+     */
     private void initPageAdapter(ViewPager viewPager ){
 
         ViewPagerAdapter Adapter  = new ViewPagerAdapter(getSupportFragmentManager());
-        Adapter.addFragment(new  RequestsFragment(), "Requests");
-        Adapter.addFragment(new  ChatsFragment(), "chat" );
-        Adapter.addFragment(new  ContactsFragment(),"Friends"  );
+        Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
+        Adapter.addFragment(new  ChatsFragment(), getString(R.string.chat) );
+        Adapter.addFragment(new  ContactsFragment(),getString(R.string.friends)  );
         viewPager.setAdapter(Adapter);
 
     }
@@ -155,64 +155,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /**
-     * Pop up message in charge of setting group name
-     */
-    private void createGroupRequest() {
-        AlertDialog.Builder requestPopUp = new AlertDialog.Builder(MainActivity.this);
-        requestPopUp.setTitle(getString(R.string.createGroup));
 
-        final EditText groupNameField = new EditText(MainActivity.this);
-        groupNameField.setHint(getString(R.string.exampleHint));
-        requestPopUp.setView(groupNameField);
-
-        //positive button
-        requestPopUp.setPositiveButton( getString(R.string.create), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                String groupName =  groupNameField.getText().toString();
-
-                if (groupName.equals("")){
-
-                    Toast.makeText(MainActivity.this, getString(R.string.enterGroupName), Toast.LENGTH_SHORT).show();
-
-                } else {
-                    createGroupChat(groupName);
-                }
-
-
-
-            }
-        });     //negative button
-        requestPopUp.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                dialog.cancel();
-            }
-        });
-
-        requestPopUp.show();
-    }
-
-    /**
-     * this method create new database node in Firebase
-     * @param groupName
-     */
-    private void createGroupChat(String groupName) {
-
-        dbRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
-                if (task.isSuccessful()){
-
-                    Toast.makeText(MainActivity.this, getString(R.string.groupCreated), Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-    }
 }
 

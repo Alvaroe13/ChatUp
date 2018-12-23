@@ -4,11 +4,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
-
-import com.example.alvar.chatapp.Fragments.ChatsFragment;
-import com.example.alvar.chatapp.Fragments.ContactsFragment;
-import com.example.alvar.chatapp.Fragments.RequestsFragment;
 
 import java.util.ArrayList;
 import java.util.List;
