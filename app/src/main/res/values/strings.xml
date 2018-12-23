@@ -50,8 +50,8 @@
     <string name="groupCreated">Group created</string>
     <string name="groups">Groups</string>
     <string name="chat">Chats</string>
-    <string name="friends">Friends</string>
-
+    <string name="textHint">Here is your message</string>
+    <string name="writeMessageHint">Write your message here</string>
 
 
 </resources>

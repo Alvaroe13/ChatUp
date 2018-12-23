@@ -3,6 +3,7 @@ package com.example.alvar.chatapp.Fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -12,12 +13,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.Activities.MainActivity;
+import com.example.alvar.chatapp.GroupChatActivity;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -71,6 +74,21 @@ public class GroupsFragment extends Fragment {
         initAdapter();
         retrieveGroupsInfo();
         addNewGroup();
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                //we get the name of the group we have clicked from the listView
+                String groupName = parent.getItemAtPosition(position).toString();
+
+                Intent goToGroupChat = new Intent(getContext(), GroupChatActivity.class);
+                //send the name of the group through this intent
+                goToGroupChat.putExtra("Group Name", groupName);
+                startActivity(goToGroupChat);
+            }
+        });
+
 
         return  groupView;
     }

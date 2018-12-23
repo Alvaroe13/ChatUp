@@ -51,6 +51,7 @@
     <string name="groupCreated">Grupo creado</string>
     <string name="groups">Grupos</string>
     <string name="chat">Chats</string>
-    <string name="friends">Amigos</string>
+    <string name="textHint">Este es tu mensaje</string>
+    <string name="writeMessageHint">Escribe tu mensaje aqui</string>
 
 </resources>

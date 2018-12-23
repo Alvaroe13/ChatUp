@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         ViewPagerAdapter Adapter  = new ViewPagerAdapter(getSupportFragmentManager());
         Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
         Adapter.addFragment(new  ChatsFragment(), getString(R.string.chat) );
-        Adapter.addFragment(new  ContactsFragment(),getString(R.string.friends)  );
+        Adapter.addFragment(new  ContactsFragment(),getString(R.string.contacts)  );
         viewPager.setAdapter(Adapter);
 
     }
