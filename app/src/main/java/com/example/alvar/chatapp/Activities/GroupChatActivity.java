@@ -1,6 +1,7 @@
-package com.example.alvar.chatapp;
+package com.example.alvar.chatapp.Activities;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -12,8 +13,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class GroupChatActivity extends AppCompatActivity {
 
@@ -31,7 +35,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsuersRef, dbCurrentGroupRef, GroupMessageKeyRef;
+    private DatabaseReference dbUsersRef, dbCurrentGroupRef, GroupMessageKeyRef;
     //ui elements
     private Toolbar toolbarGroupChat;
     private ScrollView scrollViewGroupChat;
@@ -106,7 +110,7 @@ public class GroupChatActivity extends AppCompatActivity {
         //database
         database = FirebaseDatabase.getInstance();
         //ref init and point to "Users" node from firebase database
-        dbUsuersRef = database.getReference().child("Users");
+        dbUsersRef = database.getReference().child("Users");
         //ref to "Groups" node from firebase database
         dbCurrentGroupRef = database.getReference().child("Groups").child(getGroupName());
 
@@ -117,7 +121,7 @@ public class GroupChatActivity extends AppCompatActivity {
         //here we get the unique user ID given by Firebase in the database
         currentUserID = currentUser.getUid();
 
-        dbUsuersRef.addValueEventListener(new ValueEventListener() {
+        dbUsersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -190,6 +194,74 @@ public class GroupChatActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method call whenever the activity is execute
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        dbCurrentGroupRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                if (dataSnapshot.exists()){
+                    showMessage(dataSnapshot);
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                  showMessage(dataSnapshot) ;
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    /**
+     * method in charge of showing the message in the chat room
+     * @param dataSnapshot
+     */
+    private void showMessage( DataSnapshot dataSnapshot) {
+
+        String chatDate;
+        String chatMessage;
+        String chatName ;
+        String chatTime;
+
+        Iterator iterator = dataSnapshot.getChildren().iterator();
+
+        while ( iterator.hasNext()){
+
+            chatDate = (String) ((DataSnapshot)iterator.next()).getValue();
+            chatMessage = (String) ((DataSnapshot)iterator.next()).getValue();
+            chatName = (String) ((DataSnapshot)iterator.next()).getValue();
+            chatTime = (String) ((DataSnapshot)iterator.next()).getValue();
+
+            messageGroupText.append(
+                    chatName + " : \n" +
+                    chatMessage + " \n" +
+                    chatDate + " \n" +
+                    chatTime +"."
+            );
+        }
 
 
+    }
 }

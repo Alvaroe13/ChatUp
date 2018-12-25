@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.Fragments;
 
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,8 +18,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.MainActivity;
-import com.example.alvar.chatapp.GroupChatActivity;
+import com.example.alvar.chatapp.Activities.GroupChatActivity;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

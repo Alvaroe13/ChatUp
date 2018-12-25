@@ -1,72 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GroupChatActivity">
+    tools:context=".Activities.GroupChatActivity">
 
-    <include layout="@layout/toolbar"
+        <include layout="@layout/toolbar"
         android:id="@+id/toolbarGroupChat"/>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/editTextWriteMessage"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="5dp"
-        android:layout_marginBottom="32dp">
 
         <ScrollView
             android:id="@+id/groupChatScrollView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_below="@+id/toolbarGroupChat"
+            android:layout_above="@+id/layoutEditField">
 
-            <TextView
-                android:id="@+id/chatText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:background="#B1ACAB"
-                android:padding="10dp"
-                android:text="@string/textHint"
-                android:textAllCaps="false"
-                android:textColor="@color/color_white"
-                android:textSize="18sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:id="@+id/chatText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:padding="10dp"
+                    android:hint="@string/textHint"
+                    android:textAllCaps="false"
+                    android:textColor="#000"
+                    android:textSize="18sp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginBottom="10dp"/>
+
+
+            </LinearLayout>
 
         </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/layoutEditField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:orientation="horizontal">
+
+
+        <EditText
+            android:id="@+id/editTextWriteMessage"
+            android:layout_width="310dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/writeMessageHint"
+            android:padding="17dp" />
+
+        <ImageButton
+            android:id="@+id/buttonSend"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/icons8_email_send_16" />
 
     </LinearLayout>
 
 
-    <EditText
-        android:id="@+id/editTextWriteMessage"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="5dp"
-        android:layout_marginBottom="0dp"
-        android:hint="@string/writeMessageHint" />
-
-    <ImageButton
-        android:id="@+id/buttonSend"
-        android:layout_width="46dp"
-        android:layout_height="46dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="2dp"
-        android:layout_marginLeft="2dp"
-        android:layout_marginBottom="2dp"
-        android:layout_toEndOf="@+id/editTextWriteMessage"
-        android:layout_toRightOf="@+id/editTextWriteMessage"
-        android:src="@drawable/icons8_email_send_16" />
 
 </RelativeLayout>
-
-
-
-
-
-
-
