@@ -16,12 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/toolbarGroupChat"
+            android:background="#c3c3c3"
             android:layout_above="@+id/layoutEditField">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginStart="2dp"
+                android:layout_marginLeft="2dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp">
 
 
                 <TextView
@@ -36,7 +41,7 @@
                     android:textSize="18sp"
                     android:layout_marginStart="2dp"
                     android:layout_marginLeft="2dp"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_marginBottom="60dp"/>
 
 
             </LinearLayout>
@@ -47,6 +52,7 @@
         android:id="@+id/layoutEditField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/color_white"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
@@ -58,7 +64,9 @@
             android:layout_width="310dp"
             android:layout_height="wrap_content"
             android:hint="@string/writeMessageHint"
-            android:padding="17dp" />
+            android:padding="17dp"
+            android:backgroundTint="@color/color_white"
+            android:background="@color/color_white"/>
 
         <ImageButton
             android:id="@+id/buttonSend"

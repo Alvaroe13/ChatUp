@@ -172,8 +172,8 @@ public class SettingsActivity extends AppCompatActivity {
             image = dataSnapshot.child(DATABASE_CHILD_IMAGE).getValue().toString();
             imageThumbnail = dataSnapshot.child(DATABASE_CHILD_IMAGE_THUMBNAIL).getValue().toString();
             //set values to display
-            textUsername.setText(name);
-            textStatus.setText(status);
+            textUsername.setText(getString(R.string.settingsName) + "    " +  name);
+            textStatus.setText( getString(R.string.settingsStatus)  +  "    " + status);
             //if there is no pic uploaded to database we set default img
             if (image.equals("image")){
                 imageProfile.setImageResource(R.drawable.imgdefault);

@@ -65,6 +65,9 @@ public class GroupChatActivity extends AppCompatActivity {
                 saveMessageInDatabase();
                 //erase text from the text field
                 writeMessageEditText.setText("");
+
+                //focus scrollView to the last message sent
+                scrollViewGroupChat.fullScroll(ScrollView.FOCUS_DOWN);
             }
         });
 
@@ -118,6 +121,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
 
     private void getUserInfo() {
+
         //here we get the unique user ID given by Firebase in the database
         currentUserID = currentUser.getUid();
 
@@ -130,8 +134,6 @@ public class GroupChatActivity extends AppCompatActivity {
                         username = dataSnapshot.child(currentUserID).child("name").getValue().toString();
                         Log.i(TAG, "onDataChange: email : " + username);
                     }
-
-
 
             }
 
@@ -258,8 +260,11 @@ public class GroupChatActivity extends AppCompatActivity {
                     chatName + " : \n" +
                     chatMessage + " \n" +
                     chatDate + " \n" +
-                    chatTime +"."
+                    chatTime +"." + "\n\n"
             );
+
+            //focus scrollView to the last message sent
+            scrollViewGroupChat.fullScroll(ScrollView.FOCUS_DOWN);
         }
 
 

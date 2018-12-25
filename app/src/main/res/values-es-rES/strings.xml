@@ -53,5 +53,8 @@
     <string name="chat">Chats</string>
     <string name="textHint">Este es tu mensaje</string>
     <string name="writeMessageHint">Escribe tu mensaje aqui</string>
+    <string name="status">Status</string>
+    <string name="settingsName">Nombre:</string>
+    <string name="settingsStatus">Estado:</string>
 
 </resources>
