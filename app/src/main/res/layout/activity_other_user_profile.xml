@@ -1,67 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/color_grey"
+    android:orientation="vertical"
+    android:weightSum="10"
     tools:context=".Activities.OtherUserProfileActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/otherUsersImgProf"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:src="@drawable/profile_image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center"
+        android:layout_marginTop="55dp"/>
 
-    <TextView
-        android:id="@+id/usernameOtherUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="45dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="@string/username"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/otherUsersImgProf" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/statusOtherUser"
-        android:layout_width="wrap_content"
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/user_status"
-        android:textStyle="italic"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/usernameOtherUser" />
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        android:layout_gravity="center_horizontal" >
+
+
+        <TextView
+            android:id="@+id/usernameOtherUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:text="@string/username"
+            android:gravity="center"
+            android:textColor="@color/color_white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/statusOtherUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/user_status"
+            android:textColor="@color/color_white"
+            android:textSize="18sp"
+            android:textStyle="italic" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/buttonOtherUser"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="55dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:background="@color/colorPrimaryDark"
         android:text="send message"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusOtherUser" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="85dp"
+        android:textColor="@color/color_white" />
 
 
-</android.support.constraint.ConstraintLayout>
+
+
+</LinearLayout>
+
+
+
+
+<!--<de.hdodenhof.circleimageview.CircleImageView-->
+<!--android:id="@+id/otherUsersImgProf"-->
+<!--android:layout_width="200dp"-->
+<!--android:layout_height="200dp"-->
+<!--android:layout_marginStart="8dp"-->
+<!--android:layout_marginLeft="8dp"-->
+<!--android:layout_marginTop="80dp"-->
+<!--android:layout_marginEnd="8dp"-->
+<!--android:layout_marginRight="8dp"-->
+<!--android:src="@drawable/profile_image"-->
+<!--app:layout_constraintEnd_toEndOf="parent"-->
+<!--app:layout_constraintHorizontal_bias="0.497"-->
+<!--app:layout_constraintStart_toStartOf="parent"-->
+<!--app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--<LinearLayout-->
+<!--android:id="@+id/linearLayout"-->
+<!--android:layout_width="wrap_content"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:layout_marginStart="151dp"-->
+<!--android:layout_marginLeft="151dp"-->
+<!--android:layout_marginTop="24dp"-->
+<!--android:layout_marginEnd="151dp"-->
+<!--android:layout_marginRight="151dp"-->
+<!--android:orientation="vertical"-->
+<!--app:layout_constraintEnd_toEndOf="parent"-->
+<!--app:layout_constraintStart_toStartOf="parent"-->
+<!--app:layout_constraintTop_toBottomOf="@+id/otherUsersImgProf">-->
+
+<!--<TextView-->
+    <!--android:id="@+id/usernameOtherUser"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginBottom="15dp"-->
+    <!--android:text="@string/username"-->
+    <!--android:gravity="center"-->
+    <!--android:textColor="@color/color_white"-->
+    <!--android:textSize="20sp"-->
+    <!--android:textStyle="bold" />-->
+
+<!--<TextView-->
+    <!--android:id="@+id/statusOtherUser"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:gravity="center"-->
+    <!--android:text="@string/user_status"-->
+    <!--android:textColor="@color/color_white"-->
+    <!--android:textSize="18sp"-->
+    <!--android:textStyle="italic" />-->
+
+<!--</LinearLayout>-->
+
+<!--<Button-->
+<!--android:id="@+id/buttonOtherUser"-->
+<!--android:layout_width="150dp"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:layout_marginStart="8dp"-->
+<!--android:layout_marginLeft="8dp"-->
+<!--android:layout_marginTop="8dp"-->
+<!--android:layout_marginEnd="8dp"-->
+<!--android:layout_marginRight="8dp"-->
+<!--android:layout_marginBottom="8dp"-->
+<!--android:background="@color/colorPrimaryDark"-->
+<!--android:text="send message"-->
+<!--android:textColor="@color/color_white"-->
+<!--app:layout_constraintBottom_toBottomOf="parent"-->
+<!--app:layout_constraintEnd_toEndOf="parent"-->
+<!--app:layout_constraintHorizontal_bias="0.497"-->
+<!--app:layout_constraintStart_toStartOf="parent"-->
+<!--app:layout_constraintTop_toBottomOf="@+id/linearLayout" />-->

@@ -37,6 +37,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:inputType="text"
+            android:maxLength="65"
             android:backgroundTint="@color/colorPrimary"/>
     </android.support.design.widget.TextInputLayout>
 

@@ -36,6 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Username"
+                android:maxLength="15"
                 android:textSize="21sp"
                 android:textStyle="bold"/>
 
@@ -46,6 +47,7 @@
                 android:layout_marginTop="6dp"
                 android:text="Status"
                 android:textSize="15sp"
+                android:maxLength="65"
                 android:textStyle="italic"/>
 
 
