@@ -1,5 +1,6 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -98,12 +99,26 @@ public class AllUsersActivity extends AppCompatActivity {
         FirebaseRecyclerAdapter< Contacts , AllUsersViewHolder > firebaseAdapter = new
                 FirebaseRecyclerAdapter<Contacts, AllUsersViewHolder>(firebaseOptions) {
                     @Override
-                    protected void onBindViewHolder(@NonNull AllUsersViewHolder holder, int position, @NonNull Contacts model) {
+                    protected void onBindViewHolder(@NonNull AllUsersViewHolder holder, final int position, @NonNull Contacts model) {
 
-                      //  here we fetch info from databsae and set it to the UI
+                      //  here we fetch info from database and set it to the UI
                         holder.username.setText(model.getName());
                         holder.currentStatus.setText(model.getStatus());
                         Picasso.get().load(model.getImage()).placeholder(R.drawable.profile_image).into(holder.imgProfile);
+
+                        //onClick when any of the users displayed has been pressed
+                        holder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                //here we get user id given by Firebase
+                               String otherUserId = getRef(position).getKey();
+                               Intent intentOtherUserProf = new Intent(AllUsersActivity.this, OtherUserProfileActivity.class);
+                               //we send user id through an intent
+                               intentOtherUserProf.putExtra("otherUserId" , otherUserId);
+                               startActivity(intentOtherUserProf);
+                            }
+                        });
 
 
                     }

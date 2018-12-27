@@ -41,8 +41,10 @@
         <activity
             android:name=".Activities.GroupChatActivity"
             android:parentActivityName=".Activities.MainActivity" />
-        <activity android:name=".Activities.AllUsersActivity"
-            android:parentActivityName=".Activities.MainActivity" ></activity>
+        <activity
+            android:name=".Activities.AllUsersActivity"
+            android:parentActivityName=".Activities.MainActivity" />
+        <activity android:name=".Activities.OtherUserProfileActivity"></activity>
     </application>
 
 </manifest>
