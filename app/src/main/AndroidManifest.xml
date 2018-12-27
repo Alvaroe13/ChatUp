@@ -34,12 +34,15 @@
             tools:targetApi="jelly_bean" />
         <activity
             android:name=".Activities.StatusChangeActivity"
-            android:parentActivityName=".Activities.LoginActivity" />
+            android:parentActivityName=".Activities.SettingsActivity" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".Activities.GroupChatActivity"
-            android:parentActivityName=".Activities.MainActivity"></activity>
+        <activity
+            android:name=".Activities.GroupChatActivity"
+            android:parentActivityName=".Activities.MainActivity" />
+        <activity android:name=".Activities.AllUsersActivity"
+            android:parentActivityName=".Activities.MainActivity" ></activity>
     </application>
 
 </manifest>

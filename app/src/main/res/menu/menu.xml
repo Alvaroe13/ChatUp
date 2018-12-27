@@ -6,6 +6,10 @@
         android:title="@string/profile"
         app:showAsAction="never"/>
 
+    <item android:id="@+id/menuAllUsers"
+        android:title="@string/allUsers"
+        app:showAsAction="never"/>
+
     <item android:id="@+id/signOut"
         android:title="@string/signOut"
         app:showAsAction="never"/>

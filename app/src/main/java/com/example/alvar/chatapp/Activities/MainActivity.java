@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         //init UI elements
         bindUI();
         //init toolbar and set title
-        setToolbar(getString(R.string.app_name));
+        setToolbar(getString(R.string.app_name), false);
         //init firebase
         initFirebase();
         // viewPagerAdapter init
@@ -74,13 +74,14 @@ public class MainActivity extends AppCompatActivity {
      * this method sets toolbar and it details
      * @param title
      */
-    private void setToolbar(String title){
+    private void setToolbar(String title, Boolean backOpion){
         //create toolbar
         toolbarMain = findViewById(R.id.toolbarMain);
         //we set the toolbar
         setSupportActionBar(toolbarMain);
         //we pass the title
         getSupportActionBar().setTitle(title);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(backOpion);
     }
 
     @Override
@@ -100,16 +101,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.signOut:
-                signOut();
-                Toast.makeText(this, getString(R.string.signing_Out) , Toast.LENGTH_SHORT).show();
-                return true;
+
             case R.id.settingsAccount:
                 goToSettingAccount();
+                Log.i(TAG, "onOptionsItemSelected: setting btn pressed");
+                return true;
+            case R.id.menuAllUsers:
+                goToAllUsers();
+                Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
+                return true;
+            case R.id.signOut:
+                signOut();
+                Toast.makeText(this, getString(R.string.signing_Out), Toast.LENGTH_SHORT).show();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
 
 
     private void initFirebase() {
@@ -153,6 +162,12 @@ public class MainActivity extends AppCompatActivity {
     private void goToSettingAccount(){
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
+    }
+
+
+    private void goToAllUsers() {
+        Intent intentAllUsers = new Intent(MainActivity.this, AllUsersActivity.class);
+        startActivity(intentAllUsers);
     }
 
 

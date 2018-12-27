@@ -31,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingsActivity extends AppCompatActivity {
+
     //log
     private static final String TAG = "SettingsPage";
     //Firebase
@@ -56,15 +58,10 @@ public class SettingsActivity extends AppCompatActivity {
     //Vars
     private String userID;
     private String name, status, image, imageThumbnail, email;
-    //Const firebase database
-    private static final String DATABASE_NODE = "Users";
-    private static final String DATABASE_CHILD_NAME = "name";
-    private static final String DATABASE_CHILD_EMAIL = "email";
-    private static final String DATABASE_CHILD_IMAGE = "image";
-    private static final String DATABASE_CHILD_IMAGE_THUMBNAIL = "imageThumbnail";
-    private static final String DATABASE_CHILD_STATUS = "status";
-    //Gallery request
+    //galley const
     private static final int GALLERY_REQUEST_NUMBER = 1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,7 +133,7 @@ public class SettingsActivity extends AppCompatActivity {
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        mRef = database.getReference(DATABASE_NODE).child(userID);
+        mRef = database.getReference("Users").child(userID);
         Log.i(TAG, "initFirebase: userid: " + userID);
         storageRef = FirebaseStorage.getInstance().getReference();
     }
@@ -166,20 +163,21 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void infoFetched(DataSnapshot dataSnapshot){
             //save info retrieved from DB into String vars
-            name = dataSnapshot.child(DATABASE_CHILD_NAME).getValue().toString();
-            email = dataSnapshot.child(DATABASE_CHILD_EMAIL).getValue().toString();
-            status = dataSnapshot.child(DATABASE_CHILD_STATUS).getValue().toString();
-            image = dataSnapshot.child(DATABASE_CHILD_IMAGE).getValue().toString();
-            imageThumbnail = dataSnapshot.child(DATABASE_CHILD_IMAGE_THUMBNAIL).getValue().toString();
+            name = dataSnapshot.child("name").getValue().toString();
+            email = dataSnapshot.child("email").getValue().toString();
+            status = dataSnapshot.child("status").getValue().toString();
+            image = dataSnapshot.child("image").getValue().toString();
+            imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
             //set values to display
-            textUsername.setText(getString(R.string.settingsName) + "    " +  name);
-            textStatus.setText( getString(R.string.settingsStatus)  +  "    " + status);
+            textUsername.setText(name);
+            textStatus.setText(status);
             //if there is no pic uploaded to database we set default img
             if (image.equals("image")){
                 imageProfile.setImageResource(R.drawable.imgdefault);
             } else{
                 //here we set image from database into imageView
-                Glide.with(this).load(image).into(imageProfile);
+                Picasso.get().load(image).into(imageProfile);
+
             }
 
             Log.i(TAG, "infoFetched: name: " + name);
@@ -214,7 +212,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     /**
-     * this method has the logic of changing the saving the image from storage into the database
+     * this method has the logic of saving the image from storage into the database
      * @param result
      */
     private void changeProfilePic(CropImage.ActivityResult result) {
@@ -227,7 +225,7 @@ public class SettingsActivity extends AppCompatActivity {
         uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                if (!task.isSuccessful()) {
+                if (!task.isSuccessful()) { 
                     throw task.getException();
                 }
 

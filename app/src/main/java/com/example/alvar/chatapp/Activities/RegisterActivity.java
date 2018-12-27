@@ -61,7 +61,7 @@ public class RegisterActivity extends AppCompatActivity {
         //UI elements
         BindUI();
         //toolbar
-        setToolbar(getString(R.string.register));
+        setToolbar(getString(R.string.register), true);
         //execute registration process.
         registerBtnPress();
     }
@@ -120,11 +120,11 @@ public class RegisterActivity extends AppCompatActivity {
    /**
     Create toolbar and it's detail
     */
-    private void setToolbar(String title){
+    private void setToolbar(String title, Boolean backOption){
         toolbarRegister = findViewById(R.id.toolbarRegister);
         setSupportActionBar(toolbarRegister);
         getSupportActionBar().setTitle(title);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
     /**
      Method in charge of creating new account

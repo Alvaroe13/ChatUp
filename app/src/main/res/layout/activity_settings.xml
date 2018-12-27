@@ -33,9 +33,10 @@ android:background="@color/colorPrimary">
         android:layout_marginRight="8dp"
         android:backgroundTint="@color/colorPrimary"
         android:ems="10"
-        android:hint="Name"
+        android:hint="@string/username"
         android:textColor="@color/color_white"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingImgProfile" />
@@ -51,9 +52,10 @@ android:background="@color/colorPrimary">
         android:layout_marginRight="8dp"
         android:backgroundTint="@color/colorPrimary"
         android:ems="10"
-        android:hint="Status"
+        android:hint="@string/status"
         android:textColor="@color/color_white"
         android:textSize="18sp"
+        android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingsUsername" />
@@ -138,8 +140,6 @@ android:background="@color/colorPrimary">
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/fabStatus" />
-
-
 
 
 </android.support.constraint.ConstraintLayout>
