@@ -81,9 +81,6 @@ public class AllUsersActivity extends AppCompatActivity {
         callFirebaseAdapter();
     }
 
-
-
-
     /**
      * this method contains the logic to fill the recyclerView with the info from the database node "Users".
      */
@@ -104,7 +101,13 @@ public class AllUsersActivity extends AppCompatActivity {
                       //  here we fetch info from database and set it to the UI
                         holder.username.setText(model.getName());
                         holder.currentStatus.setText(model.getStatus());
-                        Picasso.get().load(model.getImage()).placeholder(R.drawable.profile_image).into(holder.imgProfile);
+                        //here we set the default image is user has not upload any pic
+                        if (model.getImageThumbnail().equals("imgThumbnail")){
+                            holder.imgProfile.setImageResource(R.drawable.profile_image);
+                        }else{
+                            //lets upload images from db to ui using glide instead of picasso
+                            Glide.with(AllUsersActivity.this).load(model.getImageThumbnail()).into(holder.imgProfile);
+                        }
 
                         //onClick when any of the users displayed has been pressed
                         holder.itemView.setOnClickListener(new View.OnClickListener() {

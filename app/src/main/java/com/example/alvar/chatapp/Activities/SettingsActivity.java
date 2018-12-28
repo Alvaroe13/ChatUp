@@ -2,6 +2,7 @@ package com.example.alvar.chatapp.Activities;
 
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,9 +36,13 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -48,8 +53,8 @@ public class SettingsActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference mRef;
     private FirebaseUser currentUser;
-    private StorageReference storageRef;
-    private UploadTask uploadTask;
+    private StorageReference storageRef, thumbnailImageRef;
+    private UploadTask uploadTask, uploadThubmnailTask;
     //UI elements
     private CircleImageView imageProfile;
     private TextView textStatus, textUsername;
@@ -58,6 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Vars
     private String userID;
     private String name, status, image, imageThumbnail, email;
+    private Bitmap thumbnailImage = null;
     //galley const
     private static final int GALLERY_REQUEST_NUMBER = 1;
 
@@ -136,6 +142,9 @@ public class SettingsActivity extends AppCompatActivity {
         mRef = database.getReference("Users").child(userID);
         Log.i(TAG, "initFirebase: userid: " + userID);
         storageRef = FirebaseStorage.getInstance().getReference();
+
+        //we create a "Thumbnail_Images" folder in firebase storage
+        thumbnailImageRef = FirebaseStorage.getInstance().getReference();
     }
 
     /**
@@ -160,8 +169,12 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * this method is the one in charge of fetching info from the db and set it to the UI
+     * @param dataSnapshot
+     */
     private void infoFetched(DataSnapshot dataSnapshot){
+
             //save info retrieved from DB into String vars
             name = dataSnapshot.child("name").getValue().toString();
             email = dataSnapshot.child("email").getValue().toString();
@@ -172,19 +185,15 @@ public class SettingsActivity extends AppCompatActivity {
             textUsername.setText(name);
             textStatus.setText(status);
             //if there is no pic uploaded to database we set default img
-            if (image.equals("image")){
+            if (imageThumbnail.equals("imgThumbnail")){
                 imageProfile.setImageResource(R.drawable.imgdefault);
             } else{
                 //here we set image from database into imageView
-                Picasso.get().load(image).into(imageProfile);
+                //Picasso.get().load(imageThumbnail).into(imageProfile);
+                Glide.with(this).load(imageThumbnail).into(imageProfile);
 
             }
 
-            Log.i(TAG, "infoFetched: name: " + name);
-            Log.i(TAG, "infoFetched: status: " + status);
-            Log.i(TAG, "infoFetched: image: " + image);
-            Log.i(TAG, "infoFetched: imgThumbnail: " + imageThumbnail);
-            Log.i(TAG, "infoFetched: email: " + email);
         }
 
 
@@ -219,6 +228,32 @@ public class SettingsActivity extends AppCompatActivity {
         ProgressBarHelper.showProgressBar(progressBar);
 
         Uri resultUri = result.getUri();
+
+        //here we compress image size
+        ////////////////////////////////here began the compression file process
+        File filePathUri = new File(resultUri.getPath());
+
+        try{
+            //her ewe compress file and set it's dimension
+            thumbnailImage = new Compressor(this)
+                    .setMaxHeight(200)
+                    .setMaxWidth(200)
+                    .setQuality(50)
+                    .compressToBitmap(filePathUri);
+
+        } catch (Exception e){
+            e.printStackTrace();
+            String exception = e.getMessage();
+            Log.i(TAG, "compressImage: exception: " + exception);
+        }
+
+        ByteArrayOutputStream byteImage = new ByteArrayOutputStream();
+        thumbnailImage.compress(Bitmap.CompressFormat.JPEG, 50, byteImage);
+        final byte[] thumb_byte = byteImage.toByteArray();
+        /////////////////////////////////////////////////////here is the end of compressing-file process
+
+
+        //here we create the "profile_images" folder in firebase storage
         final StorageReference filepath = storageRef.child("profile_images/").child(userID + ".jpg");
 
         uploadTask = filepath.putFile(resultUri);
@@ -235,21 +270,11 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
                 if (task.isSuccessful()) {
-                    Uri downloadUri = task.getResult();
 
-                    if (downloadUri != null) {
+                    downloadUrl(task);
 
-                        String imgUri = downloadUri.toString(); //here is the image URL cast into String
-                        Log.i(TAG, "onComplete: imgUri: " + imgUri);
+                    downloadThumbnailUrl(thumb_byte);
 
-                        //lets save image from storage into database
-                        HashMap<String , Object> imgMap = new HashMap<>();
-                        imgMap.put("image", imgUri);
-                        mRef.updateChildren(imgMap);
-
-                        ProgressBarHelper.hideProgressBar(progressBar);
-
-                    }
 
                 } else{
                     String error = task.getException().getMessage();
@@ -258,5 +283,85 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    /**
+     * this method downloads the info from the image (without resized) to later be save from storage to database
+     * @param task
+     */
+    private void downloadUrl( Task<Uri> task) {
+
+
+        Uri downloadUri = task.getResult();
+
+        if (downloadUri != null) {
+
+            String imgUri = downloadUri.toString(); //here is the image URL cast into String
+            Log.i(TAG, "onComplete: imgUri: " + imgUri);
+
+            //lets save image from storage into database
+            HashMap<String , Object> imgMap = new HashMap<>();
+            imgMap.put("image", imgUri);
+            mRef.updateChildren(imgMap);
+
+            ProgressBarHelper.hideProgressBar(progressBar);
+
+        }
+    }
+
+
+    /**
+     * this method is in charge of downloading the thumbnail info and turn it into string to be saved
+     * from storage to database
+     * @param thumb_byte
+     */
+    private void downloadThumbnailUrl(byte [] thumb_byte) {
+
+        //here we create the "Thumbnail_Images" folder in firebase storage
+        final StorageReference thumbFilePath = thumbnailImageRef.child("Thumbnail_Images").child(userID + ".jpg");
+
+        uploadThubmnailTask = thumbFilePath.putBytes(thumb_byte);
+        //this method will add the image compressed into firebase storage
+        uploadThubmnailTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+
+                return thumbFilePath.getDownloadUrl();   //here we get URL info from storage (in object format)
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+
+                if (task.isSuccessful()){
+                    Uri downloadThumbnailUri = task.getResult();
+
+                    if (downloadThumbnailUri != null){
+                        String finalThumbnailUri = downloadThumbnailUri.toString();
+
+                        //here we pass the thumbnail from storage to database at the "imageThumbnail" node
+                        HashMap<String, Object> hashThumbnail = new HashMap<>();
+                        hashThumbnail.put("imageThumbnail", finalThumbnailUri);
+                        mRef.updateChildren(hashThumbnail);
+                    }
+
+                    ProgressBarHelper.hideProgressBar(progressBar);
+                    Toast.makeText(SettingsActivity.this, "thumbnail successfully uploaded to firebase storage", Toast.LENGTH_SHORT).show();
+
+                }else{
+                    String error = task.getException().getMessage();
+                    Toast.makeText(SettingsActivity.this, getString(R.string.error) + error, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+    }
+
+
+
+
 
 }
