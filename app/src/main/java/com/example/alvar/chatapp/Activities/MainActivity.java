@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
                 return true;
             case R.id.signOut:
-                signOut();
-                Toast.makeText(this, getString(R.string.signing_Out), Toast.LENGTH_SHORT).show();
+                alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
+                Log.i(TAG, "onOptionsItemSelected: log out button pressed");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -165,9 +165,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * this method is in charge of taking the user to all users page
+     */
     private void goToAllUsers() {
         Intent intentAllUsers = new Intent(MainActivity.this, AllUsersActivity.class);
         startActivity(intentAllUsers);
+    }
+
+    private AlertDialog alertMessage(String title, String message){
+
+
+        AlertDialog popUpWindow = new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        signOut();
+                        Toast.makeText(MainActivity.this,
+                                getResources().getString(R.string.signing_Out), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton(getString(R.string.no), null)
+                .show();
+
+        return popUpWindow;
     }
 
 

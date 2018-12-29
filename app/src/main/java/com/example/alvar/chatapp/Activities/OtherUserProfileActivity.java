@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -97,14 +98,15 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         String username = dataSnapshot.child("name").getValue().toString();
         String status = dataSnapshot.child("status").getValue().toString();
         String image = dataSnapshot.child("image").getValue().toString();
+        String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
 
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
-        if (image.equals("image")){
+        if (imageThumbnail.equals("imgThumbnail")){
             otherUserImg.setImageResource(R.drawable.imgdefault);
         } else{
             //here we set image from database into imageView
-            Picasso.get().load(image).into(otherUserImg);
+            Glide.with(OtherUserProfileActivity.this).load(imageThumbnail).into(otherUserImg);
 
         }
 

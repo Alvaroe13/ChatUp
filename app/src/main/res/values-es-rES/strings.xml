@@ -56,5 +56,9 @@
     <string name="status">Status</string>
     <string name="settingsName">Nombre:</string>
     <string name="settingsStatus">Estado:</string>
+    <string name="alertDialogTitle">Estas cerrando sesion</string>
+    <string name="alertDialogMessage">Estas seguro que quieres cerrar sesion?</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
 
 </resources>

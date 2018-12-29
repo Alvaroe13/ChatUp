@@ -55,6 +55,11 @@
     <string name="status">Status</string>
     <string name="settingsName">Name:</string>
     <string name="settingsStatus">Status:</string>
+    <string name="alertDialogTitle">You are signing out</string>
+    <string name="alertDialogMessage">Are you sure you want to sign out?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
 
 
 </resources>

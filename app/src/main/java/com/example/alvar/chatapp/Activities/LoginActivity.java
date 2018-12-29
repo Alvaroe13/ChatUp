@@ -121,6 +121,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.i(TAG, "signInWithEmail:success");
                             user = mAuth.getCurrentUser();
+                            Toast.makeText(getApplicationContext(),  getString(R.string.welcome), Toast.LENGTH_SHORT).show();
                             goToMain();
                         } else {
                             // If sign in fails, display a message to the user.

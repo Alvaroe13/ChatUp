@@ -62,7 +62,7 @@
 
     <Button
         android:id="@+id/buttonOtherUser"
-        android:layout_width="150dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimaryDark"
         android:text="send message"
