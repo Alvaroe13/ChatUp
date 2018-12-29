@@ -59,7 +59,9 @@
     <string name="alertDialogMessage">Are you sure you want to sign out?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-
+    <string name="sendChatRequest">Send chat request</string>
+    <string name="cancelChatRequest">Cancel chat request</string>
+    <string name="chatRequestSent">Chat request sent</string>
 
 
 </resources>

@@ -60,5 +60,8 @@
     <string name="alertDialogMessage">Estas seguro que quieres cerrar sesion?</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
+    <string name="sendChatRequest">Enviar solicitud de chat</string>
+    <string name="cancelChatRequest">Cancelar solicitud de chat</string>
+    <string name="chatRequestSent">Solicitud enviada</string>
 
 </resources>
