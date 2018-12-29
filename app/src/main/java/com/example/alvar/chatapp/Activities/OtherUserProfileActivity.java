@@ -151,10 +151,58 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                     }
 
+                    if (current_database_state.equals("request_sent")){
+
+                        cancelChatRequest();
+                    }
+
                 }
             });
             
         }
+    }
+
+    /**
+     * this method is in charge of removing the chat request info from both nodes created
+     * when a user send a chat request
+     */
+    private void cancelChatRequest() {
+
+        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                .removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()){
+
+
+                            dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                                    .removeValue()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            if (task.isSuccessful()){
+
+                                                btnOther.setEnabled(true);
+                                                current_database_state = "new";
+                                                btnOther.setText(getString(R.string.sendChatRequest));
+                                                Toast.makeText(OtherUserProfileActivity.this,
+                                                        getString(R.string.canceledChatRequest), Toast.LENGTH_SHORT).show();
+
+                                            }
+
+                                        }
+                                    });
+
+
+
+                        }
+
+                    }
+                });
+
     }
 
     /**

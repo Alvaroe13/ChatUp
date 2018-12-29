@@ -61,6 +61,7 @@
     <string name="no">No</string>
     <string name="sendChatRequest">Send chat request</string>
     <string name="cancelChatRequest">Cancel chat request</string>
+    <string name="canceledChatRequest">Canceled chat request</string>
     <string name="chatRequestSent">Chat request sent</string>
 
 

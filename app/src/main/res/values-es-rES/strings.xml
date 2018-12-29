@@ -63,5 +63,6 @@
     <string name="sendChatRequest">Enviar solicitud de chat</string>
     <string name="cancelChatRequest">Cancelar solicitud de chat</string>
     <string name="chatRequestSent">Solicitud enviada</string>
+    <string name="canceledChatRequest">Solicitud cancelada</string>
 
 </resources>
