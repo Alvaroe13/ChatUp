@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference dbRef;
+    private DatabaseReference dbUsersRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         //database init
         database = FirebaseDatabase.getInstance();
         //database ref init
-        dbRef = database.getReference().child("Users");
+        dbUsersRef = database.getReference().child("Users");
     }
 
 
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
         currentUserID = mAuth.getCurrentUser().getUid();
 
-        dbRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         imageDialog.setView(imageProfileView);
 
         //we access db containing info to be fetched
-        dbRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 

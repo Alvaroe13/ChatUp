@@ -7,11 +7,13 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference mRef;
+    private DatabaseReference dbUsersRef;
     private FirebaseUser currentUser;
     private StorageReference storageRef, thumbnailImageRef;
     private UploadTask uploadTask, uploadThubmnailTask;
@@ -61,7 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private FloatingActionButton fabImage, fabStatus;
     //Vars
-    private String userID;
+    private String currentUserID;
     private String name, status, image, imageThumbnail, email;
     private Bitmap thumbnailImage = null;
     //galley const
@@ -80,6 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
         initFirebase();
         //init retrieve data from firebase database method
         retrieveDataFromDb();
+        imageClick();
     }
 
     /**
@@ -135,12 +138,12 @@ public class SettingsActivity extends AppCompatActivity {
         //we get current user logged in
         currentUser = mAuth.getCurrentUser();
         //save unique UID from user logged-in to a var type String named "userID"
-        userID = currentUser.getUid();
+        currentUserID = currentUser.getUid();
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        mRef = database.getReference("Users").child(userID);
-        Log.i(TAG, "initFirebase: userid: " + userID);
+        dbUsersRef = database.getReference("Users").child(currentUserID);
+        Log.i(TAG, "initFirebase: userid: " + currentUserID);
         storageRef = FirebaseStorage.getInstance().getReference();
 
         //we create a "Thumbnail_Images" folder in firebase storage
@@ -153,7 +156,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void retrieveDataFromDb(){
 
         // Read from the database
-        mRef.addValueEventListener(new ValueEventListener() {
+        dbUsersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i(TAG, "onDataChange: data retrieved :" + dataSnapshot);
@@ -254,7 +257,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         //here we create the "profile_images" folder in firebase storage
-        final StorageReference filepath = storageRef.child("profile_images/").child(userID + ".jpg");
+        final StorageReference filepath = storageRef.child("profile_images/").child(currentUserID + ".jpg");
 
         uploadTask = filepath.putFile(resultUri);
         uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -302,7 +305,7 @@ public class SettingsActivity extends AppCompatActivity {
             //lets save image from storage into database
             HashMap<String , Object> imgMap = new HashMap<>();
             imgMap.put("image", imgUri);
-            mRef.updateChildren(imgMap);
+            dbUsersRef.updateChildren(imgMap);
 
             ProgressBarHelper.hideProgressBar(progressBar);
 
@@ -318,7 +321,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void downloadThumbnailUrl(byte [] thumb_byte) {
 
         //here we create the "Thumbnail_Images" folder in firebase storage
-        final StorageReference thumbFilePath = thumbnailImageRef.child("Thumbnail_Images").child(userID + ".jpg");
+        final StorageReference thumbFilePath = thumbnailImageRef.child("Thumbnail_Images").child(currentUserID + ".jpg");
 
         uploadThubmnailTask = thumbFilePath.putBytes(thumb_byte);
         //this method will add the image compressed into firebase storage
@@ -344,7 +347,7 @@ public class SettingsActivity extends AppCompatActivity {
                         //here we pass the thumbnail from storage to database at the "imageThumbnail" node
                         HashMap<String, Object> hashThumbnail = new HashMap<>();
                         hashThumbnail.put("imageThumbnail", finalThumbnailUri);
-                        mRef.updateChildren(hashThumbnail);
+                        dbUsersRef.updateChildren(hashThumbnail);
                     }
 
                     ProgressBarHelper.hideProgressBar(progressBar);
@@ -359,6 +362,64 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
     }
+
+    /**
+     * method in charge of handling event when image has been clicked
+     */
+    private void imageClick(){
+
+        imageProfile.setEnabled(true);
+        imageProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageProfileDialog();
+            }
+        });
+
+    }
+
+    /**
+     * method in charge of displaying the image profile once the toolbar has been clicked
+     * @return
+     */
+    private AlertDialog.Builder imageProfileDialog(){
+        //create alertDialog
+        AlertDialog.Builder imageDialog = new AlertDialog.Builder(SettingsActivity.this);
+        //create Dialog's view
+        View imageProfileView = getLayoutInflater().inflate(R.layout.profile_dialog, null);
+        //bind imageView from layout into the code
+        final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
+        //set View to it's dialog builder
+        imageDialog.setView(imageProfileView);
+
+        //we access db containing info to be fetched
+        dbUsersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                //we store the image from the db into String var
+                String image = dataSnapshot.child("image").getValue().toString();
+
+                //set image from firebase databsae to UI
+                if ( image.equals("image")){
+                    imageProfileDialog.setImageResource(R.drawable.profile_image);
+                }else{
+                    Glide.with(SettingsActivity.this).load(image).into(imageProfileDialog);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //show alert dialog builder
+        imageDialog.show();
+
+        return imageDialog ;
+    }
+
 
 
 
