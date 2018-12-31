@@ -1,5 +1,6 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -255,18 +257,63 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method handle even when toolbar has been clicked
+     */
     private void toolbarOnClick(){
+
+
+        toolbarMain.setEnabled(true);
         toolbarMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToProfile();
+                imageProfileDialog();
+                Log.i(TAG, "onClick: toolbarMain pressed!!!!");
+
             }
         });
     }
 
-    private void goToProfile() {
-        Intent intentGoToProfile = new Intent(MainActivity.this, SettingsActivity.class);
-        startActivity(intentGoToProfile);
+    /**
+     * method in charge of displaying the image profile once the toolbar has been clicked
+     * @return
+     */
+    private AlertDialog.Builder imageProfileDialog(){
+        //create alertDialog
+        AlertDialog.Builder imageDialog = new AlertDialog.Builder(MainActivity.this);
+        //create Dialog's view
+        View imageProfileView = getLayoutInflater().inflate(R.layout.profile_dialog, null);
+        //bind imageView from layout into the code
+        final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
+        //set View to it's dialog builder
+        imageDialog.setView(imageProfileView);
+
+        //we access db containing info to be fetched
+        dbRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                //we store the image from the db into String var
+                String image = dataSnapshot.child("image").getValue().toString();
+
+                //set image from firebase databsae to UI
+                if ( image.equals("image")){
+                    imageProfileDialog.setImageResource(R.drawable.profile_image);
+                }else{
+                    Glide.with(MainActivity.this).load(image).into(imageProfileDialog);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //show alert dialog builder
+        imageDialog.show();
+
+        return imageDialog ;
     }
 
 
