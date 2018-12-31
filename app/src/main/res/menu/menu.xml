@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/settingsAccount"
-        android:title="@string/profile"
+        android:title="@string/editProfile"
         app:showAsAction="never"/>
 
     <item android:id="@+id/menuAllUsers"

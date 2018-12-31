@@ -24,7 +24,6 @@
     <string name="dontHaveAccount">No tienes cuenta aun?</string>
     <string name="createAccount">Crea una aquí!</string>
     <string name="email_exist">Email ya en uso</string>
-    <string name="changeImage">Cambiar foto</string>
     <string name="updateStatus">Actualizar Estado</string>
     <string name="user_status">Estado usuario </string>
     <string name="user_displayname">Tu nombre </string>
@@ -64,5 +63,10 @@
     <string name="cancelChatRequest">Cancelar solicitud de chat</string>
     <string name="chatRequestSent">Solicitud enviada</string>
     <string name="canceledChatRequest">Solicitud cancelada</string>
+    <string name="editProfile">Editar perfil</string>
+    <string name="changeImage">Cambiar foto</string>
+    <string name="rejectRequest">Rechazar solicitud</string>
+    <string name="acceptChatRequest">Aceptar solicitud</string>
+    <string name="chatRequestRejected">Solicitud rechazada</string>
 
 </resources>

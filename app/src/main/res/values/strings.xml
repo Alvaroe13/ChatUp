@@ -23,7 +23,6 @@
     <string name="dontHaveAccount">Don\'t have account yet?</string>
     <string name="createAccount">create one here!</string>
     <string name="email_exist">Email already in use</string>
-    <string name="changeImage">Change Image</string>
     <string name="updateStatus">Update Status</string>
     <string name="user_status">User Status</string>
     <string name="user_displayname">Your display name</string>
@@ -63,6 +62,11 @@
     <string name="cancelChatRequest">Cancel chat request</string>
     <string name="canceledChatRequest">Canceled chat request</string>
     <string name="chatRequestSent">Chat request sent</string>
+    <string name="editProfile">Edit profile</string>
+    <string name="changeImage">Change Image</string>
+    <string name="rejectRequest">Reject request</string>
+    <string name="acceptChatRequest">Accept chat request</string>
+    <string name="chatRequestRejected">Chat request rejected</string>
 
 
 </resources>

@@ -63,14 +63,25 @@
 
 
     <Button
-        android:id="@+id/buttonOtherUser"
+        android:id="@+id/buttonSendRequest"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimaryDark"
         android:text="@string/sendChatRequest"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="85dp"
+        android:layout_marginTop="45dp"
         android:textColor="@color/color_white" />
+
+    <Button
+        android:id="@+id/buttonDeclineRequest"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAccent"
+        android:text="@string/rejectRequest"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="15dp"
+        android:textColor="@color/color_white"
+        android:visibility="invisible"/>
 
 
 

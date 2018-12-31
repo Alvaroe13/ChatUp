@@ -33,10 +33,10 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
-    private Button btnOther;
+    private Button buttonSendRequest, buttonRejectRequest;
     //vars
     private String otherUserIdReceived, senderRequestUserId;
-    private String current_database_state = "new";
+    private String current_database_state = "not_friend_yet";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +55,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         otherUserImg = findViewById(R.id.otherUsersImgProf);
         usernameOtherUser = findViewById(R.id.usernameOtherUser);
         statusOtherUser = findViewById(R.id.statusOtherUser);
-        btnOther = findViewById(R.id.buttonOtherUser);
+        buttonSendRequest = findViewById(R.id.buttonSendRequest);
+        buttonRejectRequest = findViewById(R.id.buttonDeclineRequest);
     }
 
     private void initFirebase(){
@@ -128,7 +129,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         //we get current user id
         senderRequestUserId = auth.getCurrentUser().getUid();
-        current_database_state = "new";
+        current_database_state = "not_friend_yet";
 
         chatRequestStatus();
 
@@ -136,21 +137,22 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             //in case the current user open it's own profile in the "all users" page
         if (senderRequestUserId.equals(otherUserIdReceived)){
             //we hide "send request" button
-            btnOther.setVisibility(View.INVISIBLE);
+            buttonSendRequest.setVisibility(View.INVISIBLE);
 
         } else{
 
             //do something here
-            btnOther.setOnClickListener(new View.OnClickListener() {
+            buttonSendRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    if (current_database_state.equals("new")){
+                    //in case there is no request send yet
+                    if (current_database_state.equals("not_friend_yet")){
 
                         sendChatRequest();
 
                     }
-
+                    //in case the request it's been sent
                     if (current_database_state.equals("request_sent")){
 
                         cancelChatRequest();
@@ -160,6 +162,60 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             });
             
         }
+    }
+
+
+
+    /**
+     * this method is in charge of uploading the current status of a chat request
+     */
+    private void chatRequestStatus() {
+
+
+        dbChatRequestNodeRef.child(senderRequestUserId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.hasChild(otherUserIdReceived)) {
+
+                    /*
+                    here we get the type of request in order to show the user who sends the request
+                    and the users whom receives the request the respective UI
+                    */
+                    String request_type = dataSnapshot.child(otherUserIdReceived).child("request_type").getValue().toString();
+
+                    //if the user sends a chat request
+                    if (request_type.equals("sent")){
+                        current_database_state = "request_sent";
+                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
+                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
+                    }
+                    //in case the user receives a chat request
+                    else if (request_type.equals("received")){
+
+                        current_database_state = "request_received";
+                        buttonSendRequest.setText(getString(R.string.acceptChatRequest));
+                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+                        buttonRejectRequest.setVisibility(View.VISIBLE);
+
+                        buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //if user click "reject button" we dont do the binding in the DB
+                                cancelChatRequest();
+                            }
+                        });
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     /**
@@ -185,11 +241,16 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                             if (task.isSuccessful()){
 
-                                                btnOther.setEnabled(true);
-                                                current_database_state = "new";
-                                                btnOther.setText(getString(R.string.sendChatRequest));
+                                                buttonSendRequest.setEnabled(true);
+                                                current_database_state = "not_friend_yet";
+                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+
                                                 Toast.makeText(OtherUserProfileActivity.this,
-                                                        getString(R.string.canceledChatRequest), Toast.LENGTH_SHORT).show();
+                                                        getString(R.string.chatRequestRejected), Toast.LENGTH_SHORT).show();
+
+                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
+                                                buttonRejectRequest.setEnabled(false);
 
                                             }
 
@@ -206,47 +267,19 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * this method is in charge of uploading the current status of a chat request
-     */
-    private void chatRequestStatus() {
-
-
-        dbChatRequestNodeRef.child(senderRequestUserId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.hasChild(otherUserIdReceived)) {
-
-                    String request_type = dataSnapshot.child(otherUserIdReceived).child("request_type").getValue().toString();
-
-                    if (request_type.equals("sent")){
-                        current_database_state = "request_sent";
-                        btnOther.setText(getString(R.string.cancelChatRequest));
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    /**
      * this method is in charge of sending a chat request
      */
     private void sendChatRequest() {
 
         //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived).child("request_type").setValue("sent")
+        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                .child("request_type").setValue("sent")
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 /*
-                is we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
+                if we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
                 and the other for the request sender
                 */
                 if (task.isSuccessful()){
@@ -259,9 +292,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                     if (task.isSuccessful()){
 
-                                        btnOther.setEnabled(true);
+                                        buttonSendRequest.setEnabled(true);
                                         current_database_state = "request_sent";
-                                        btnOther.setText(getString(R.string.cancelChatRequest));
+                                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
 
                                         Toast.makeText(OtherUserProfileActivity.this,
                                                 getString(R.string.chatRequestSent), Toast.LENGTH_SHORT).show();
