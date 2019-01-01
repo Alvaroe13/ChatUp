@@ -1,6 +1,7 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,6 +36,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
     private Button buttonSendRequest, buttonRejectRequest;
+    private CoordinatorLayout coordinatorLayout;
     //vars
     private String otherUserIdReceived, senderRequestUserId;
     private String current_database_state = "not_friend_yet";
@@ -57,6 +60,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         statusOtherUser = findViewById(R.id.statusOtherUser);
         buttonSendRequest = findViewById(R.id.buttonSendRequest);
         buttonRejectRequest = findViewById(R.id.buttonDeclineRequest);
+        coordinatorLayout = findViewById(R.id.coordinatorLayout);
     }
 
     private void initFirebase(){
@@ -245,8 +249,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 current_database_state = "not_friend_yet";
                                                 buttonSendRequest.setText(getString(R.string.sendChatRequest));
 
-                                                Toast.makeText(OtherUserProfileActivity.this,
-                                                        getString(R.string.chatRequestRejected), Toast.LENGTH_SHORT).show();
+                                                //show the user the request has been canceled
+                                                SnackbarHelper.showSnackBarLongRed(coordinatorLayout, getString(R.string.canceledChatRequest));
 
                                                 buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                                                 buttonRejectRequest.setVisibility(View.INVISIBLE);
@@ -296,8 +300,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         current_database_state = "request_sent";
                                         buttonSendRequest.setText(getString(R.string.cancelChatRequest));
 
-                                        Toast.makeText(OtherUserProfileActivity.this,
-                                                getString(R.string.chatRequestSent), Toast.LENGTH_SHORT).show();
+                                        //show the user the request has been successfully sent
+                                        SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
 
                                     }
                                 }

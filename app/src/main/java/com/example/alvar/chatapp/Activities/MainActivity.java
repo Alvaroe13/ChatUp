@@ -280,13 +280,13 @@ public class MainActivity extends AppCompatActivity {
      */
     private AlertDialog.Builder imageProfileDialog(){
         //create alertDialog
-        AlertDialog.Builder imageDialog = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder imageDialogBuilder = new AlertDialog.Builder(MainActivity.this);
         //create Dialog's view
         View imageProfileView = getLayoutInflater().inflate(R.layout.profile_dialog, null);
         //bind imageView from layout into the code
         final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
         //set View to it's dialog builder
-        imageDialog.setView(imageProfileView);
+        imageDialogBuilder.setView(imageProfileView);
 
         //we access db containing info to be fetched
         dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
@@ -311,9 +311,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //show alert dialog builder
-        imageDialog.show();
+        imageDialogBuilder.show();
 
-        return imageDialog ;
+        return imageDialogBuilder ;
     }
 
 
