@@ -70,6 +70,7 @@
     <string name="chatRequestAccepted">Chat request accepted</string>
     <string name="removeContact">Remove contact</string>
     <string name="sendMessage">Send message</string>
+    <string name="contactRemoved">Contact removed</string>
 
 
 </resources>

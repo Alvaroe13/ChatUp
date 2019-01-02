@@ -40,6 +40,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //vars
     private String otherUserIdReceived, senderRequestUserId;
     private String current_database_state = "not_friend_yet";
+    private String firebaseErrorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,12 +169,17 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         //accept the chat request
                         acceptRequest();
                     }
+                    if (current_database_state.equals("contact_added")){
+
+                        removeContact();
+                    }
 
                 }
             });
             
         }
     }
+
 
 
     /**
@@ -268,6 +274,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
+
                 /*
                 if we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
                 and the other for the request sender)
@@ -291,6 +298,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
 
                                     }
+                                    //if something goes wrong show message to the user
+                                    else if (firebaseErrorMessage != null ){
+                                        Toast.makeText(OtherUserProfileActivity.this,
+                                                task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+
                                 }
                             });
                 }
@@ -337,16 +350,29 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 buttonRejectRequest.setEnabled(false);
 
                                             }
+                                            //if something goes wrong show message to the user
+                                            else if (firebaseErrorMessage != null ){
+                                                Toast.makeText(OtherUserProfileActivity.this,
+                                                        task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
 
                                         }
+
                                     });
 
 
 
                         }
+                        //if something goes wrong show message to the user
+                        else if (firebaseErrorMessage != null ){
+                            Toast.makeText(OtherUserProfileActivity.this,
+                                    task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
 
                     }
                 });
+
 
     }
 
@@ -357,6 +383,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
      * in the "Chats Requests" node
      */
     private void acceptRequest() {
+
+
         //here we create the "contacts" node for the user sending the request
         contactsNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
                 .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -402,26 +430,36 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                                                          getString(R.string.chatRequestAccepted));
                                                                         buttonRejectRequest.setVisibility(View.VISIBLE);
                                                                         buttonRejectRequest.setEnabled(true);
-                                                                        buttonRejectRequest.setText("Send message");
+                                                                        buttonRejectRequest.setText(getString(R.string.sendMessage));
                                                                         buttonRejectRequest.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
 
                                                                     }
-
-                                                                    else {
+                                                                    //if something goes wrong show message to the user
+                                                                    else if (firebaseErrorMessage != null ){
                                                                         Toast.makeText(OtherUserProfileActivity.this,
-                                                                                "something wrong happened", Toast.LENGTH_SHORT).show();
+                                                                                task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                                     }
 
 
                                                                 }
                                                             });
                                                 }
+                                                //if something goes wrong show message to the user
+                                                else if (firebaseErrorMessage != null ){
+                                                    Toast.makeText(OtherUserProfileActivity.this,
+                                                            task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                }
 
                                             }
                                         });
 
 
+                            }
+                            //if something goes wrong show message to the user
+                            else if (firebaseErrorMessage != null ){
+                                Toast.makeText(OtherUserProfileActivity.this,
+                                        task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                         }
@@ -430,9 +468,72 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
                 }
+                //if something goes wrong show message to the user
+                else if (firebaseErrorMessage != null ){
+                    Toast.makeText(OtherUserProfileActivity.this,
+                            task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
+    }
+
+
+    private void removeContact() {
+
+        contactsNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                .removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()){
+
+
+                            contactsNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                                    .removeValue()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            //here we update the UI in the "all users" page
+                                            if (task.isSuccessful()){
+
+                                                buttonSendRequest.setEnabled(true);
+                                                current_database_state = "not_friend_yet";
+                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+
+                                                //show the user the request has been canceled
+                                                SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
+                                                        getString(R.string.contactRemoved));
+
+                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
+                                                buttonRejectRequest.setEnabled(false);
+
+                                            }
+                                            //if something goes wrong show message to the user
+                                            else if (firebaseErrorMessage != null ){
+                                                Toast.makeText(OtherUserProfileActivity.this,
+                                                        task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+
+                                        }
+                                    });
+
+
+
+                        }
+                        //if something goes wrong show message to the user
+                        else if (firebaseErrorMessage != null ){
+                            Toast.makeText(OtherUserProfileActivity.this,
+                                    task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+
+
     }
 
 

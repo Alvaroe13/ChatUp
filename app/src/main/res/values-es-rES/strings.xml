@@ -71,5 +71,6 @@
     <string name="chatRequestAccepted">Solicitud aceptada</string>
     <string name="removeContact">Eliminar contacto</string>
     <string name="sendMessage">Enviar mensaje</string>
+    <string name="contactRemoved">Contact eliminado</string>
 
 </resources>
