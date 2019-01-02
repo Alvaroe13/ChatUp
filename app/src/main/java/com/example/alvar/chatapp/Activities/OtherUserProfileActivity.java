@@ -31,7 +31,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef;
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
@@ -71,6 +71,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         dbUsersNodeRef = database.getReference().child("Users");
         //we aim to "Chat Request" node
         dbChatRequestNodeRef = database.getReference().child("Chat Requests");
+        //we create "Contacts" node
+        contactsNodeRef = database.getReference().child("Contacts");
     }
 
     /**
@@ -145,12 +147,11 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         } else{
 
-            //do something here
             buttonSendRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    //in case there is no request send yet
+                    //in case there is no request sent yet
                     if (current_database_state.equals("not_friend_yet")){
 
                         sendChatRequest();
@@ -161,13 +162,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                         cancelChatRequest();
                     }
+                    //in case the user has received a chat request
+                    if(current_database_state.equals("request_received")){
+
+                        //accept the chat request
+                        acceptRequest();
+                    }
 
                 }
             });
             
         }
     }
-
 
 
     /**
@@ -190,6 +196,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                     //if the user sends a chat request
                     if (request_type.equals("sent")){
+
                         current_database_state = "request_sent";
                         buttonSendRequest.setText(getString(R.string.cancelChatRequest));
                         buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
@@ -205,12 +212,38 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //if user click "reject button" we dont do the binding in the DB
+                                //if user click "reject button" we don't do the binding in the DB
                                 cancelChatRequest();
                             }
                         });
                     }
 
+                }
+                //here in this part we update the UI from the user sending the request
+                else {
+
+                    contactsNodeRef.child(senderRequestUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if (dataSnapshot.hasChild(otherUserIdReceived)){
+                                //here we update the UI and database status of the user who sent the request
+                                current_database_state = "contact_added";
+                                buttonSendRequest.setText(getString(R.string.removeContact));
+
+                                buttonRejectRequest.setVisibility(View.VISIBLE);
+                                buttonRejectRequest.setEnabled(true);
+                                buttonRejectRequest.setText(getString(R.string.sendMessage));
+                                buttonRejectRequest.setBackgroundColor(getResources()
+                                        .getColor(R.color.colorPrimaryDark));
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
             }
@@ -220,6 +253,51 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+
+    /**
+     * this method is in charge of sending a chat request
+     */
+    private void sendChatRequest() {
+
+        //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
+
+        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                .child("request_type").setValue("sent")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                /*
+                if we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
+                and the other for the request sender)
+                */
+                if (task.isSuccessful()){
+
+                    dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                            .child("request_type").setValue("received")
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+
+                                    //here we update the UI in the "all users" page
+                                    if (task.isSuccessful()){
+
+                                        buttonSendRequest.setEnabled(true);
+                                        current_database_state = "request_sent";
+                                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
+
+                                        //show the user the request has been successfully sent
+                                        SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+
+                                    }
+                                }
+                            });
+                }
+            }
+        });
+
+
     }
 
     /**
@@ -243,6 +321,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
 
+                                            //here we update the UI in the "all users" page
                                             if (task.isSuccessful()){
 
                                                 buttonSendRequest.setEnabled(true);
@@ -250,7 +329,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 buttonSendRequest.setText(getString(R.string.sendChatRequest));
 
                                                 //show the user the request has been canceled
-                                                SnackbarHelper.showSnackBarLongRed(coordinatorLayout, getString(R.string.canceledChatRequest));
+                                                SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
+                                                                  getString(R.string.canceledChatRequest));
 
                                                 buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                                                 buttonRejectRequest.setVisibility(View.INVISIBLE);
@@ -270,48 +350,92 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     }
 
+
     /**
-     * this method is in charge of sending a chat request
+     * this method contains the logic of the db when a user accepts a request chat,
+     * meaning that we create a new db node named "Contacts" and we must remove the request saved
+     * in the "Chats Requests" node
      */
-    private void sendChatRequest() {
-
-        //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
-
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
-                .child("request_type").setValue("sent")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+    private void acceptRequest() {
+        //here we create the "contacts" node for the user sending the request
+        contactsNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                /*
-                if we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
-                and the other for the request sender
-                */
+
                 if (task.isSuccessful()){
 
-                    dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
-                            .child("request_type").setValue("received")
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
+                    //here we create the "contacts" no for the user receving the request
+                    contactsNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                            .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
 
-                                    if (task.isSuccessful()){
+                            if (task.isSuccessful()){
 
-                                        buttonSendRequest.setEnabled(true);
-                                        current_database_state = "request_sent";
-                                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
+                                //here we delete the info of the user sending the request saved in the "Chat request" node
+                                dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                                        .removeValue()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
 
-                                        //show the user the request has been successfully sent
-                                        SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+                                                if (task.isSuccessful()){
 
-                                    }
-                                }
-                            });
+                                                    //here we delete the info of the user receiving the request saved in the "Chat request" node
+                                                    dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                                                            .removeValue()
+                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                                    //here we update the UI in the "all users" page
+                                                                    if (task.isSuccessful()){
+
+                                                                        buttonSendRequest.setEnabled(true);
+                                                                        current_database_state = "contact_added";
+                                                                        buttonSendRequest.setText(getString(R.string.removeContact));
+                                                                        buttonSendRequest.setBackgroundColor(getResources()
+                                                                                .getColor(R.color.colorPrimaryDark));
+
+                                                                        SnackbarHelper.showSnackBarLong(coordinatorLayout,
+                                                                                         getString(R.string.chatRequestAccepted));
+                                                                        buttonRejectRequest.setVisibility(View.VISIBLE);
+                                                                        buttonRejectRequest.setEnabled(true);
+                                                                        buttonRejectRequest.setText("Send message");
+                                                                        buttonRejectRequest.setBackgroundColor(getResources()
+                                                                                .getColor(R.color.colorPrimaryDark));
+
+                                                                    }
+
+                                                                    else {
+                                                                        Toast.makeText(OtherUserProfileActivity.this,
+                                                                                "something wrong happened", Toast.LENGTH_SHORT).show();
+                                                                    }
+
+
+                                                                }
+                                                            });
+                                                }
+
+                                            }
+                                        });
+
+
+                            }
+
+                        }
+                    });
+
+
+
                 }
+
             }
         });
-
-
     }
 
 
 }
+
+

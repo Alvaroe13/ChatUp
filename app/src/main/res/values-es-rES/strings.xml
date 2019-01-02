@@ -68,5 +68,8 @@
     <string name="rejectRequest">Rechazar solicitud</string>
     <string name="acceptChatRequest">Aceptar solicitud</string>
     <string name="chatRequestRejected">Solicitud rechazada</string>
+    <string name="chatRequestAccepted">Solicitud aceptada</string>
+    <string name="removeContact">Eliminar contacto</string>
+    <string name="sendMessage">Enviar mensaje</string>
 
 </resources>
