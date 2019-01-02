@@ -242,6 +242,13 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                 buttonRejectRequest.setText(getString(R.string.sendMessage));
                                 buttonRejectRequest.setBackgroundColor(getResources()
                                         .getColor(R.color.colorPrimaryDark));
+                                buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        //replace for actual function
+                                        Toast.makeText(OtherUserProfileActivity.this, "send message", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
                         }
 
