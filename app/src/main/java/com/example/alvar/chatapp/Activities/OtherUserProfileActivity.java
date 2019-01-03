@@ -71,7 +71,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         //we aim to "Users" node
         dbUsersNodeRef = database.getReference().child("Users");
         //we aim to "Chat Request" node
-        dbChatRequestNodeRef = database.getReference().child("Chat Requests");
+        dbChatRequestNodeRef = database.getReference().child("Chat_Requests");
         //we create "Contacts" node
         contactsNodeRef = database.getReference().child("Contacts");
     }

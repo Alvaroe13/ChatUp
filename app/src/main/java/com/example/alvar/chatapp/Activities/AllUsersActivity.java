@@ -131,8 +131,9 @@ public class AllUsersActivity extends AppCompatActivity {
                     public AllUsersViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
 
                         //here we bind the user layout to the firebase adapter
+                        View allUsersView = LayoutInflater.from(viewGroup.getContext()).
+                                inflate(R.layout.users_individual_layout, viewGroup, false);
 
-                        View allUsersView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.users_individual_layout, viewGroup, false);
                         AllUsersViewHolder viewHolder = new AllUsersViewHolder(allUsersView);
                         return viewHolder;
 

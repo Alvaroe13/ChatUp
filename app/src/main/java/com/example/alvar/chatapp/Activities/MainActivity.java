@@ -1,6 +1,5 @@
 package com.example.alvar.chatapp.Activities;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -22,7 +21,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
-import com.example.alvar.chatapp.Fragments.ContactsFragment;
+import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         ViewPagerAdapter Adapter  = new ViewPagerAdapter(getSupportFragmentManager());
         Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
         Adapter.addFragment(new  ChatsFragment(), getString(R.string.chat) );
-        Adapter.addFragment(new  ContactsFragment(),getString(R.string.requests)  );
+        Adapter.addFragment(new RequestsFragment(),getString(R.string.requests)  );
         viewPager.setAdapter(Adapter);
 
     }
