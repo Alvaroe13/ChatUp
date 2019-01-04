@@ -4,6 +4,7 @@ package com.example.alvar.chatapp.Fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,11 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Model.Contacts;
-import com.example.alvar.chatapp.Model.Requests;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -153,6 +152,7 @@ public class RequestsFragment extends Fragment {
                                                      }
 
 
+
                                                  }
 
                                                  @Override
@@ -192,13 +192,13 @@ public class RequestsFragment extends Fragment {
         adapterFirebase.startListening();
 
     }
-
     //here we bind and init elements from the UI in the individual request layout
     public class RequestsViewHolder extends RecyclerView.ViewHolder{
 
         CircleImageView imageRequest;
         TextView userName ;
         Button acceptButton, declineButton;
+        CardView cardViewRequest;
 
         public RequestsViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -207,8 +207,13 @@ public class RequestsFragment extends Fragment {
             acceptButton = itemView.findViewById(R.id.buttonAccept);
             declineButton = itemView.findViewById(R.id.buttonDeclineRequest);
             userName = itemView.findViewById(R.id.usernameRequestIndividual);
+            cardViewRequest = itemView.findViewById(R.id.cardViewRequest);
+
 
         }
+
+
+        
 
     }
 

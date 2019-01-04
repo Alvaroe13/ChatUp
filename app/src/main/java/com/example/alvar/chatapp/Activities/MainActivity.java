@@ -14,12 +14,12 @@ import android.view.MenuInflater;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
+import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
@@ -135,7 +135,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * init firebase services
+     */
     private void initFirebase() {
         //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
@@ -189,7 +191,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * this method contains the pop up message when user clicks log out from menu option
+     * this method contains the pop-up message when user clicks log out from menu option
+     * (standard alert dialog)
      * @param title
      * @param message
      * @return
@@ -261,12 +264,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private void toolbarOnClick(){
 
-
         toolbarMain.setEnabled(true);
         toolbarMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageProfileDialog();
+
+                showAlertDialog();
                 Log.i(TAG, "onClick: toolbarMain pressed!!!!");
 
             }
@@ -274,45 +277,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of displaying the image profile once the toolbar has been clicked
-     * @return
+     * method in charge of init "ImageProfileShow" dialog class
      */
-    private AlertDialog.Builder imageProfileDialog(){
-        //create alertDialog
-        AlertDialog.Builder imageDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-        //create Dialog's view
-        View imageProfileView = getLayoutInflater().inflate(R.layout.profile_dialog, null);
-        //bind imageView from layout into the code
-        final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
-        //set View to it's dialog builder
-        imageDialogBuilder.setView(imageProfileView);
+    private void showAlertDialog(){
 
-        //we access db containing info to be fetched
-        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        ImageProfileShow imageDialog = new ImageProfileShow();
+        imageDialog.show(getSupportFragmentManager(),"showImageProfile");
 
-                //we store the image from the db into String var
-                String image = dataSnapshot.child("image").getValue().toString();
-
-                //set image from firebase databsae to UI
-                if ( image.equals("image")){
-                    imageProfileDialog.setImageResource(R.drawable.profile_image);
-                }else{
-                    Glide.with(MainActivity.this).load(image).into(imageProfileDialog);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        //show alert dialog builder
-        imageDialogBuilder.show();
-
-        return imageDialogBuilder ;
     }
 
 
