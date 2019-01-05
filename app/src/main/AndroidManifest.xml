@@ -44,7 +44,9 @@
         <activity
             android:name=".Activities.AllUsersActivity"
             android:parentActivityName=".Activities.MainActivity" />
-        <activity android:name=".Activities.OtherUserProfileActivity"></activity>
+        <activity android:name=".Activities.OtherUserProfileActivity" />
+        <activity android:name=".Activities.ContactsActivity"
+                  android:parentActivityName=".Activities.MainActivity"></activity>
     </application>
 
 </manifest>

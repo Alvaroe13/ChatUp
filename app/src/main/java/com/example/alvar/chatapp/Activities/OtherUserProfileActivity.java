@@ -22,7 +22,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -40,9 +39,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private CoordinatorLayout coordinatorLayout;
     private CardView cardViewAllUsers;
     //vars
-    private String otherUserIdReceived, senderRequestUserId;
+    private String otherUserId, senderRequestUserId;
     private String current_database_state = "not_friend_yet";
-    private String firebaseErrorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +68,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void initFirebase(){
         //init firebase auth to get current user id
         auth = FirebaseAuth.getInstance();
+        //init firebase database service
         database = FirebaseDatabase.getInstance();
         //we aim to "Users" node
         dbUsersNodeRef = database.getReference().child("Users");
@@ -80,13 +79,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * in this method we receive the unique user Id given by firebase to any user.
+     * in this method we receive the unique user Id given by firebase to any user
+     * coming from the "AllUsersActivity".
      * @return
      */
     private String receiveUserId() {
-       otherUserIdReceived = getIntent().getStringExtra("otherUserId");
-        Log.i(TAG, "receiveUserId: user ID: " + otherUserIdReceived);
-        return otherUserIdReceived;
+       otherUserId = getIntent().getStringExtra("otherUserId");
+        Log.i(TAG, "receiveUserId: user ID: " + otherUserId);
+        return otherUserId;
     }
 
     /**
@@ -145,7 +145,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
             //in case the current user open it's own profile in the "all users" page
-        if (senderRequestUserId.equals(otherUserIdReceived)){
+        if (senderRequestUserId.equals(otherUserId)){
             //we hide "send request" button
             buttonSendRequest.setVisibility(View.INVISIBLE);
 
@@ -195,13 +195,13 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.hasChild(otherUserIdReceived)) {
+                if (dataSnapshot.hasChild(otherUserId)) {
 
                     /*
                     here we get the type of request in order to show the user who sends the request
                     and the users whom receives the request the respective UI
                     */
-                    String request_type = dataSnapshot.child(otherUserIdReceived).child("request_type").getValue().toString();
+                    String request_type = dataSnapshot.child(otherUserId).child("request_type").getValue().toString();
 
                     //if the user sends a chat request
                     if (request_type.equals("sent")){
@@ -235,7 +235,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            if (dataSnapshot.hasChild(otherUserIdReceived)){
+                            if (dataSnapshot.hasChild(otherUserId)){
                                 //here we update the UI and database status of the user who sent the request
                                 current_database_state = "contact_added";
                                 buttonSendRequest.setText(getString(R.string.removeContact));
@@ -279,7 +279,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
                 .child("request_type").setValue("sent")
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -291,7 +291,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 */
                 if (task.isSuccessful()){
 
-                    dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
                             .child("request_type").setValue("received")
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
@@ -309,7 +309,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                     }
                                     //if something goes wrong show message to the user
-                                    else if (firebaseErrorMessage != null ){
+                                    else{
                                         Toast.makeText(OtherUserProfileActivity.this,
                                                 task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                     }
@@ -329,7 +329,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
      */
     private void cancelChatRequest() {
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -338,7 +338,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                            dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -361,7 +361,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                             }
                                             //if something goes wrong show message to the user
-                                            else if (firebaseErrorMessage != null ){
+                                            else{
                                                 Toast.makeText(OtherUserProfileActivity.this,
                                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                             }
@@ -374,7 +374,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                         }
                         //if something goes wrong show message to the user
-                        else if (firebaseErrorMessage != null ){
+                        else{
                             Toast.makeText(OtherUserProfileActivity.this,
                                     task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
@@ -396,15 +396,15 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
         //here we create the "contacts" node for the user sending the request
-        contactsNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
                 .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
 
-                    //here we create the "contacts" no for the user receving the request
-                    contactsNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                    //here we create the "contacts" no for the user receiving the request
+                    contactsNodeRef.child(otherUserId).child(senderRequestUserId)
                             .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -412,7 +412,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                             if (task.isSuccessful()){
 
                                 //here we delete the info of the user sending the request saved in the "Chat request" node
-                                dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+                                dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
                                         .removeValue()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
@@ -421,7 +421,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 if (task.isSuccessful()){
 
                                                     //here we delete the info of the user receiving the request saved in the "Chat request" node
-                                                    dbChatRequestNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                                                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
                                                             .removeValue()
                                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                 @Override
@@ -446,7 +446,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                                                     }
                                                                     //if something goes wrong show message to the user
-                                                                    else if (firebaseErrorMessage != null ){
+                                                                    else{
                                                                         Toast.makeText(OtherUserProfileActivity.this,
                                                                                 task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                                     }
@@ -456,7 +456,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                             });
                                                 }
                                                 //if something goes wrong show message to the user
-                                                else if (firebaseErrorMessage != null ){
+                                                else{
                                                     Toast.makeText(OtherUserProfileActivity.this,
                                                             task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                 }
@@ -467,7 +467,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                             }
                             //if something goes wrong show message to the user
-                            else if (firebaseErrorMessage != null ){
+                            else{
                                 Toast.makeText(OtherUserProfileActivity.this,
                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -479,7 +479,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                 }
                 //if something goes wrong show message to the user
-                else if (firebaseErrorMessage != null ){
+                else{
                     Toast.makeText(OtherUserProfileActivity.this,
                             task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -491,7 +491,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     private void removeContact() {
 
-        contactsNodeRef.child(senderRequestUserId).child(otherUserIdReceived)
+        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -500,7 +500,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            contactsNodeRef.child(otherUserIdReceived).child(senderRequestUserId)
+                            contactsNodeRef.child(otherUserId).child(senderRequestUserId)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -523,7 +523,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                             }
                                             //if something goes wrong show message to the user
-                                            else if (firebaseErrorMessage != null ){
+                                            else{
                                                 Toast.makeText(OtherUserProfileActivity.this,
                                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                             }
@@ -535,7 +535,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                         }
                         //if something goes wrong show message to the user
-                        else if (firebaseErrorMessage != null ){
+                        else{
                             Toast.makeText(OtherUserProfileActivity.this,
                                     task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
@@ -545,7 +545,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
     }
-
 
 }
 

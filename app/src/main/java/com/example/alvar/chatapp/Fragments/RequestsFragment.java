@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Model.Contacts;
@@ -33,7 +34,6 @@ public class RequestsFragment extends Fragment {
 
     //log
     private static final String TAG = "RequestsFragmentPage";
-
     //firebase serives
     private FirebaseAuth auth;
     private FirebaseDatabase database;
@@ -137,6 +137,8 @@ public class RequestsFragment extends Fragment {
                                                  @Override
                                                  public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                                                     //we fetch info from the "Users" node and set it into the UI
+
                                                      if (dataSnapshot.exists()){
 
                                                          String name = dataSnapshot.child("name").getValue().toString();
@@ -192,6 +194,23 @@ public class RequestsFragment extends Fragment {
         adapterFirebase.startListening();
 
     }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //here we bind and init elements from the UI in the individual request layout
     public class RequestsViewHolder extends RecyclerView.ViewHolder{
 
@@ -210,10 +229,24 @@ public class RequestsFragment extends Fragment {
             cardViewRequest = itemView.findViewById(R.id.cardViewRequest);
 
 
+            acceptButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getActivity(), "accepted", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            declineButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getActivity(), "declined", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
 
 
-        
+
 
     }
 
