@@ -38,9 +38,7 @@ public class StatusChangeActivity extends AppCompatActivity {
     private CoordinatorLayout statusCoordinatorLayout;
     //Vars
     private String userID;
-    //Const firebase database
-    private static final String DATABASE_NODE = "Users";
-    private static final String DATABASE_CHILD_STATUS = "status";
+    private String currentStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +86,7 @@ public class StatusChangeActivity extends AppCompatActivity {
      */
     private void currentStatus() {
         //get intent from "Settings Activity"
-        String currentStatus = getIntent().getStringExtra("currentStatus");
+        currentStatus = getIntent().getStringExtra("currentStatus");
         //set value into the editText
         statusChangeTxt.getEditText().setText(currentStatus);
     }
@@ -106,7 +104,7 @@ public class StatusChangeActivity extends AppCompatActivity {
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        mRef = database.getReference(DATABASE_NODE).child(userID);
+        mRef = database.getReference("Users").child(userID);
         Log.i(TAG, "initFirebase: userid: " + userID);
     }
 
@@ -115,25 +113,27 @@ public class StatusChangeActivity extends AppCompatActivity {
      */
     private void statusChanged() {
 
-        String status = statusChangeTxt.getEditText().getText().toString();
+        //we store in this var the new edit enter by the user
+       String status = statusChangeTxt.getEditText().getText().toString();
 
-        mRef.child(DATABASE_CHILD_STATUS).setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete: change done correctly");
-                    closeKeyboard();
-                    //show confirmation message to user
-                    SnackbarHelper.showSnackBarLong(statusCoordinatorLayout, getString(R.string.status_updated));
-                } else{
-                    //we save error thrown by firebase and save it into var "error"
-                    String statusChangeError = task.getException().getMessage();
-                    //show error message to user
-                    Toast.makeText(StatusChangeActivity.this, statusChangeError , Toast.LENGTH_SHORT).show();
-                    Log.i(TAG, "onComplete: error" + statusChangeError);
-                }
-            }
-        });
+                //we update the "status" section in the "Users" node from the db
+                mRef.child("status").setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()){
+                            Log.i(TAG, "onComplete: change done correctly");
+                            closeKeyboard();
+                            //show confirmation message to user
+                            SnackbarHelper.showSnackBarLong(statusCoordinatorLayout, getString(R.string.status_updated));
+                        } else{
+                            //we save error thrown by firebase and save it into var "error"
+                            String statusChangeError = task.getException().getMessage();
+                            //show error message to user
+                            Toast.makeText(StatusChangeActivity.this, statusChangeError , Toast.LENGTH_SHORT).show();
+                            Log.i(TAG, "onComplete: error" + statusChangeError);
+                        }
+                    }
+                });
     }
 
     /**

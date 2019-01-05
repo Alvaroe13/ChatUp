@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.google.android.gms.tasks.Continuation;
@@ -372,56 +373,21 @@ public class SettingsActivity extends AppCompatActivity {
         imageProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageProfileDialog();
+                showAlertDialog();
             }
         });
 
     }
 
     /**
-     * method in charge of displaying the image profile once the toolbar has been clicked
-     * @return
+     * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
-    private AlertDialog.Builder imageProfileDialog(){
-        //create alertDialog
-        AlertDialog.Builder imageDialog = new AlertDialog.Builder(SettingsActivity.this);
-        //create Dialog's view
-        View imageProfileView = getLayoutInflater().inflate(R.layout.profile_dialog, null);
-        //bind imageView from layout into the code
-        final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
-        //set View to it's dialog builder
-        imageDialog.setView(imageProfileView);
+    private void showAlertDialog(){
 
-        //we access db containing info to be fetched
-        dbUsersRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        ImageProfileShow imageDialog = new ImageProfileShow();
+        imageDialog.show(getSupportFragmentManager(),"showImageProfile");
 
-                //we store the image from the db into String var
-                String image = dataSnapshot.child("image").getValue().toString();
-
-                //set image from firebase databsae to UI
-                if ( image.equals("image")){
-                    imageProfileDialog.setImageResource(R.drawable.profile_image);
-                }else{
-                    Glide.with(SettingsActivity.this).load(image).into(imageProfileDialog);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        //show alert dialog builder
-        imageDialog.show();
-
-        return imageDialog ;
     }
-
-
-
 
 
 
