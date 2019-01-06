@@ -82,6 +82,7 @@ public class RequestsFragment extends Fragment {
         dbRequestsNodeRef = database.getReference().child("Chat_Requests");
         // we aim to "Users" node from db
         dbUsersNode = database.getReference().child("Users");
+        dbUsersNode.keepSynced(true);
         Log.i(TAG, "initFirebase: init firebase correctly");
     }
 

@@ -7,13 +7,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +32,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 
@@ -54,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersRef;
+    private DatabaseReference dbUsersReff;
     private FirebaseUser currentUser;
     private StorageReference storageRef, thumbnailImageRef;
     private UploadTask uploadTask, uploadThubmnailTask;
@@ -143,10 +139,10 @@ public class SettingsActivity extends AppCompatActivity {
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        dbUsersRef = database.getReference("Users").child(currentUserID);
-        Log.i(TAG, "initFirebase: userid: " + currentUserID);
+        dbUsersReff = database.getReference("Users");
+        dbUsersReff.keepSynced(true);
+        //init firebase storage
         storageRef = FirebaseStorage.getInstance().getReference();
-
         //we create a "Thumbnail_Images" folder in firebase storage
         thumbnailImageRef = FirebaseStorage.getInstance().getReference();
     }
@@ -157,7 +153,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void retrieveDataFromDb(){
 
         // Read from the database
-        dbUsersRef.addValueEventListener(new ValueEventListener() {
+        dbUsersReff.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i(TAG, "onDataChange: data retrieved :" + dataSnapshot);
@@ -193,7 +189,6 @@ public class SettingsActivity extends AppCompatActivity {
                 imageProfile.setImageResource(R.drawable.imgdefault);
             } else{
                 //here we set image from database into imageView
-                //Picasso.get().load(imageThumbnail).into(imageProfile);
                 Glide.with(this).load(imageThumbnail).into(imageProfile);
 
             }
@@ -306,7 +301,7 @@ public class SettingsActivity extends AppCompatActivity {
             //lets save image from storage into database
             HashMap<String , Object> imgMap = new HashMap<>();
             imgMap.put("image", imgUri);
-            dbUsersRef.updateChildren(imgMap);
+            dbUsersReff.updateChildren(imgMap);
 
             ProgressBarHelper.hideProgressBar(progressBar);
 
@@ -348,7 +343,7 @@ public class SettingsActivity extends AppCompatActivity {
                         //here we pass the thumbnail from storage to database at the "imageThumbnail" node
                         HashMap<String, Object> hashThumbnail = new HashMap<>();
                         hashThumbnail.put("imageThumbnail", finalThumbnailUri);
-                        dbUsersRef.updateChildren(hashThumbnail);
+                        dbUsersReff.updateChildren(hashThumbnail);
                     }
 
                     ProgressBarHelper.hideProgressBar(progressBar);

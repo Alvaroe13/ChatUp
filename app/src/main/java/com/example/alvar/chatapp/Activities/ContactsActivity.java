@@ -63,9 +63,10 @@ public class ContactsActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         //init db "Users" node
         dbUsersNodeRef = database.getReference().child("Users");
+        dbUsersNodeRef.keepSynced(true);
         //init db "Contacts" node
         dbContactsNodeRef = database.getReference().child("Contacts");
-
+        dbContactsNodeRef.keepSynced(true);
     }
 
     private void setToolbar(String title, Boolean backOption){
