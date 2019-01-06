@@ -118,6 +118,8 @@ public class RequestsFragment extends Fragment {
                              //here we get the user id of every request made in the "Chat_Requests" node
                              final String list_user_id = getRef(position).getKey();
 
+                             Log.i(TAG, "onBindViewHolder: user id: " + list_user_id);
+
 
                              DatabaseReference requestTypeRef = getRef(position).child("request_type").getRef();
 
@@ -194,21 +196,6 @@ public class RequestsFragment extends Fragment {
         adapterFirebase.startListening();
 
     }
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //here we bind and init elements from the UI in the individual request layout
