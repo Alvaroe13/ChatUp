@@ -71,6 +71,7 @@
     <string name="removeContact">Remove contact</string>
     <string name="sendMessage">Send message</string>
     <string name="contactRemoved">Contact removed</string>
+    <string name="friendAdded">Friend added</string>
 
 
 </resources>

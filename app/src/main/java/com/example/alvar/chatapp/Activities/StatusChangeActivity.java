@@ -1,7 +1,9 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +23,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Objects;
 
 public class StatusChangeActivity extends AppCompatActivity {
 
@@ -114,9 +118,12 @@ public class StatusChangeActivity extends AppCompatActivity {
     private void statusChanged() {
 
         //we store in this var the new edit enter by the user
-       String status = statusChangeTxt.getEditText().getText().toString();
+        String status = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            status = Objects.requireNonNull(statusChangeTxt.getEditText()).getText().toString();
+        }
 
-                //we update the "status" section in the "Users" node from the db
+        //we update the "status" section in the "Users" node from the db
                 mRef.child("status").setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
