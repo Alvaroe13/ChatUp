@@ -14,35 +14,8 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbarChat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imageToolbarChat"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:src="@drawable/profile_image" />
-
-            <TextView
-                android:id="@+id/usernameToolbarChat"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="25dp"
-                android:layout_marginLeft="25dp"
-                android:text="username"
-                android:textColor="@color/color_white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-
-        </android.support.v7.widget.Toolbar>
+       <include layout="@layout/toolbar"
+           android:id="@+id/toolbarChat"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerChat"

@@ -1,12 +1,16 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -36,7 +40,7 @@ public class ChatActivity extends AppCompatActivity {
     private EditText chatEditText;
     private ImageButton buttonSend;
     private CircleImageView imageProfile;
-    private TextView usernameToolbarChat;
+    private TextView usernameToolbarChat, lastSeenToolbarChat;
     //vars
     private String contactID, currentUserID;
 
@@ -46,11 +50,12 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //we receive the contact ID from the "ContactsActivity"
         contactID = getIntent().getStringExtra("contactID");
 
-        UI();
         initFirebase();
-        setToolbar("", true);
+        setToolbar("",true);
+        UI();
         initRecycleView();
         fetchInfo();
 
@@ -58,10 +63,10 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void UI(){
+
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonSend);
-        imageProfile = findViewById(R.id.imageToolbarChat);
-        usernameToolbarChat = findViewById(R.id.usernameToolbarChat);
+
     }
 
     private void initFirebase(){
@@ -71,13 +76,26 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     Create toolbar and it's detail
+     Create toolbar and inflate the custom bar chat bar layout
      */
     private void setToolbar(String title, Boolean backOption){
+
         toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
-        getSupportActionBar().setTitle(title);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle(title);
+        actionBar.setDisplayHomeAsUpEnabled(backOption);
+
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View viewCustomBar = inflater.inflate(R.layout.chat_custom_bar, null);
+        actionBar.setCustomView(viewCustomBar);
+
+        imageProfile = findViewById(R.id.imageToolbarChat);
+        usernameToolbarChat = findViewById(R.id.usernameToolbarChat);
+        lastSeenToolbarChat = findViewById(R.id.lastSeenChatToolbar);
+
+
     }
 
     /**
@@ -102,6 +120,9 @@ public class ChatActivity extends AppCompatActivity {
 
                     String usernameContact = dataSnapshot.child("name").getValue().toString();
                     String imageContact = dataSnapshot.child("imageThumbnail").getValue().toString();
+
+                    Log.i(TAG, "onDataChange: name: " + usernameContact);
+                    Log.i(TAG, "onDataChange: image: " + imageContact);
 
                     usernameToolbarChat.setText(usernameContact);
                     if (imageContact.equals("imgThumbnail")){
