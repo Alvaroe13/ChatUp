@@ -13,10 +13,9 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="16dp"
-        android:src="@drawable/profile_image" />
+        android:cropToPadding="true"
+        android:src="@drawable/profile_image"
+        android:layout_marginRight="10dp"/>
 
     <TextView
         android:id="@+id/usernameToolbarChat"
@@ -24,8 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/imageToolbarChat"
         android:textColor="@color/color_white"
-        android:layout_marginLeft="3dp"
-        android:layout_marginStart="3dp"
         android:textSize="18sp"
         android:text="Username" />
 
@@ -33,11 +30,9 @@
         android:id="@+id/lastSeenChatToolbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/imageToolbarChat"
+        android:layout_below="@+id/usernameToolbarChat"
         android:textColor="@color/color_white"
-        android:layout_marginLeft="3dp"
-        android:layout_marginStart="3dp"
-        android:textSize="14sp"
+        android:textSize="12sp"
         android:text="last seen" />
 
 </RelativeLayout>

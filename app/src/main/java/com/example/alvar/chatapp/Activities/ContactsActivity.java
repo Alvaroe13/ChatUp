@@ -132,9 +132,9 @@ public class ContactsActivity extends AppCompatActivity {
                                                          if (dataSnapshot.exists()) {
 
                                                              //here we fetch info from db
-                                                             String name = dataSnapshot.child("name").getValue().toString();
+                                                             final String name = dataSnapshot.child("name").getValue().toString();
                                                              String status = dataSnapshot.child("status").getValue().toString();
-                                                             String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+                                                             final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
 
                                                              //here we set info from db to the UI
                                                              holder.contactName.setText(name);
@@ -151,6 +151,8 @@ public class ContactsActivity extends AppCompatActivity {
                                                                  public void onClick(View v) {
                                                                      Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
                                                                      intentChatRoom.putExtra("contactID", list_user_contacts_id);
+                                                                     intentChatRoom.putExtra("contactName", name);
+                                                                     intentChatRoom.putExtra("contactImage", image);
                                                                      startActivity(intentChatRoom);
                                                                  }
                                                              });

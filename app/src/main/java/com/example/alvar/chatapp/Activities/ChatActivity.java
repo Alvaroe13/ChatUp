@@ -42,7 +42,7 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageProfile;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     //vars
-    private String contactID, currentUserID;
+    private String contactID, contactName, contactImage;
 
 
     @Override
@@ -50,23 +50,26 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        //we receive the contact ID from the "ContactsActivity"
-        contactID = getIntent().getStringExtra("contactID");
-
+        fetchInfoIntent();
         initFirebase();
         setToolbar("",true);
-        UI();
+        UiElements();
         initRecycleView();
-        fetchInfo();
-
 
     }
 
-    private void UI(){
-
+    private void UiElements(){
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonSend);
+    }
 
+    /**
+     * this method receives de bundles from "ContactsActivity"
+     */
+    private void fetchInfoIntent(){
+        contactID = getIntent().getStringExtra("contactID");
+        contactName = getIntent().getStringExtra("contactName");
+        contactImage = getIntent().getStringExtra("contactImage");
     }
 
     private void initFirebase(){
@@ -86,15 +89,20 @@ public class ChatActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(title);
         actionBar.setDisplayHomeAsUpEnabled(backOption);
+        actionBar.setDisplayShowCustomEnabled(true);
 
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View viewCustomBar = inflater.inflate(R.layout.chat_custom_bar, null);
         actionBar.setCustomView(viewCustomBar);
 
+        //UI elements from custom toolbar
         imageProfile = findViewById(R.id.imageToolbarChat);
         usernameToolbarChat = findViewById(R.id.usernameToolbarChat);
         lastSeenToolbarChat = findViewById(R.id.lastSeenChatToolbar);
 
+        //here we set info from bundles into the ui elements in custom toolbar
+        usernameToolbarChat.setText(contactName);
+        Glide.with(this).load(contactImage).into(imageProfile);
 
     }
 
@@ -105,43 +113,6 @@ public class ChatActivity extends AppCompatActivity {
         Log.i(TAG, "initRecycler: recycler init successful");
         recyclerViewChat = findViewById(R.id.recyclerChat);
         recyclerViewChat.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
-    }
-
-    /**
-     * fetch info from the db and set it into the chat toolbar
-     */
-    private void fetchInfo(){
-
-
-        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-
-                    String usernameContact = dataSnapshot.child("name").getValue().toString();
-                    String imageContact = dataSnapshot.child("imageThumbnail").getValue().toString();
-
-                    Log.i(TAG, "onDataChange: name: " + usernameContact);
-                    Log.i(TAG, "onDataChange: image: " + imageContact);
-
-                    usernameToolbarChat.setText(usernameContact);
-                    if (imageContact.equals("imgThumbnail")){
-                        imageProfile.setImageResource(R.drawable.imgdefault);
-                    }else{
-                        Glide.with(ChatActivity.this).load(imageContact).into(imageProfile);
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
     }
 
 
