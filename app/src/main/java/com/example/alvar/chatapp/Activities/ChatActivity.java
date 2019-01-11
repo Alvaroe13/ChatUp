@@ -191,6 +191,8 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //we remove any text enter by the user once it's been sent
+        chatEditText.setText("");
 
 
 
