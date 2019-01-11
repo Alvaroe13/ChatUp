@@ -2,6 +2,7 @@ package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.util.ObjectsCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,15 +15,21 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -33,7 +40,7 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbMessagesNodeRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -42,7 +49,9 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageProfile;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     //vars
-    private String contactID, contactName, contactImage;
+    private String contactID, currentUserID;
+    private String contactName, contactImage;
+    private String messageText;
 
 
     @Override
@@ -53,14 +62,19 @@ public class ChatActivity extends AppCompatActivity {
         fetchInfoIntent();
         initFirebase();
         setToolbar("",true);
-        UiElements();
+        UIElements();
         initRecycleView();
+        sendButtonPressed();
+
+        Log.i(TAG, "onCreate: current user: " + currentUserID);
+        Log.i(TAG, "onCreate: other user: " + contactID);
 
     }
 
-    private void UiElements(){
+
+    private void UIElements(){
         chatEditText = findViewById(R.id.chatEditText);
-        buttonSend = findViewById(R.id.buttonSend);
+        buttonSend = findViewById(R.id.buttonChat);
     }
 
     /**
@@ -73,9 +87,14 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initFirebase(){
+
         auth = FirebaseAuth.getInstance();
+        //we get current user ID
+        currentUserID = auth.getCurrentUser().getUid();
+
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
+        dbMessagesNodeRef = database.getReference().child("Message");
     }
 
     /**
@@ -115,6 +134,69 @@ public class ChatActivity extends AppCompatActivity {
         recyclerViewChat.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
     }
 
+    /**
+     * this method handle the click event when send button is pressed
+     */
+    private void sendButtonPressed() {
+        buttonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //we get message written by the user
+                messageText = chatEditText.getText().toString();
+
+                //if field is empty
+                if (messageText.equals("")){
+                    //show toast to the user
+                    Toast.makeText(ChatActivity.this, "Please write something", Toast.LENGTH_SHORT).show();
+                }else{
+                    //otherwise we send the message
+                    sendMessage();
+                }
+
+            }
+        });
+    }
+
+    /**
+     * this method contains the logic of saving the messages in the database
+     */
+    private void sendMessage() {
+
+        String messageSenderRef = "Message-" + currentUserID + "/" + contactID;
+        String messageReceiverRef = "Message-" + contactID + "/" + currentUserID;
+
+        dbMessagesNodeRef.child(currentUserID).child(contactID).push();
+
+        DatabaseReference messageKeyRef = dbMessagesNodeRef;
+        String messagePushID = messageKeyRef.getKey();
+
+        Map<String, Object> messageDetails = new HashMap<>();
+        messageDetails.put("message", messageText);
+        messageDetails.put("type", "text");
+        messageDetails.put("sender", contactID);
+
+        Map<String, Object> chatUsersInfo = new HashMap<>();
+        chatUsersInfo.put(messageSenderRef + "/" + messagePushID , messageDetails);
+        chatUsersInfo.put(messageReceiverRef + "/" + messagePushID , messageDetails);
+
+        dbMessagesNodeRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(ChatActivity.this, "message sent", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ChatActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+
+
+
+
+    }
 
 
 }

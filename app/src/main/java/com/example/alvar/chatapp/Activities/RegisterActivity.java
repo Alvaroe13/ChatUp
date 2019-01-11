@@ -34,8 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference mRef;
-    private FirebaseUser currentUser;
+    private DatabaseReference dbUsersNodeRef;
     //UI elements
     private TextInputLayout usernameTextField, emailTextField, passwrodTextField, repeatPasswordTextField;
     private Button registerBtn;
@@ -48,18 +47,16 @@ public class RegisterActivity extends AppCompatActivity {
     private static final String DEFAULT_IMG = "image";
     public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
     private static final String DEFAULT_THUMBNAIL = "imgThumbnail";
-    private static final String DATABASE_TREE_NAME = "Users";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        //init firebase auth
-        mAuth = FirebaseAuth.getInstance();
-        //init firebase real time database
-        database = FirebaseDatabase.getInstance();
+
         //UI elements
         BindUI();
+        //init firebase services
+        initFirebase();
         //toolbar
         setToolbar(getString(R.string.register), true);
         //execute registration process.
@@ -117,6 +114,21 @@ public class RegisterActivity extends AppCompatActivity {
         registerProgressBar = findViewById(R.id.registerProgressBar);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
     }
+
+    /**
+     * init firebase services
+     */
+    private void initFirebase(){
+
+        //init firebase auth
+        mAuth = FirebaseAuth.getInstance();
+        //init firebase real time database
+        database = FirebaseDatabase.getInstance();
+        //create database Tree with name "Users" and child is the user ID
+        dbUsersNodeRef = database.getReference("Users");
+
+    }
+
    /**
     Create toolbar and it's detail
     */
@@ -126,6 +138,7 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
+
     /**
      Method in charge of creating new account
      */
@@ -161,19 +174,18 @@ public class RegisterActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * this method is the one in charge of savind the info in database
+     */
     private void createNewAccount(){
 
-        //check current user logged in
-        currentUser = mAuth.getCurrentUser();
         //we get user unique ID in Firebase
-        String userID = currentUser.getUid();
-        //create database Tree with name "Users" and child is the user ID
-        mRef = database.getReference("Users").child(userID);
-        //Init user object and set it's values to be save into the db
+        String currentUserID = mAuth.getCurrentUser().getUid();
+        //Init user object and set it's values to be saved into the db
         User user = new User( username, email, password, DEFAULT_STATUS, DEFAULT_IMG, DEFAULT_THUMBNAIL );
 
         //save info into database and we do a last check
-        mRef.setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 //if everything goes well
