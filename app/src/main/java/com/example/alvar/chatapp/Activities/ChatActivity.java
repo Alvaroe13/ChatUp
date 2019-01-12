@@ -94,7 +94,7 @@ public class ChatActivity extends AppCompatActivity {
 
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
-        dbMessagesNodeRef = database.getReference().child("Message");
+        dbMessagesNodeRef = database.getReference().child("Messages");
     }
 
     /**
