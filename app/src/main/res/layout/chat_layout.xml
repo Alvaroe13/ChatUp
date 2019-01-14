@@ -17,18 +17,18 @@
             android:src="@drawable/imgdefault"/>
 
         <TextView
-            android:id="@+id/textRight"
+            android:id="@+id/textLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/imageChat"
+            android:layout_marginLeft="3dp"
             android:background="@drawable/left_message_layout"
             android:padding="9dp"
             android:text="text right"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/textLeft"
+            android:id="@+id/textRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -37,8 +37,7 @@
             android:padding="9dp"
             android:text="text left"
             android:textColor="@color/color_white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textSize="16sp"/>
 
 
     </RelativeLayout>
