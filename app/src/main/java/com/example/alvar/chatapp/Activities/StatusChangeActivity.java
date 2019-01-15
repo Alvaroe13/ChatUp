@@ -1,19 +1,17 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
-import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
-import android.support.v7.widget.Toolbar;
 
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
@@ -23,8 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.Objects;
 
 public class StatusChangeActivity extends AppCompatActivity {
 
@@ -42,7 +38,6 @@ public class StatusChangeActivity extends AppCompatActivity {
     private CoordinatorLayout statusCoordinatorLayout;
     //Vars
     private String userID;
-    private String currentStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,14 +49,26 @@ public class StatusChangeActivity extends AppCompatActivity {
         initFirebase();
         //init toolbar
         setToolbar(getString(R.string.statusToolbar));
-        currentStatus();
 
 
         statusChangeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //save button
-                statusChanged();
+
+                //we store in this var the new edit enter by the user
+                String status = statusChangeTxt.getEditText().getText().toString() ;
+
+                //if field is empty we make sure the user knows it
+                if (status.equals("")){
+                    SnackbarHelper.showSnackBarLongRed(statusCoordinatorLayout, getString(R.string.statusCannotBeEmpty));
+                }
+                else{
+                    //we update the status
+                    statusChanged(status);
+                }
+
+
             }
         });
     }
@@ -85,15 +92,6 @@ public class StatusChangeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    /**
-     * this method is in charge of showing the current status in the status change page.
-     */
-    private void currentStatus() {
-        //get intent from "Settings Activity"
-        currentStatus = getIntent().getStringExtra("currentStatus");
-        //set value into the editText
-        statusChangeTxt.getEditText().setText(currentStatus);
-    }
 
     /**
      method in charge of initialize firebase service
@@ -109,19 +107,12 @@ public class StatusChangeActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
         mRef = database.getReference("Users").child(userID);
-        Log.i(TAG, "initFirebase: userid: " + userID);
     }
 
     /**
      * method in charge of setting new status text in the UI
      */
-    private void statusChanged() {
-
-        //we store in this var the new edit enter by the user
-        String status = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            status = Objects.requireNonNull(statusChangeTxt.getEditText()).getText().toString();
-        }
+    private void statusChanged(String status) {
 
         //we update the "status" section in the "Users" node from the db
                 mRef.child("status").setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {

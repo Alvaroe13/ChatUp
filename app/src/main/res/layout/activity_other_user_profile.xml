@@ -63,6 +63,8 @@
                 android:text="@string/user_status"
                 android:textColor="@color/color_white"
                 android:textSize="18sp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:textStyle="italic" />
 
         </LinearLayout>

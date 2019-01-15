@@ -73,6 +73,10 @@
     <string name="contactRemoved">Contact removed</string>
     <string name="friendAdded">Friend added</string>
     <string name="noEmptyFieldAllowed">Field must not be empty</string>
+    <string name="statusCannotBeEmpty">Status cannot be empty</string>
+    <string name="wantsToConnect">Wants to connect with you</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
 
 
 </resources>
