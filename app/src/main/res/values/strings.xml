@@ -77,6 +77,7 @@
     <string name="wantsToConnect">Wants to connect with you</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
+    <string name="textChatHint">Type your message here...</string>
 
 
 </resources>

@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <RelativeLayout
-        android:padding="6dp"
+        android:padding="0.5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

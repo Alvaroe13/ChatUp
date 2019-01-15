@@ -78,5 +78,6 @@
     <string name="wantsToConnect">Quiere ser tu amigo</string>
     <string name="accept">Aceptar</string>
     <string name="decline">Rechazar</string>
+    <string name="textChatHint">Escrie tu mensaje aqui...</string>
 
 </resources>

@@ -3,11 +3,8 @@ package com.example.alvar.chatapp.Utils;
 import android.graphics.Color;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
-
-import com.example.alvar.chatapp.R;
 
 public class SnackbarHelper {
 
