@@ -3,7 +3,6 @@ package com.example.alvar.chatapp.Activities;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,12 +23,12 @@ import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,12 +39,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatActivity extends AppCompatActivity {
 
-
     private static final String TAG = "ChatActivityPage";
+
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbMessagesNodeRef, messagePushID;
+    private DatabaseReference dbMessagesNodeRef, messagePushID;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -100,7 +99,6 @@ public class ChatActivity extends AppCompatActivity {
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
-        dbUsersNodeRef = database.getReference().child("Users");
         dbMessagesNodeRef = database.getReference().child("Messages");
     }
 
@@ -142,14 +140,17 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void initRecycleView(){
 
+        //instance of arrayList of messages
+        messagesList = new ArrayList<>();
+
         recyclerViewChat = findViewById(R.id.recyclerChat);
+        recyclerViewChat.setHasFixedSize(true);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         linearLayoutManager.setStackFromEnd(true);
         recyclerViewChat.setLayoutManager(linearLayoutManager);
-        messagesList = new ArrayList<>();
-        adapter = new MessageAdapter(messagesList, this);
+
+        adapter = new MessageAdapter(ChatActivity.this, messagesList);
         recyclerViewChat.setAdapter(adapter);
-        recyclerViewChat.setHasFixedSize(true);
 
     }
 
@@ -228,35 +229,24 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        //this is the route to get to the message info
         dbMessagesNodeRef.child("Message").child(currentUserID).child(contactID)
-                .addChildEventListener(new ChildEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        Messages messages = dataSnapshot.getValue(Messages.class);
+                        messagesList.clear();
 
-                        messagesList.add(messages);
+                        for (DataSnapshot info : dataSnapshot.getChildren()){
 
-                        adapter.notifyDataSetChanged();
+                                Messages messages = info.getValue(Messages.class);
 
-                        recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
+                                messagesList.add(messages);
 
+                                adapter.notifyDataSetChanged();
 
-                    }
+                                recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
 
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                        }
 
                     }
 
@@ -267,4 +257,6 @@ public class ChatActivity extends AppCompatActivity {
                 });
 
     }
+
+
 }

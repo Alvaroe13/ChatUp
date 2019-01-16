@@ -155,7 +155,7 @@ public class GroupChatActivity extends AppCompatActivity {
         messageKey = dbCurrentGroupRef.push().getKey();
 
         if (message.equals("")){
-            Toast.makeText(this, "Please write something...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
         } else {
 
             addMessage();

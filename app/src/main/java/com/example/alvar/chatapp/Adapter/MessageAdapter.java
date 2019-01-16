@@ -30,13 +30,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     // firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbMessagesNodeRef;
+    private DatabaseReference dbUsersNodeRef;
     // List to contain the messages
     private List<Messages> messagesList;
     private String currentUserID;
     private Context mContext;
 
-    public MessageAdapter(List<Messages> messagesList, Context mContext) {
+    public MessageAdapter(Context mContext , List<Messages> messagesList) {
         this.messagesList = messagesList;
         this.mContext = mContext;
     }
@@ -45,7 +45,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
        auth =  FirebaseAuth.getInstance();
        database = FirebaseDatabase.getInstance();
        dbUsersNodeRef = database.getReference().child("Users");
-       dbMessagesNodeRef = database.getReference().child("Messages");
     }
 
 
@@ -56,6 +55,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         // we bind the layout with this controller and the sub class "MessageViewHolder"
 
         View viewChat = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.chat_layout, viewGroup, false);
+
+        //init firebase services as soon as we inflate the view
+        initFirebase();
+
+
         return new MessageViewHolder(viewChat);
     }
 
@@ -67,26 +71,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder, int position) {
 
-
-        initFirebase();
-
         //first of all we get current user id
         currentUserID = auth.getCurrentUser().getUid();
-
-
 
         Messages messages = messagesList.get(position);
 
         String messageSenderID = messages.getSenderByID();
         String messageType = messages.getType();
-        Boolean messageSeen = messages.getSeen();
 
         Log.i(TAG, "onBindViewHolder: sender ID: " + messageSenderID);
 
+        //here we fetch the image info from the "Users" node
+        fetchImage();
         dbUsersNodeRef.child(messageSenderID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
 
                 if (dataSnapshot.exists()){
 
@@ -97,17 +96,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     }else{
                         Glide.with(mContext).load(imageThumbnail).into(messageViewHolder.imageContact);
                     }
-
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
 
-
+        // Here we set the conditions in order to show the correct layout depending on the situation
 
         if (messageType.equals("text")){
 
@@ -141,6 +138,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
+    private void fetchImage() {
+    }
+
+    /**
+     * this method is the one in charge of establishing the number of items to be shown in the recyclerView
+     * @return
+     */
     @Override
     public int getItemCount() {
         //get the size of the List
@@ -148,7 +152,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     /**
-     * view holder class
+     * This is the viewHolder Class. The one in charge of finding the UI elements within each
+     * item shown in the recyclerView
      */
     public class MessageViewHolder extends RecyclerView.ViewHolder{
 
@@ -156,10 +161,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         TextView textRightSide, textLeftSide;
         CircleImageView imageContact;
 
-
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
-
 
             textLeftSide = itemView.findViewById(R.id.textLeft);
             textRightSide = itemView.findViewById(R.id.textRight);
