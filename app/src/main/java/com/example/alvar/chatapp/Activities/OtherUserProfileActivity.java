@@ -1,5 +1,6 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -37,10 +38,10 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private TextView usernameOtherUser, statusOtherUser;
     private Button buttonSendRequest, buttonRejectRequest;
     private CoordinatorLayout coordinatorLayout;
-    private CardView cardViewAllUsers;
     //vars
     private String otherUserId, senderRequestUserId;
     private String current_database_state = "not_friend_yet";
+    private String username, status, imageThumbnail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         buttonSendRequest = findViewById(R.id.buttonSendRequest);
         buttonRejectRequest = findViewById(R.id.buttonDeclineRequest);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
-        cardViewAllUsers = findViewById(R.id.cardViewAllUsers);
     }
 
     private void initFirebase(){
@@ -115,9 +115,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
      */
     private void setInfo(DataSnapshot dataSnapshot) {
 
-        String username = dataSnapshot.child("name").getValue().toString();
-        String status = dataSnapshot.child("status").getValue().toString();
-        String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+         username = dataSnapshot.child("name").getValue().toString();
+         status = dataSnapshot.child("status").getValue().toString();
+         imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
 
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
@@ -248,8 +248,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                 buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        //replace for actual function
-                                        Toast.makeText(OtherUserProfileActivity.this, "send message", Toast.LENGTH_SHORT).show();
+                                        //take the current user to the chat room with new friend
+                                        goToChatRoom();
                                     }
                                 });
                             }
@@ -351,6 +351,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 current_database_state = "not_friend_yet";
                                                 buttonSendRequest.setText(getString(R.string.sendChatRequest));
 
+
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                                   getString(R.string.canceledChatRequest));
@@ -435,6 +436,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                                         buttonSendRequest.setText(getString(R.string.removeContact));
                                                                         buttonSendRequest.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
+
 
                                                                         SnackbarHelper.showSnackBarLong(coordinatorLayout,
                                                                                          getString(R.string.chatRequestAccepted));
@@ -544,6 +546,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 });
 
 
+    }
+
+    /**
+     * intent to take the user from "all users" page to chat room with the contact
+     */
+    private void goToChatRoom(){
+
+        Intent intentChatRoom = new Intent(OtherUserProfileActivity.this, ChatActivity.class);
+        intentChatRoom.putExtra("contactID", otherUserId);
+        intentChatRoom.putExtra("contactName", username);
+        intentChatRoom.putExtra("contactImage", imageThumbnail);
+        startActivity(intentChatRoom);
     }
 
 }

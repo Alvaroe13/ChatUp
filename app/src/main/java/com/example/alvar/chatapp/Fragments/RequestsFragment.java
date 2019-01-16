@@ -37,7 +37,7 @@ public class RequestsFragment extends Fragment {
 
     //log
     private static final String TAG = "RequestsFragmentPage";
-    //firebase serives
+    //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
     private DatabaseReference dbRequestsNodeRef, dbUsersNode, dbContactsNodeRef;
@@ -62,8 +62,6 @@ public class RequestsFragment extends Fragment {
         UI(requestsView);
         initFirebase();
         initRecycler(requestsView);
-
-
 
         return requestsView;
     }
@@ -182,6 +180,13 @@ public class RequestsFragment extends Fragment {
 
                                                  }
                                              });
+
+                                         } else{
+                                             /* in case we have sent a request message we make sure not to
+                                                show any request in our request fragment, we need to hide only the CardView
+                                                as it is the container of the rest of the element*/
+
+                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.INVISIBLE);
 
                                          }
 
