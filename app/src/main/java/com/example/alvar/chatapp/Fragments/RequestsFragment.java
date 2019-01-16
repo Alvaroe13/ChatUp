@@ -1,9 +1,9 @@
 package com.example.alvar.chatapp.Fragments;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,17 +12,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,7 +40,6 @@ public class RequestsFragment extends Fragment {
     private DatabaseReference dbRequestsNodeRef, dbUsersNode, dbContactsNodeRef;
     //ui elements
     private RecyclerView requestsRecycler;
-    private CoordinatorLayout coordinatorLayout;
     //vars
     private String currentUserID;
     private String list_user_id;
@@ -59,18 +55,11 @@ public class RequestsFragment extends Fragment {
         View requestsView =  inflater.inflate(R.layout.fragment_requests, container, false);
         Log.i(TAG, "onCreateView: view init correctly with its methods");
 
-        UI(requestsView);
         initFirebase();
         initRecycler(requestsView);
 
         return requestsView;
     }
-
-    private void UI(View view){
-        Log.i(TAG, "initRecycler: views init successful");
-        coordinatorLayout = view.findViewById(R.id.coordinatorLayout);
-    }
-
 
     /**
      * we init recyclerView
@@ -80,7 +69,6 @@ public class RequestsFragment extends Fragment {
         Log.i(TAG, "initRecycler: recycler init successful");
         requestsRecycler = view.findViewById(R.id.requestsRecyclerView);
         requestsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        coordinatorLayout = view.findViewById(R.id.coordinatorLayout);
     }
 
     private void initFirebase(){
@@ -126,10 +114,6 @@ public class RequestsFragment extends Fragment {
                             @Override
                             protected void onBindViewHolder(@NonNull final RequestsViewHolder holder, int position, @NonNull Contacts model) {
 
-                           //this shows the buttons from the individual layout as we've set the buttons invisible by default
-                             holder.itemView.findViewById(R.id.buttonAccept).setVisibility(View.VISIBLE);
-                             holder.itemView.findViewById(R.id.buttonDeclineRequest).setVisibility(View.VISIBLE);
-
                              //here we get the user id of every request made in the "Chat_Requests" node
                              list_user_id = getRef(position).getKey();
 
@@ -165,9 +149,19 @@ public class RequestsFragment extends Fragment {
                                                          if ( image.equals("imgThumbnail")){
                                                              holder.imageRequest.setImageResource(R.drawable.profile_image);
                                                          } else{
-                                                                 Glide.with(getContext()).load(image).into(holder.imageRequest);
+                                                                 Glide.with(getActivity()).load(image).into(holder.imageRequest);
 
                                                          }
+
+                                                         //here we take the user from request fragment to "AnswerRequestActivity"
+                                                         holder.cardViewRequest.setOnClickListener(new View.OnClickListener() {
+                                                             @Override
+                                                             public void onClick(View v) {
+
+                                                                requestAnswer(list_user_id);
+
+                                                             }
+                                                         });
 
                                                      }
 
@@ -226,147 +220,33 @@ public class RequestsFragment extends Fragment {
 
         CircleImageView imageRequest;
         TextView userName ;
-        Button acceptButton, declineButton;
         CardView cardViewRequest;
 
         public RequestsViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imageRequest = itemView.findViewById(R.id.imageRequestsUser);
-            acceptButton = itemView.findViewById(R.id.buttonAccept);
-            declineButton = itemView.findViewById(R.id.buttonDeclineRequest);
             userName = itemView.findViewById(R.id.usernameRequestIndividual);
             cardViewRequest = itemView.findViewById(R.id.cardViewRequest);
 
 
-            acceptButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    acceptChatRequest();
-                }
-            });
-
-            declineButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    declineChatRequest();
-
-                }
-            });
-
-
 
         }
-
-        /**
-         * method in charge of accepting chat request
-         */
-        private void acceptChatRequest() {
-
-            /*at this point since we have accepted the chat request
-              we add the new contact in the "Contacts" node
-             */
-            dbContactsNodeRef.child(currentUserID).child(list_user_id)
-                    .child("contact_status")
-                    .setValue("saved")
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-
-                            if (task.isSuccessful()){
-
-                                dbContactsNodeRef.child(list_user_id).child(currentUserID)
-                                        .child("contact_status")
-                                        .setValue("saved")
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                if (task.isSuccessful()){
-                                                    /*now from this point onward we remove request from request tab
-                                                      by deleting such request from the "Chat_Requests" node
-                                                     */
-
-                                                    dbRequestsNodeRef.child(currentUserID).child(list_user_id)
-                                                            .removeValue()
-                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-
-                                                                    if (task.isSuccessful()){
-
-                                                                        dbRequestsNodeRef.child(list_user_id).child(currentUserID)
-                                                                                .removeValue()
-                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                    @Override
-                                                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                                                        if (task.isSuccessful()){
-
-                                                                                            //show confirmation message to the user
-                                                                                            SnackbarHelper.showSnackBarLong(coordinatorLayout,
-                                                                                                                     getString(R.string.friendAdded));
-                                                                                        }
-                                                                                    }
-                                                                                });
-
-                                                                    }
-
-                                                                }
-                                                            });
-
-                                                }
-                                            }
-                                        });
-
-
-                            }
-
-                        }
-                    });
-        }
-
-        /**
-         * method in charge of declining chat request
-         */
-        private void declineChatRequest() {
-
-            dbRequestsNodeRef.child(currentUserID).child(list_user_id)
-                    .removeValue()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-
-                            if (task.isSuccessful()){
-
-                                dbRequestsNodeRef.child(list_user_id).child(currentUserID)
-                                        .removeValue()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                if (task.isSuccessful()){
-
-                                                    SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
-                                                                            getString(R.string.chatRequestRejected));
-
-                                                }
-                                            }
-                                        });
-                            }
-
-                        }
-                    });
-
-
-
-        }
-
 
     }
 
 
+    private void requestAnswer(String list_user_id) {
+
+        Intent intentRequestAnswer = new Intent(getActivity(), AnswerRequestActivity.class);
+        intentRequestAnswer.putExtra("otherUserID", list_user_id);
+        Log.i(TAG, "onClick:  other user id: " + list_user_id);
+        startActivity(intentRequestAnswer);
     }
+
+
+
+
+}
 
 

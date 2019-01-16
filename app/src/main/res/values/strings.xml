@@ -74,10 +74,10 @@
     <string name="friendAdded">Friend added</string>
     <string name="noEmptyFieldAllowed">Field must not be empty</string>
     <string name="statusCannotBeEmpty">Status cannot be empty</string>
-    <string name="wantsToConnect">Wants to connect with you</string>
+    <string name="wantsToConnect">Wants to be your friend</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
-    <string name="textChatHint">Type your message here...</string>
+    <string name="textChatHint">Type your message here</string>
 
 
 </resources>
