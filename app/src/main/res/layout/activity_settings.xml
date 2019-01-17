@@ -102,13 +102,13 @@ android:background="@color/color_grey">
         android:id="@+id/fabStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_status"
         app:fabSize="mini"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/fabImage"
         app:layout_constraintEnd_toEndOf="parent" />
 
 
@@ -116,26 +116,26 @@ android:background="@color/color_grey">
         android:id="@+id/fabImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginLeft="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_photo_library"
-        app:fabSize="mini"
+        app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/changeImage"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/fabImage" />
+        app:layout_constraintEnd_toStartOf="@+id/fabImage" />
 
     <TextView
         android:id="@+id/textView4"
@@ -143,10 +143,10 @@ android:background="@color/color_grey">
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="40dp"
         android:text="@string/updateStatus"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/textView3"
         app:layout_constraintEnd_toStartOf="@+id/fabStatus" />
 
 

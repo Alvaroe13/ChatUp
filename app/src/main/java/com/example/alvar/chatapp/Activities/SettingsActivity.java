@@ -51,7 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
     private DatabaseReference dbUsersReff;
     private FirebaseUser currentUser;
     private StorageReference storageRef, thumbnailImageRef;
-    private UploadTask uploadTask, uploadThubmnailTask;
+    private UploadTask uploadTask, uploadThumbnailTask;
     //UI elements
     private CircleImageView imageProfile;
     private TextView textStatus, textUsername;
@@ -187,7 +187,9 @@ public class SettingsActivity extends AppCompatActivity {
                 imageProfile.setImageResource(R.drawable.profile_image);
             } else{
                 //here we set image from database into imageView
-                Glide.with(this).load(imageThumbnail).into(imageProfile);
+                Glide.with(getApplicationContext())
+                        .load(imageThumbnail)
+                        .into(imageProfile);
 
             }
 
@@ -318,9 +320,9 @@ public class SettingsActivity extends AppCompatActivity {
         //here we create the "Thumbnail_Images" folder in firebase storage
         final StorageReference thumbFilePath = thumbnailImageRef.child("Thumbnail_Images").child(currentUserID + ".jpg");
 
-        uploadThubmnailTask = thumbFilePath.putBytes(thumb_byte);
+        uploadThumbnailTask = thumbFilePath.putBytes(thumb_byte);
         //this method will add the image compressed into firebase storage
-        uploadThubmnailTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+        uploadThumbnailTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                 if (!task.isSuccessful()) {
