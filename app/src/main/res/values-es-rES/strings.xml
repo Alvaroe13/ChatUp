@@ -79,5 +79,7 @@
     <string name="accept">Aceptar</string>
     <string name="decline">Rechazar</string>
     <string name="textChatHint">Escrie tu mensaje aquí</string>
+    <string name="deleteContact">Borrar contact</string>
+    <string name="deleteContactMessage">Estas seguro que quieres borrar este contacto?</string>
 
 </resources>

@@ -116,7 +116,7 @@ public class AnswerRequestActivity extends AppCompatActivity {
                     otherUserName.setText(name);
 
                     if (image.equals("image")){
-                        imageView.setImageResource(R.drawable.imgdefault);
+                        imageView.setImageResource(R.drawable.profile_image);
                     }else {
                         Glide.with(AnswerRequestActivity.this).load(image).into(imageView);
                     }

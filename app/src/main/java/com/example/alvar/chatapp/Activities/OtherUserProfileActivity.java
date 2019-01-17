@@ -1,8 +1,10 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -122,7 +124,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
         if (imageThumbnail.equals("imgThumbnail")){
-            otherUserImg.setImageResource(R.drawable.imgdefault);
+            otherUserImg.setImageResource(R.drawable.profile_image);
         } else{
             //here we set image from database into imageView
             Glide.with(OtherUserProfileActivity.this).load(imageThumbnail).into(otherUserImg);
@@ -159,7 +161,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     if (current_database_state.equals("not_friend_yet")){
 
                         sendChatRequest();
-
                     }
                     //in case the request it's been sent
                     if (current_database_state.equals("request_sent")){
@@ -174,7 +175,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     }
                     if (current_database_state.equals("contact_added")){
 
-                        removeContact();
+                        alertMessage(getString(R.string.deleteContact), getString(R.string.deleteContactMessage));
                     }
 
                 }
@@ -404,7 +405,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                 if (task.isSuccessful()){
 
-                    //here we create the "contacts" no for the user receiving the request
+                    //here we create the "contacts" node for the user receiving the request
                     contactsNodeRef.child(otherUserId).child(senderRequestUserId)
                             .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -558,6 +559,32 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         intentChatRoom.putExtra("contactName", username);
         intentChatRoom.putExtra("contactImage", imageThumbnail);
         startActivity(intentChatRoom);
+    }
+    /**
+     * this method contains the pop-up message when user wants to remove a contact
+     * (standard alert dialog)
+     * @param title
+     * @param message
+     * @return
+     */
+    private AlertDialog alertMessage(String title, String message){
+
+
+        AlertDialog popUpWindow = new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        removeContact();
+                    }
+                })
+                .setNegativeButton(getString(R.string.no), null)
+                .show();
+
+        return popUpWindow;
     }
 
 }

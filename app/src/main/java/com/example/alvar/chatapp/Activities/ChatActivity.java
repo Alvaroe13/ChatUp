@@ -127,7 +127,7 @@ public class ChatActivity extends AppCompatActivity {
         //here we set info from bundles into the ui elements in custom toolbar
         usernameToolbarChat.setText(contactName);
         if (contactImage.equals("imgThumbnail")) {
-            imageProfile.setImageResource(R.drawable.imgdefault);
+            imageProfile.setImageResource(R.drawable.profile_image);
         } else {
             Glide.with(this).load(contactImage).into(imageProfile);
         }

@@ -184,7 +184,7 @@ public class SettingsActivity extends AppCompatActivity {
             textStatus.setText(status);
             //if there is no pic uploaded to database we set default img
             if (imageThumbnail.equals("imgThumbnail")){
-                imageProfile.setImageResource(R.drawable.imgdefault);
+                imageProfile.setImageResource(R.drawable.profile_image);
             } else{
                 //here we set image from database into imageView
                 Glide.with(this).load(imageThumbnail).into(imageProfile);

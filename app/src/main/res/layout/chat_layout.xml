@@ -14,7 +14,7 @@
             android:id="@+id/imageChat"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:src="@drawable/imgdefault"/>
+            android:src="@drawable/profile_image"/>
 
         <TextView
             android:id="@+id/textLeft"
