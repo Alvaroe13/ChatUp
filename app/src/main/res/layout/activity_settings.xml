@@ -10,11 +10,11 @@ android:background="@color/color_grey">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/settingImgProfile"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
         android:layout_marginStart="90dp"
         android:layout_marginLeft="90dp"
-        android:layout_marginTop="65dp"
+        android:layout_marginTop="45dp"
         android:layout_marginEnd="90dp"
         android:layout_marginRight="90dp"
         android:src="@drawable/profile_image"
@@ -26,6 +26,7 @@ android:background="@color/color_grey">
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:padding="16dp"
@@ -38,7 +39,6 @@ android:background="@color/color_grey">
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:orientation="vertical"
         android:layout_gravity="center_horizontal" >
 
@@ -104,38 +104,38 @@ android:background="@color/color_grey">
         android:layout_height="wrap_content"
         android:layout_marginEnd="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="10dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_status"
+        app:fabSize="mini"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:fabSize="normal"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginBottom="85dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="10dp"
         android:backgroundTint="@color/color_white"
         android:src="@drawable/ic_photo_library"
+        app:fabSize="mini"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:fabSize="normal"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="42dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginBottom="28dp"
         android:text="@string/changeImage"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/textView4"
-        app:layout_constraintEnd_toStartOf="@+id/fabImage" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/fabImage" />
 
     <TextView
         android:id="@+id/textView4"

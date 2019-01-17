@@ -213,6 +213,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
+                Log.i(TAG, "onActivityResult: error: " + error);
             }
         }
     }
@@ -299,7 +300,7 @@ public class SettingsActivity extends AppCompatActivity {
             //lets save image from storage into database
             HashMap<String , Object> imgMap = new HashMap<>();
             imgMap.put("image", imgUri);
-            dbUsersReff.updateChildren(imgMap);
+            dbUsersReff.child(currentUserID).updateChildren(imgMap);
 
             ProgressBarHelper.hideProgressBar(progressBar);
 
@@ -341,7 +342,7 @@ public class SettingsActivity extends AppCompatActivity {
                         //here we pass the thumbnail from storage to database at the "imageThumbnail" node
                         HashMap<String, Object> hashThumbnail = new HashMap<>();
                         hashThumbnail.put("imageThumbnail", finalThumbnailUri);
-                        dbUsersReff.updateChildren(hashThumbnail);
+                        dbUsersReff.child(currentUserID).updateChildren(hashThumbnail);
                     }
 
                     ProgressBarHelper.hideProgressBar(progressBar);
