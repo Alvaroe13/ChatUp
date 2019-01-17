@@ -2,12 +2,14 @@ package com.example.alvar.chatapp.Activities;
 
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -96,6 +98,15 @@ public class SettingsActivity extends AppCompatActivity {
      * Method in charge of event when fab buttons are clicked
      */
     private void fabButtonClicked(){
+
+        //first we set fab background color
+
+        fabImage.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
+                                                                                           R.color.color_blue_light)));
+
+        fabStatus.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
+                                                                                           R.color.colorPrimaryDark)));
+
         fabImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
