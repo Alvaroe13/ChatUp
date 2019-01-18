@@ -30,7 +30,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
                 android:src="@drawable/profile_image"
-                android:layout_marginLeft="5dp"/>
+                android:layout_marginLeft="5dp"
+                android:visibility="visible"/>
 
 
             <LinearLayout

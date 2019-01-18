@@ -7,7 +7,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,7 +37,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
-    private Button buttonSendRequest, buttonRejectRequest;
+    private Button buttonFirst, buttonSecond;
     private CoordinatorLayout coordinatorLayout;
     //vars
     private String otherUserId, senderRequestUserId;
@@ -62,8 +61,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         otherUserImg = findViewById(R.id.otherUsersImgProf);
         usernameOtherUser = findViewById(R.id.usernameOtherUser);
         statusOtherUser = findViewById(R.id.statusOtherUser);
-        buttonSendRequest = findViewById(R.id.buttonSendRequest);
-        buttonRejectRequest = findViewById(R.id.buttonDeclineRequest);
+        buttonFirst = findViewById(R.id.buttonSendRequest);
+        buttonSecond = findViewById(R.id.buttonDeclineRequest);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
     }
 
@@ -149,11 +148,11 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             //in case the current user open it's own profile in the "all users" page
         if (senderRequestUserId.equals(otherUserId)){
             //we hide "send request" button
-            buttonSendRequest.setVisibility(View.INVISIBLE);
+            buttonFirst.setVisibility(View.INVISIBLE);
 
         } else{
 
-            buttonSendRequest.setOnClickListener(new View.OnClickListener() {
+            buttonFirst.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -208,18 +207,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     if (request_type.equals("sent")){
 
                         current_database_state = "request_sent";
-                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
-                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
+                        buttonFirst.setText(getString(R.string.cancelChatRequest));
+                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
                     }
                     //in case the user receives a chat request
                     else if (request_type.equals("received")){
 
                         current_database_state = "request_received";
-                        buttonSendRequest.setText(getString(R.string.acceptChatRequest));
-                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
-                        buttonRejectRequest.setVisibility(View.VISIBLE);
+                        buttonFirst.setText(getString(R.string.acceptChatRequest));
+                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+                        buttonSecond.setVisibility(View.VISIBLE);
 
-                        buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                        buttonSecond.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 //if user click "reject button" we don't do the binding in the DB
@@ -239,14 +238,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                             if (dataSnapshot.hasChild(otherUserId)){
                                 //here we update the UI and database status of the user who sent the request
                                 current_database_state = "contact_added";
-                                buttonSendRequest.setText(getString(R.string.removeContact));
+                                buttonFirst.setText(getString(R.string.removeContact));
 
-                                buttonRejectRequest.setVisibility(View.VISIBLE);
-                                buttonRejectRequest.setEnabled(true);
-                                buttonRejectRequest.setText(getString(R.string.sendMessage));
-                                buttonRejectRequest.setBackgroundColor(getResources()
+                                buttonSecond.setVisibility(View.VISIBLE);
+                                buttonSecond.setEnabled(true);
+                                buttonSecond.setText(getString(R.string.sendMessage));
+                                buttonSecond.setBackgroundColor(getResources()
                                         .getColor(R.color.colorPrimaryDark));
-                                buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                                buttonSecond.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                         //take the current user to the chat room with new friend
@@ -301,9 +300,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                     //here we update the UI in the "all users" page
                                     if (task.isSuccessful()){
 
-                                        buttonSendRequest.setEnabled(true);
+                                        buttonFirst.setEnabled(true);
                                         current_database_state = "request_sent";
-                                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
+                                        buttonFirst.setText(getString(R.string.cancelChatRequest));
 
                                         //show the user the request has been successfully sent
                                         SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
@@ -348,18 +347,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                             //here we update the UI in the "all users" page
                                             if (task.isSuccessful()){
 
-                                                buttonSendRequest.setEnabled(true);
+                                                buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
-                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+                                                buttonFirst.setText(getString(R.string.sendChatRequest));
 
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                                   getString(R.string.canceledChatRequest));
 
-                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
-                                                buttonRejectRequest.setEnabled(false);
+                                                buttonFirst.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonSecond.setVisibility(View.INVISIBLE);
+                                                buttonSecond.setEnabled(false);
 
                                             }
                                             //if something goes wrong show message to the user
@@ -432,19 +431,19 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                                     //here we update the UI in the "all users" page
                                                                     if (task.isSuccessful()){
 
-                                                                        buttonSendRequest.setEnabled(true);
+                                                                        buttonFirst.setEnabled(true);
                                                                         current_database_state = "contact_added";
-                                                                        buttonSendRequest.setText(getString(R.string.removeContact));
-                                                                        buttonSendRequest.setBackgroundColor(getResources()
+                                                                        buttonFirst.setText(getString(R.string.removeContact));
+                                                                        buttonFirst.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
 
 
                                                                         SnackbarHelper.showSnackBarLong(coordinatorLayout,
                                                                                          getString(R.string.chatRequestAccepted));
-                                                                        buttonRejectRequest.setVisibility(View.VISIBLE);
-                                                                        buttonRejectRequest.setEnabled(true);
-                                                                        buttonRejectRequest.setText(getString(R.string.sendMessage));
-                                                                        buttonRejectRequest.setBackgroundColor(getResources()
+                                                                        buttonSecond.setVisibility(View.VISIBLE);
+                                                                        buttonSecond.setEnabled(true);
+                                                                        buttonSecond.setText(getString(R.string.sendMessage));
+                                                                        buttonSecond.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
 
                                                                     }
@@ -512,17 +511,17 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                             //here we update the UI in the "all users" page
                                             if (task.isSuccessful()){
 
-                                                buttonSendRequest.setEnabled(true);
+                                                buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
-                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+                                                buttonFirst.setText(getString(R.string.sendChatRequest));
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                         getString(R.string.contactRemoved));
 
-                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
-                                                buttonRejectRequest.setEnabled(false);
+                                                buttonFirst.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonSecond.setVisibility(View.INVISIBLE);
+                                                buttonSecond.setEnabled(false);
 
                                             }
                                             //if something goes wrong show message to the user

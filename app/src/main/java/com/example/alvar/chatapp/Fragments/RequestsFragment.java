@@ -13,11 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
-import com.example.alvar.chatapp.Activities.LoginActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -42,6 +40,7 @@ public class RequestsFragment extends Fragment {
     private DatabaseReference dbRequestsNodeRef, dbUsersNode, requestTypeRef;
     //ui elements
     private RecyclerView requestsRecycler;
+    private LinearLayoutManager linearLayoutManager;
     //vars
     private String currentUserID;
 
@@ -68,7 +67,8 @@ public class RequestsFragment extends Fragment {
      */
     private void initRecycler(View view){
         requestsRecycler = view.findViewById(R.id.requestsRecyclerView);
-        requestsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        requestsRecycler.setLayoutManager(linearLayoutManager);
     }
 
     private void initFirebase(){
@@ -183,9 +183,9 @@ public class RequestsFragment extends Fragment {
                                                 show any request in our request fragment, we need to hide only the CardView
                                                 as it is the container of the rest of the element*/
 
-                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.INVISIBLE);
-                                             holder.itemView.findViewById(R.id.imageRequestsUser).setVisibility(View.INVISIBLE);
-                                             holder.itemView.findViewById(R.id.usernameRequestIndividual).setVisibility(View.INVISIBLE);
+                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.GONE);
+                                             holder.itemView.findViewById(R.id.cardViewRequest).setLayoutParams( new RecyclerView.LayoutParams(0,0));
+
 
                                          }
 
