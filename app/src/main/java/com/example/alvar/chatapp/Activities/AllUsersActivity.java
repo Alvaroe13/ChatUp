@@ -51,7 +51,7 @@ public class AllUsersActivity extends AppCompatActivity {
     private void initFirebase() {
         //we init firebase database service
         database = FirebaseDatabase.getInstance();
-        //here we init db reference and point to "Users" node
+        //here we init db reference and pointed to "Users" node
         dbUsersRef = database.getReference().child("Users");
     }
 
@@ -103,7 +103,7 @@ public class AllUsersActivity extends AppCompatActivity {
                             holder.imgProfile.setImageResource(R.drawable.profile_image);
                         }else{
                             //lets upload images from db to ui using glide instead of picasso
-                            Glide.with(AllUsersActivity.this).load(model.getImageThumbnail()).into(holder.imgProfile);
+                            Glide.with(getApplicationContext()).load(model.getImageThumbnail()).into(holder.imgProfile);
                         }
 
                         //onClick when any of the users displayed has been pressed

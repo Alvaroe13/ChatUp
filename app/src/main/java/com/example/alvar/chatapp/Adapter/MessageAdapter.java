@@ -81,8 +81,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         Log.i(TAG, "onBindViewHolder: sender ID: " + messageSenderID);
 
-        //here we fetch the image info from the "Users" node
-        fetchImage();
+        //here we fetch image from db
         dbUsersNodeRef.child(messageSenderID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -134,11 +133,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
 
-
-
-    }
-
-    private void fetchImage() {
     }
 
     /**
