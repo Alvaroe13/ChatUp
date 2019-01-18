@@ -181,6 +181,8 @@ public class RequestsFragment extends Fragment {
                                                 as it is the container of the rest of the element*/
 
                                              holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.INVISIBLE);
+                                             holder.itemView.findViewById(R.id.imageRequestsUser).setVisibility(View.INVISIBLE);
+                                             holder.itemView.findViewById(R.id.usernameRequestIndividual).setVisibility(View.INVISIBLE);
 
                                          }
 
@@ -229,12 +231,9 @@ public class RequestsFragment extends Fragment {
             userName = itemView.findViewById(R.id.usernameRequestIndividual);
             cardViewRequest = itemView.findViewById(R.id.cardViewRequest);
 
-
-
         }
 
     }
-
 
     private void requestAnswer(String list_user_id) {
 
