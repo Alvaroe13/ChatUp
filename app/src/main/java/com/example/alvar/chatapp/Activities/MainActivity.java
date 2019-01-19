@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                         imageToolbarMain.setImageResource(R.drawable.profile_image);
                     }else{
                         Log.i(TAG, "onDataChange: image set");
-                        Glide.with(MainActivity.this).load(imageThumbnailToolbar).into(imageToolbarMain);
+                        Glide.with(getApplicationContext()).load(imageThumbnailToolbar).into(imageToolbarMain);
                     }
 
                 } else{

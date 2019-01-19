@@ -21,6 +21,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -28,24 +31,25 @@ public class LoginActivity extends AppCompatActivity {
 
     //Firebase
     private FirebaseAuth mAuth;
-    private FirebaseUser user;
+    private FirebaseDatabase database;
+    private DatabaseReference dbUsersNodeRef;
     //UI elements
     private TextInputLayout usernameLogin, passwordLogin;
     private ProgressBar loginProgressBar;
     private CoordinatorLayout coordinatorLayout;
-
+    private TextView txtCreateAccount, forgotPasswordTxt;
     //vars
     private Button btnLogin;
-    private String email, password;
-    private TextView txtCreateAccount, forgotPasswordtxt;
+    private String email, password, currentUserID, deviceToken;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        //firebase service init
-        mAuth = FirebaseAuth.getInstance();
+
+        initFirebase();
         BindUI();
         goToRegister();
 
@@ -72,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        forgotPasswordtxt.setOnClickListener(new View.OnClickListener() {
+        forgotPasswordTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(LoginActivity.this, RecoverPasswordActivity.class);
@@ -89,7 +93,15 @@ public class LoginActivity extends AppCompatActivity {
         loginProgressBar = findViewById(R.id.loginProgressBar);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
         txtCreateAccount = findViewById(R.id.txtCreateAccount);
-        forgotPasswordtxt = findViewById(R.id.forgotPasswordText);
+        forgotPasswordTxt = findViewById(R.id.forgotPasswordText);
+    }
+
+    private void initFirebase(){
+        //firebase service init
+        mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        dbUsersNodeRef = database.getReference().child("Users");
+
     }
 
     @Override
@@ -109,26 +121,21 @@ public class LoginActivity extends AppCompatActivity {
 
     private void sigIn(String email, String password){
 
-        email = usernameLogin.getEditText().getText().toString().trim();
-        password = passwordLogin.getEditText().getText().toString().trim();
-
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Log.i(TAG, "signInWithEmail:success");
-                            user = mAuth.getCurrentUser();
-                            Toast.makeText(getApplicationContext(),  getString(R.string.welcome), Toast.LENGTH_SHORT).show();
-                            goToMain();
+                            Log.i(TAG, "signInWithEmail:success" );
+                            getDeviceToken();
+
+
                         } else {
                             // If sign in fails, display a message to the user.
                             String error = task.getException().getMessage();
                             Log.i(TAG, "signInWithEmail:failure : " + error);
                             Toast.makeText(LoginActivity.this, error , Toast.LENGTH_LONG).show();
-                            //indicates wonrg credentials
-                         //   SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.loginError));
                             //dismiss progressBar
                             ProgressBarHelper.hideProgressBar(loginProgressBar);
 
@@ -137,6 +144,28 @@ public class LoginActivity extends AppCompatActivity {
                         // ...
                     }
                 });
+    }
+
+    /**
+     * in this method we get the mobile device token
+     */
+    private void getDeviceToken() {
+
+        currentUserID = mAuth.getCurrentUser().getUid();
+        deviceToken = FirebaseInstanceId.getInstance().getToken();
+
+        dbUsersNodeRef.child(currentUserID).child("token")
+                .setValue(deviceToken).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+
+                    Toast.makeText(getApplicationContext(), getString(R.string.welcome), Toast.LENGTH_SHORT).show();
+                    goToMain();
+                }
+            }
+        });
     }
 
     private void goToRegister(){

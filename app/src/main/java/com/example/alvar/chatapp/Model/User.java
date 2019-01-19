@@ -8,18 +8,20 @@ public class User {
     private String status;
     private String image;
     private String imageThumbnail;
+    private String token;
 
     public User(){
 
     }
 
-    public User(String name, String email, String password, String status, String image, String imageThumbnail) {
+    public User(String name, String email, String password, String status, String image, String imageThumbnail, String token) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.status = status;
         this.image = image;
         this.imageThumbnail = imageThumbnail;
+        this.token = token;
     }
 
     /**
@@ -50,6 +52,11 @@ public class User {
         return imageThumbnail;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+
     /**
      * Setters
      * @param name
@@ -77,5 +84,9 @@ public class User {
 
     public void setImageThumbnail(String imageThumbnail) {
         this.imageThumbnail = imageThumbnail;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

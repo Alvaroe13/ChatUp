@@ -140,7 +140,7 @@ public class ContactsActivity extends AppCompatActivity {
                                                              if ( image.equals("imgThumbnail")){
                                                                  holder.contactImage.setImageResource(R.drawable.profile_image);
                                                              } else{
-                                                                 Glide.with(ContactsActivity.this)
+                                                                 Glide.with(getApplicationContext())
                                                                                                 .load(image).into(holder.contactImage);
                                                              }
 

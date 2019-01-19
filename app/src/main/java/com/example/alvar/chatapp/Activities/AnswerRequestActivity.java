@@ -118,7 +118,7 @@ public class AnswerRequestActivity extends AppCompatActivity {
                     if (image.equals("image")){
                         imageView.setImageResource(R.drawable.profile_image);
                     }else {
-                        Glide.with(AnswerRequestActivity.this).load(image).into(imageView);
+                        Glide.with(getApplicationContext()).load(image).into(imageView);
                     }
 
                 }

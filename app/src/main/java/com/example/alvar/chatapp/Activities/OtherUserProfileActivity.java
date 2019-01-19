@@ -25,6 +25,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class OtherUserProfileActivity extends AppCompatActivity {
@@ -33,14 +35,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbNotificationsRef;
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
     private Button buttonFirst, buttonSecond;
     private CoordinatorLayout coordinatorLayout;
     //vars
-    private String otherUserId, senderRequestUserId;
+    private String otherUserId, currentUserID;
     private String current_database_state = "not_friend_yet";
     private String username, status, imageThumbnail;
 
@@ -77,6 +79,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         dbChatRequestNodeRef = database.getReference().child("Chat_Requests");
         //we create "Contacts" node
         contactsNodeRef = database.getReference().child("Contacts");
+        //we create "Notifications" node
+        dbNotificationsRef = database.getReference().child("Notifications");
     }
 
     /**
@@ -111,7 +115,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * this method is in charge of setting the info fetched from the db into the UI
+     * this method is in charge of setting up the info fetched from the db into the UI
      * @param dataSnapshot
      */
     private void setInfo(DataSnapshot dataSnapshot) {
@@ -126,7 +130,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             otherUserImg.setImageResource(R.drawable.profile_image);
         } else{
             //here we set image from database into imageView
-            Glide.with(OtherUserProfileActivity.this).load(imageThumbnail).into(otherUserImg);
+            Glide.with(getApplicationContext()).load(imageThumbnail).into(otherUserImg);
 
         }
 
@@ -139,14 +143,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void manageChatRequest(){
 
         //we get current user id
-        senderRequestUserId = auth.getCurrentUser().getUid();
+        currentUserID = auth.getCurrentUser().getUid();
         current_database_state = "not_friend_yet";
 
         chatRequestStatus();
 
 
             //in case the current user open it's own profile in the "all users" page
-        if (senderRequestUserId.equals(otherUserId)){
+        if (currentUserID.equals(otherUserId)){
             //we hide "send request" button
             buttonFirst.setVisibility(View.INVISIBLE);
 
@@ -191,7 +195,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void chatRequestStatus() {
 
 
-        dbChatRequestNodeRef.child(senderRequestUserId).addValueEventListener(new ValueEventListener() {
+        dbChatRequestNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -231,7 +235,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 //here in this part we update the UI from the user sending the request
                 else {
 
-                    contactsNodeRef.child(senderRequestUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                    contactsNodeRef.child(currentUserID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -279,7 +283,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+        dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                 .child("request_type").setValue("sent")
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -291,7 +295,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 */
                 if (task.isSuccessful()){
 
-                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                    dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                             .child("request_type").setValue("received")
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
@@ -304,8 +308,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         current_database_state = "request_sent";
                                         buttonFirst.setText(getString(R.string.cancelChatRequest));
 
-                                        //show the user the request has been successfully sent
-                                        SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+                                        sendNotification();
+
 
                                     }
                                     //if something goes wrong show message to the user
@@ -323,13 +327,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     }
 
+
     /**
      * this method is in charge of removing the chat request info from both nodes created
      * when a user send a chat request
      */
     private void cancelChatRequest() {
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+        dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -338,7 +343,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                            dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -397,7 +402,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
         //here we create the "contacts" node for the user sending the request
-        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
+        contactsNodeRef.child(currentUserID).child(otherUserId)
                 .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -405,7 +410,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 if (task.isSuccessful()){
 
                     //here we create the "contacts" node for the user receiving the request
-                    contactsNodeRef.child(otherUserId).child(senderRequestUserId)
+                    contactsNodeRef.child(otherUserId).child(currentUserID)
                             .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -413,7 +418,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                             if (task.isSuccessful()){
 
                                 //here we delete the info of the user sending the request saved in the "Chat request" node
-                                dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+                                dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                                         .removeValue()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
@@ -422,7 +427,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 if (task.isSuccessful()){
 
                                                     //here we delete the info of the user receiving the request saved in the "Chat request" node
-                                                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                                                    dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                                                             .removeValue()
                                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                 @Override
@@ -493,7 +498,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     private void removeContact() {
 
-        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
+        contactsNodeRef.child(currentUserID).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -502,7 +507,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            contactsNodeRef.child(otherUserId).child(senderRequestUserId)
+                            contactsNodeRef.child(otherUserId).child(currentUserID)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -584,6 +589,34 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 .show();
 
         return popUpWindow;
+    }
+
+
+    /**
+     * method in charge of saving information in the "Notifications" node
+     */
+
+    private void sendNotification() {
+
+        HashMap<String, String> notificationsMap = new HashMap<>();
+        notificationsMap.put("sender" , otherUserId);
+        notificationsMap.put("type" , "request");
+
+        dbNotificationsRef.child(currentUserID).push()
+                .setValue(notificationsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+
+                    //show the user the request has been successfully sent
+                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+                }
+            }
+        });
+
+
+
     }
 
 }

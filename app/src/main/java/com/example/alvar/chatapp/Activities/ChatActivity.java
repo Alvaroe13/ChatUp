@@ -129,7 +129,7 @@ public class ChatActivity extends AppCompatActivity {
         if (contactImage.equals("imgThumbnail")) {
             imageProfile.setImageResource(R.drawable.profile_image);
         } else {
-            Glide.with(this).load(contactImage).into(imageProfile);
+            Glide.with(getApplicationContext()).load(contactImage).into(imageProfile);
         }
 
 

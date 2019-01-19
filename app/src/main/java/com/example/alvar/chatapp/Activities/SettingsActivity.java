@@ -359,7 +359,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
 
                     ProgressBarHelper.hideProgressBar(progressBar);
-                    Toast.makeText(SettingsActivity.this, "thumbnail successfully uploaded to firebase storage", Toast.LENGTH_SHORT).show();
+
 
                 }else{
                     String error = task.getException().getMessage();
