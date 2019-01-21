@@ -99,7 +99,7 @@ public class ChatActivity extends AppCompatActivity {
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
-        dbMessagesNodeRef = database.getReference().child("Messages");
+        dbMessagesNodeRef = database.getReference().child("Chats").child("Messages");
     }
 
     /**
@@ -185,8 +185,8 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage() {
 
         //first we create a ref for sender and receiver to be later saved in the db
-        String messageSenderRef = "Message/" + currentUserID + "/" + contactID;
-        String messageReceiverRef = "Message/" + contactID + "/" + currentUserID;
+        String messageSenderRef =  currentUserID + "/" + contactID;
+        String messageReceiverRef = contactID + "/" + currentUserID;
 
 
         messagePushID = dbMessagesNodeRef.child(currentUserID).child(contactID).push();
@@ -229,7 +229,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        dbMessagesNodeRef.child("Message").child(currentUserID).child(contactID)
+        dbMessagesNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
