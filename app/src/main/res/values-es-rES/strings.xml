@@ -81,5 +81,6 @@
     <string name="textChatHint">Escrie tu mensaje aquí</string>
     <string name="deleteContact">Borrar contact</string>
     <string name="deleteContactMessage">Estas seguro que quieres borrar este contacto?</string>
-
+    <string name="drawerOpen">Drawer Abierto</string>
+    <string name="drawerClose">Drawer Cerrado</string>
 </resources>

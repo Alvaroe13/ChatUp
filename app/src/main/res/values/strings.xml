@@ -80,6 +80,8 @@
     <string name="textChatHint">Type your message here</string>
     <string name="deleteContact">Delete contact</string>
     <string name="deleteContactMessage">Are you sure you want to delete this contact?</string>
+    <string name="drawerOpen">Drawer Open</string>
+    <string name="drawerClose">Drawer Close</string>
 
 
 

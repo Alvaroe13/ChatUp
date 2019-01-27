@@ -1,16 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
 
-    <item android:id="@+id/settingsAccount"
-        android:title="@string/editProfile"
-        app:showAsAction="never"/>
+    <group>
+        <item
+            android:id="@+id/contacts"
+            android:title="Contacts"
+            android:icon="@drawable/ic_contact">
+        </item>
+        <item
+            android:id="@+id/maps"
+            android:title="Maps"
+            android:icon="@drawable/ic_maps">
+        </item>
+    </group>
 
-    <item android:id="@+id/menuAllUsers"
-        android:title="@string/allUsers"
-        app:showAsAction="never"/>
 
-    <item android:id="@+id/signOut"
-        android:title="@string/signOut"
-        app:showAsAction="never"/>
+    <item android:title="Account">
+        <menu>
+
+            <item
+                android:id="@+id/settingsAccount"
+                android:title="Profile"
+                android:icon="@drawable/ic_settings"/>
+
+            <item
+                android:id="@+id/menuAllUsers"
+                android:title="@string/allUsers"
+                android:icon="@drawable/ic_person_add"/>
+
+            <item
+                android:id="@+id/signOut"
+                android:title="@string/signOut"
+                android:icon="@drawable/ic_power"/>
+
+        </menu>
+    </item>
+
 </menu>
+
