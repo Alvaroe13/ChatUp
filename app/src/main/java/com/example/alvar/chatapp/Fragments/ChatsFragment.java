@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ChatActivity;
@@ -49,7 +50,7 @@ public class ChatsFragment extends Fragment {
     //vars
     private String currentUserID;
     private FirebaseRecyclerOptions<Contacts> options;
-    private FirebaseRecyclerAdapter<Contacts , ChatsViewHolder> adapter;
+    private FirebaseRecyclerAdapter<Contacts, ChatsViewHolder> adapter;
 
 
     public ChatsFragment() {
@@ -73,8 +74,7 @@ public class ChatsFragment extends Fragment {
         initFirebaseAdapter();
 
 
-
-        return viewContacts ;
+        return viewContacts;
     }
 
     private void initFirebase() {
@@ -88,7 +88,8 @@ public class ChatsFragment extends Fragment {
         fabContacts = viewContacts.findViewById(R.id.fabContacts);
 
     }
-    private void initRecyclerView(){
+
+    private void initRecyclerView() {
         chatRecyclerView = viewContacts.findViewById(R.id.chatRecyclerView);
         linearLayoutManager = new LinearLayoutManager(getContext());
         chatRecyclerView.setLayoutManager(linearLayoutManager);
@@ -99,7 +100,7 @@ public class ChatsFragment extends Fragment {
     /**
      * this method handles event when fab button in pressed
      */
-    private void fabButtonPressed(){
+    private void fabButtonPressed() {
         fabContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,107 +124,109 @@ public class ChatsFragment extends Fragment {
 
 
         adapter = new FirebaseRecyclerAdapter<Contacts, ChatsViewHolder>(options) {
-                    @Override
-                    protected void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position, @NonNull Contacts model) {
+            @Override
+            protected void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position, @NonNull Contacts model) {
 
-                        //here lies the issue, it does not iterates through the whole list of messages node
+                //here lies the issue, it does not iterates through the whole list of messages node
 
-                        final String otherUserID = getRef(position).getKey();
+                final String otherUserID = getRef(position).getKey();
 
-                        Log.i(TAG, "onBindViewHolder: other user id : " + otherUserID);
+                Log.i(TAG, "onBindViewHolder: other user id : " + otherUserID);
 
-                        //here we fetch information from other user
-                        dbUsersNodeRef.child(otherUserID)
-                                .addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-
-
-                                        if (dataSnapshot.exists()) {
+                //here we fetch information from other user
+                dbUsersNodeRef.child(otherUserID)
+                        .addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
-                                                //here we fetch info from db
-                                                final String name = dataSnapshot.child("name").getValue().toString();
-                                                final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-
-                                                Log.i(TAG, "onDataChange: name " + name);
-                                                Log.i(TAG, "onDataChange: image " + image);
-
-                                                //here we set info from db to the UI
-                                                holder.username.setText(name);
-                                                if ( image.equals("imgThumbnail")){
-                                                    holder.chatImageContact.setImageResource(R.drawable.profile_image);
-                                                } else{
-                                                    Glide.with(getContext())
-                                                            .load(image).into(holder.chatImageContact);
-                                                }
+                                if (dataSnapshot.exists()) {
 
 
+                                    //here we fetch info from db
+                                    final String name = dataSnapshot.child("name").getValue().toString();
+                                    final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
 
-                                                holder.chatLayout.setOnClickListener(new View.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(View v) {
-                                                        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
-                                                        intentChatRoom.putExtra("contactID", otherUserID);
-                                                        intentChatRoom.putExtra("contactName", name);
-                                                        intentChatRoom.putExtra("contactImage", image);
-                                                        startActivity(intentChatRoom);
-                                                    }
-                                                });
+                                    Log.i(TAG, "onDataChange: name " + name);
+                                    Log.i(TAG, "onDataChange: image " + image);
 
+                                    //here we set info from db to the UI
+                                    holder.username.setText(name);
+                                    if (image.equals("imgThumbnail")) {
+                                        holder.chatImageContact.setImageResource(R.drawable.profile_image);
+                                    } else {
+
+                                        try {
+                                            Glide.with(getContext())
+                                                    .load(image).into(holder.chatImageContact);
+                                        } catch (NullPointerException e) {
+                                            String exception = e.getMessage();
+                                            Log.i(TAG, "onDataChange: exception: " + exception);
+                                            Toast.makeText(getContext(), exception, Toast.LENGTH_SHORT).show();
                                         }
 
                                     }
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                    }
-                                });
+                                    holder.chatLayout.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
+                                            intentChatRoom.putExtra("contactID", otherUserID);
+                                            intentChatRoom.putExtra("contactName", name);
+                                            intentChatRoom.putExtra("contactImage", image);
+                                            startActivity(intentChatRoom);
+                                        }
+                                    });
+
+                                }
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
 
 
-                    }
+            }
 
-                    @NonNull
-                    @Override
-                    public ChatsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            @NonNull
+            @Override
+            public ChatsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
 
-                        View chatView = LayoutInflater.from(viewGroup.getContext())
-                                            .inflate(R.layout.chats_individual_layout, viewGroup, false);
+                View chatView = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.chats_individual_layout, viewGroup, false);
 
-                        return new ChatsViewHolder(chatView);
-                    }
-                };
-
+                return new ChatsViewHolder(chatView);
+            }
+        };
 
 
         adapter.startListening();
         chatRecyclerView.setAdapter(adapter);
 
 
-
     }
-
 
 
     @Override
     public void onStart() {
         super.onStart();
 
-        if (adapter != null){
+        if (adapter != null) {
             adapter.startListening();
         }
 
     }
 
 
-    public class ChatsViewHolder extends RecyclerView.ViewHolder{
+    public class ChatsViewHolder extends RecyclerView.ViewHolder {
 
-       LinearLayout chatLayout;
+        LinearLayout chatLayout;
         CircleImageView chatImageContact;
         TextView username, message;
-
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -234,7 +237,6 @@ public class ChatsFragment extends Fragment {
             username = itemView.findViewById(R.id.usernameChat);
             message = itemView.findViewById(R.id.messageChat);
         }
-
 
 
     }

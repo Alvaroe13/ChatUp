@@ -168,45 +168,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        //bind menu xml file to code
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.menu, menu);
-//        return true;
-//    }
-//
-
-//
-//    /**
-//     * Metohod in charge of taking the user to pages from option menu
-//     * @param item
-//     * @return
-//     */
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle item selection
-//        switch (item.getItemId()) {
-//
-//            case R.id.settingsAccount:
-//                goToSettingAccount();
-//                Log.i(TAG, "onOptionsItemSelected: setting btn pressed");
-//                return true;
-//            case R.id.menuAllUsers:
-//                goToAllUsers();
-//                Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
-//                return true;
-//            case R.id.signOut:
-//                alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
-//                Log.i(TAG, "onOptionsItemSelected: log out button pressed");
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
-
-
     /**
      * init firebase services
      */
