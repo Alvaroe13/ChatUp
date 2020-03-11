@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (email.equals("") ||  password.equals("")){
                     Log.i(TAG, "btnLogin clicked, some field is empty");
-                    //Show info using snackbar
+                    //Show info using snack bar
                     SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.noEmptyField));
                 } else {
                     Log.i(TAG, "btnLogin clicked no filed empty, proceed to call signIn method");
@@ -86,6 +86,10 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
+
+    /**
+     * Init UI elements
+     */
     private void BindUI(){
         usernameLogin = findViewById(R.id.loginName);
         passwordLogin = findViewById(R.id.loginPassword);
@@ -96,14 +100,23 @@ public class LoginActivity extends AppCompatActivity {
         forgotPasswordTxt = findViewById(R.id.forgotPasswordText);
     }
 
+    /**
+     * init firebase services
+     */
     private void initFirebase(){
         //firebase service init
         mAuth = FirebaseAuth.getInstance();
+        //firebase db init
         database = FirebaseDatabase.getInstance();
+        //get access to "Users" branch of db
         dbUsersNodeRef = database.getReference().child("Users");
 
     }
 
+    /**
+     * check status of user as soon as the app is launched since this activity is launched firstly
+     * by default (look at the androidManifest tree)
+     */
     @Override
     public void onStart() {
         super.onStart();
@@ -119,6 +132,11 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * this one's in charge of signing into firebase db.
+     * @param email
+     * @param password
+     */
     private void sigIn(String email, String password){
 
         mAuth.signInWithEmailAndPassword(email, password)
@@ -133,6 +151,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         } else {
                             // If sign in fails, display a message to the user.
+
                             String error = task.getException().getMessage();
                             Log.i(TAG, "signInWithEmail:failure : " + error);
                             Toast.makeText(LoginActivity.this, error , Toast.LENGTH_LONG).show();
@@ -168,6 +187,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * takes the user to register
+     */
     private void goToRegister(){
         txtCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,6 +200,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * takes the user to the main page
+     */
     private void goToMain(){
         Intent intentToMain = new Intent (LoginActivity.this,MainActivity.class);
         startActivity(intentToMain);

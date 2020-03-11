@@ -114,11 +114,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * this method sets toolbar and it details
-     *
+     * this method sets toolbar and it's details
      * @param title
      */
-    private void setToolbar(String title, Boolean backOpion) {
+    private void setToolbar(String title, Boolean backOption) {
         //create toolbar
         toolbarMain = findViewById(R.id.toolbarMain);
         //we set the toolbar
@@ -126,10 +125,13 @@ public class MainActivity extends AppCompatActivity {
         //we pass the title
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOpion);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
-
+    /**
+     * this methods handles the action taken in the drawer menu
+     * @param menuItem
+     */
     private void drawerOptionsMenu(MenuItem menuItem) {
 
         switch (menuItem.getItemId()) {
@@ -177,14 +179,13 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         //database init
         database = FirebaseDatabase.getInstance();
-        //database ref init
+        //database ref init and get access ti "Users" branch in the db
         dbUsersRef = database.getReference().child("Users");
     }
 
 
     /**
      * this method is in charge of creating the tabs and setting it's title
-     *
      * @param viewPager
      */
     private void initPageAdapter(ViewPager viewPager) {
@@ -198,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of signin out from firebase console
+     * method in charge of signing out from firebase console
      */
     private void signOut() {
         //sign out from firebase service and app
@@ -228,7 +229,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * this method contains the pop-up message when user clicks log out from menu option
      * (standard alert dialog)
-     *
      * @param title
      * @param message
      * @return
@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * method handle even when toolbar has been clicked
+     * method handle events when toolbar has been clicked
      */
     private void drawerImagePressed(){
 
@@ -325,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * this method is in charge os closing the drawer when pressing back button
+     * this method is in charge of closing the drawer when pressing back button
      */
     @Override
     public void onBackPressed() {
