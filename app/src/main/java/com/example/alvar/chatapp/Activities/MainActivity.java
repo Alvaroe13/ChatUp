@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbarMain);
         //we pass the title
         getSupportActionBar().setTitle(title);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOpion);
     }
 
