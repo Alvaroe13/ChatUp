@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,8 +8,10 @@
     android:layout_height="match_parent"
     tools:context=".Activities.LoginActivity"
     android:background="@color/colorPrimary"
+    android:orientation="vertical"
     tools:layout_editor_absoluteY="25dp">
 
+    <!--
 
     <TextView
         android:id="@+id/textView"
@@ -164,6 +166,20 @@
         app:layout_constraintTop_toBottomOf="@+id/btnLogin"
         android:textColor="@color/color_white"/>
 
-</android.support.constraint.ConstraintLayout>
+        -->
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="25dp"
+                    android:src="@drawable/login_photo"/>
+    </ScrollView>
+</LinearLayout>
