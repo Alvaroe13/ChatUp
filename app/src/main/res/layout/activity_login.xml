@@ -72,29 +72,58 @@
                         android:theme="@style/TextLabel"/>
                 </android.support.design.widget.TextInputLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:id="@+id/txtCreateAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="end"
+                    android:text="Sign up"
+                    android:layout_marginRight="35dp"
+                    android:textColor="@color/color_white"
+                    android:textSize="16sp"
+                    android:textStyle="bold|italic" />
+
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginRight="40dp"
-                    android:text="@string/Login"/>
+                    android:text="@string/Login"
+                    android:layout_marginTop="5dp"/>
+
+                <TextView
+                    android:id="@+id/forgotPasswordText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/passwordForgot"
+                    android:clickable="true"
+                    android:textColor="@color/color_white"
+                    android:gravity="end"
+                    android:layout_marginRight="15dp"/>
+            </LinearLayout>
 
             <android.support.design.widget.CoordinatorLayout
                 android:id="@+id/coordinatorLayout"
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_gravity="">
-
+                android:layout_height="match_parent">
 
             </android.support.design.widget.CoordinatorLayout>
-
 
         </LinearLayout>
 
 
          </FrameLayout>
+
+
 
 
 
