@@ -83,4 +83,5 @@
     <string name="deleteContactMessage">Estas seguro que quieres borrar este contacto?</string>
     <string name="drawerOpen">Drawer Abierto</string>
     <string name="drawerClose">Drawer Cerrado</string>
+    <string name="signUp">Crear cuenta</string>
 </resources>

@@ -16,6 +16,10 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
         app:srcCompat="@drawable/login_photo" />
 
 
@@ -87,10 +91,10 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="end"
-                    android:text="Sign up"
-                    android:layout_marginRight="35dp"
+                    android:text="@string/signUp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"
                     android:textColor="@color/color_white"
-                    android:textSize="16sp"
                     android:textStyle="bold|italic" />
 
                 <Button
@@ -106,9 +110,11 @@
                     android:layout_height="wrap_content"
                     android:text="@string/passwordForgot"
                     android:clickable="true"
+                    android:focusable="true"
                     android:textColor="@color/color_white"
                     android:gravity="end"
-                    android:layout_marginRight="15dp"/>
+                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"/>
             </LinearLayout>
 
             <android.support.design.widget.CoordinatorLayout
