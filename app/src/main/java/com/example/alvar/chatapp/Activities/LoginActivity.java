@@ -61,14 +61,14 @@ public class LoginActivity extends AppCompatActivity {
                 email = usernameLogin.getEditText().getText().toString().trim();
                 password = passwordLogin.getEditText().getText().toString().trim();
 
-                if (email.equals("") ||  password.equals("")){
+                if (email.equals("") || password.equals("")){
                     Log.i(TAG, "btnLogin clicked, some field is empty");
                     //Show info using snack bar
                     SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.noEmptyField));
                 } else {
                     Log.i(TAG, "btnLogin clicked no filed empty, proceed to call signIn method");
                     ProgressBarHelper.showProgressBar(loginProgressBar);
-                    sigIn(email, password); //random comment to test
+                    sigIn(email, password);
                 }
 
 
