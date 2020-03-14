@@ -41,7 +41,7 @@ public class RegisterActivity extends AppCompatActivity {
     private ProgressBar registerProgressBar;
     private CoordinatorLayout coordinatorLayout;
     //Vars
-    private String username, email, password, repeatPassword, currentUserID, deviceToken;
+    private String username, email, password, repeatPassword, deviceToken;
     //Constants
     private static final String DEFAULT_IMG = "image";
     public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
@@ -63,49 +63,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * When "Create Account" button has been pressed
-     */
-    private void registerBtnPress() {
-
-        //here we get user's device token
-        deviceToken = FirebaseInstanceId.getInstance().getToken();
-
-
-        registerBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                username = usernameTextField.getEditText().getText().toString().trim();
-                email = emailTextField.getEditText().getText().toString().trim();
-                password = passwordTextField.getEditText().getText().toString().trim();
-                repeatPassword = repeatPasswordTextField.getEditText().getText().toString().trim();
-                //if there's a mandatory field empty
-                if (username.equals("") || email.equals("") || password.equals("")) {
-                    Log.i(TAG, "onClick: enter this if statement");
-                    //show info to user
-                    SnackbarHelper.showSnackBarShort(coordinatorLayout, getString(R.string.noEmptyField));
-                    //if password and repeat password field does not match
-                } else if (!password.equals(repeatPassword)) {
-                    Log.i(TAG, "onClick: check repeat password matches");
-                    //show info to user
-                    SnackbarHelper.showSnackBarShort(coordinatorLayout, getResources().getString(R.string.password_check));
-                    //if password length is less than 6 characters
-                } else if (password.length() <= 6) {
-                    Log.i(TAG, "onClick: check password lenght is longer than 7 digs");
-                    //inform user the min length is 6
-                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.password_Length));
-                } else {
-                    Log.i(TAG, "onClick: Register New User method called");
-                    //if everything goes well we create user account
-                    registerNewUSer(email, password);
-                    //hide progress bar
-                    ProgressBarHelper.showProgressBar(registerProgressBar);
-                }
-
-            }
-        });
-    }
-
-    /**
      * We bind every UI element here
      */
     private void BindUI() {
@@ -120,8 +77,19 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
+     * Create toolbar and it's detail
+     */
+    private void setToolbar(String title, Boolean backOption) {
+        toolbarRegister = findViewById(R.id.toolbarRegister);
+        setSupportActionBar(toolbarRegister);
+        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
+    }
+
+    /**
      * init firebase services
      */
+
     private void initFirebase() {
 
         //init firebase auth
@@ -134,19 +102,55 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Create toolbar and it's detail
+     * When "Create Account" button has been pressed
      */
-    private void setToolbar(String title, Boolean backOption) {
-        toolbarRegister = findViewById(R.id.toolbarRegister);
-        setSupportActionBar(toolbarRegister);
-        getSupportActionBar().setTitle(title);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
+    private void registerBtnPress() {
+
+        //here we get user's device token
+        deviceToken = FirebaseInstanceId.getInstance().getToken();
+
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                username = usernameTextField.getEditText().getText().toString().trim();
+                email = emailTextField.getEditText().getText().toString().trim();
+                password = passwordTextField.getEditText().getText().toString().trim();
+                repeatPassword = repeatPasswordTextField.getEditText().getText().toString().trim();
+
+                //if there's a mandatory field empty
+                if (username.equals("") || email.equals("") || password.equals("") || repeatPassword.equals("")) {
+                    Log.i(TAG, "onClick: enter this if statement");
+                    //show info to user
+                    SnackbarHelper.showSnackBarShort(coordinatorLayout, getString(R.string.noEmptyField));
+                    //if password and repeat password field does NOT match
+                } else if (!password.equals(repeatPassword)) {
+                    Log.i(TAG, "onClick: check repeat password matches");
+                    //show info to user
+                    SnackbarHelper.showSnackBarShort(coordinatorLayout, getResources().getString(R.string.password_check));
+                    //if password length is less than 6 characters
+                } else if (password.length() <= 6) {
+                    Log.i(TAG, "onClick: check password length is longer than 7 digits");
+                    //inform user password's minimum length is 6
+                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.password_Length));
+                } else {
+                    Log.i(TAG, "onClick: Register New User method called");
+                    //if everything goes well we create user account
+                    registerNewUSer(email, password);
+                    //show progress bar
+                    ProgressBarHelper.showProgressBar(registerProgressBar);
+                }
+
+            }
+        });
     }
+
+
 
     /**
      * Method in charge of creating new account
      */
     private void registerNewUSer(final String email, final String password) {
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -154,13 +158,13 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.i(TAG, "createUserWithEmail:success");
                             //register info in real-time database
-                            createNewAccount();
+                            saveInfoInDataBase();
                         } else {
 
                             String error = task.getException().getMessage();
                             // If sign in fails, display a message to the user.
                             Log.i(TAG, "createUserWithEmail:failure" + error);
-                            //show error message to user
+                            //show error message
                             Toast.makeText(RegisterActivity.this, error , Toast.LENGTH_SHORT).show();
                             //hide progress bar
                             ProgressBarHelper.hideProgressBar(registerProgressBar);
@@ -172,23 +176,14 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Intent to take to main page
+     * this method is the one in charge of saving the info into the database
      */
-    private void goToMain() {
-        Intent intentToMain = new Intent(RegisterActivity.this, MainActivity.class);
-        startActivity(intentToMain);
-        finish();
-    }
-
-    /**
-     * this method is the one in charge of savind the info in database
-     */
-    private void createNewAccount(){
+    private void saveInfoInDataBase(){
 
         //we get user unique ID in Firebase
-        currentUserID = mAuth.getCurrentUser().getUid();
+        String currentUserID = mAuth.getCurrentUser().getUid();
 
-        //Init user object and set it's values to be saved into the db
+        //Init User object and set it's values to be saved into the db
         User user = new User(username, email, password, DEFAULT_STATUS, DEFAULT_IMG, DEFAULT_THUMBNAIL, deviceToken);
 
         //save info into database and we do a last check
@@ -213,6 +208,15 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * Intent to take to main page
+     */
+    private void goToMain() {
+        Intent intentToMain = new Intent(RegisterActivity.this, MainActivity.class);
+        startActivity(intentToMain);
+        finish();
     }
 
 

@@ -17,7 +17,7 @@
     <string name="chatRoom">Chat</string>
     <string name="signing_Out">Hasta pronto!</string>
     <string name="password_Length">Contraseña debe tener mínimo 7 caracteres</string>
-    <string name="password_check">Verifica contraseña</string>
+    <string name="password_check">Contraseñas deben ser iguales</string>
     <string name="account_created">Cuenta Creada</string>
     <string name="welcome">Bienvenido!</string>
     <string name="server_error">Error en sistems, intentalo de nuevo luego!</string>
@@ -26,7 +26,7 @@
     <string name="email_exist">Email ya en uso</string>
     <string name="updateStatus">Actualizar Estado</string>
     <string name="user_status">Estado usuario </string>
-    <string name="user_displayname">Tu nombre </string>
+    <string name="user_displayName">Tu nombre </string>
     <string name="enterEmail">Ingresa tu correo electrónico</string>
     <string name="recoverPassword">Por favor mira tu correo electrónico</string>
     <string name="enterEmailForRecovery">Debes ingresar un email valido</string>
@@ -51,7 +51,7 @@
     <string name="groups">Grupos</string>
     <string name="chat">Chats</string>
     <string name="textHint">Este es tu mensaje</string>
-    <string name="writeMessageHint">Escribe tu mensaje aqui</string>
+    <string name="writeMessageHint">Escribe tu mensaje aquí</string>
     <string name="status">Status</string>
     <string name="settingsName">Nombre:</string>
     <string name="settingsStatus">Estado:</string>
