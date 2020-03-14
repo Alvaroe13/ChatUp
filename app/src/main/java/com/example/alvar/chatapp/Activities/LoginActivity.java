@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView txtCreateAccount, forgotPasswordTxt;
     //vars
     private Button btnLogin;
-    private String email, password, currentUserID, deviceToken;
+    private String email, password;
 
 
 
@@ -68,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Log.i(TAG, "btnLogin clicked no filed empty, proceed to call signIn method");
                     ProgressBarHelper.showProgressBar(loginProgressBar);
-                    sigIn(email, password);
+                    sigIn(email, password); //random comment to test
                 }
 
 
@@ -122,12 +122,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        //if user is signed in we take the user to main activity
+        //if user is signed in we take the user to the main activity
         if (currentUser != null){
-            Intent intentToMain = new Intent (this,MainActivity.class);
-            startActivity(intentToMain);
-            finish();       //he cannot go back to login page
-            Log.i(TAG, "onStart: onStart method called");
+                 goToMain();
+                 Log.i(TAG, "onStart: onStart method called");
         }
 
     }
@@ -170,9 +168,10 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void getDeviceToken() {
 
-        currentUserID = mAuth.getCurrentUser().getUid();
-        deviceToken = FirebaseInstanceId.getInstance().getToken();
+        String currentUserID = mAuth.getCurrentUser().getUid();
+        String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
+        //set token value id database's token child
         dbUsersNodeRef.child(currentUserID).child("token")
                 .setValue(deviceToken).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -206,7 +205,7 @@ public class LoginActivity extends AppCompatActivity {
     private void goToMain(){
         Intent intentToMain = new Intent (LoginActivity.this,MainActivity.class);
         startActivity(intentToMain);
-        finish();
+        finish(); //he cannot go back to login page
     }
 
 
