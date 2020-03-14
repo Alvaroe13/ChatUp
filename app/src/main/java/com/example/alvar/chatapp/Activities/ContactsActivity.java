@@ -110,6 +110,8 @@ public class ContactsActivity extends AppCompatActivity {
                                 //here we get the user id of every contact saved in "Contacts" node
                                 final String list_user_contacts_id = getRef(position).getKey();
 
+                                Log.i(TAG, "onBindViewHolder: contacts : " + list_user_contacts_id);
+
                                 DatabaseReference contactStatus = getRef(position).child("contact_status").getRef();
 
                                  contactStatus.addValueEventListener(new ValueEventListener() {
@@ -140,7 +142,7 @@ public class ContactsActivity extends AppCompatActivity {
                                                              if ( image.equals("imgThumbnail")){
                                                                  holder.contactImage.setImageResource(R.drawable.profile_image);
                                                              } else{
-                                                                 Glide.with(ContactsActivity.this)
+                                                                 Glide.with(getApplicationContext())
                                                                                                 .load(image).into(holder.contactImage);
                                                              }
 

@@ -7,9 +7,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.R;
@@ -29,6 +31,8 @@ import com.google.firebase.database.ValueEventListener;
 
 public class ImageProfileShow extends DialogFragment {
 
+    private static final String TAG = "ImageProfileShow";
+
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
@@ -44,10 +48,10 @@ public class ImageProfileShow extends DialogFragment {
         //init firebase method
         initFirebase();
 
-        //Create dialog buider
+        //Create dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater viewinflater= getActivity().getLayoutInflater();
-        View imageProfileView = viewinflater.inflate(R.layout.profile_dialog, null);
+        LayoutInflater viewInflater= getActivity().getLayoutInflater();
+        View imageProfileView = viewInflater.inflate(R.layout.profile_dialog, null);
         final ImageView imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
         builder.setView(imageProfileView);
 
@@ -59,6 +63,12 @@ public class ImageProfileShow extends DialogFragment {
 
                 //we store the image from the db into String var
                 String image = dataSnapshot.child("image").getValue().toString();
+
+                if (getActivity() == null) {
+
+                    Log.i(TAG, "onDataChange: error with context: ");
+                     return ;
+                }
 
                 //set image from firebase databsae to UI
                 if ( image.equals("image")){

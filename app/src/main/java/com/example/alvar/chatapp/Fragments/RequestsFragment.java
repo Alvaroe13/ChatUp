@@ -37,12 +37,12 @@ public class RequestsFragment extends Fragment {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbRequestsNodeRef, dbUsersNode, dbContactsNodeRef;
+    private DatabaseReference dbRequestsNodeRef, dbUsersNode, requestTypeRef;
     //ui elements
     private RecyclerView requestsRecycler;
+    private LinearLayoutManager linearLayoutManager;
     //vars
     private String currentUserID;
-    private String list_user_id;
 
 
     public RequestsFragment(){
@@ -66,9 +66,9 @@ public class RequestsFragment extends Fragment {
      * @param view
      */
     private void initRecycler(View view){
-        Log.i(TAG, "initRecycler: recycler init successful");
         requestsRecycler = view.findViewById(R.id.requestsRecyclerView);
-        requestsRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        requestsRecycler.setLayoutManager(linearLayoutManager);
     }
 
     private void initFirebase(){
@@ -83,9 +83,6 @@ public class RequestsFragment extends Fragment {
         // we aim to "Users" node from db
         dbUsersNode = database.getReference().child("Users");
         dbUsersNode.keepSynced(true);
-        //init "Contacts" node
-        dbContactsNodeRef = database.getReference().child("Contacts");
-        Log.i(TAG, "initFirebase: init firebase correctly");
     }
 
     @Override
@@ -115,22 +112,25 @@ public class RequestsFragment extends Fragment {
                             protected void onBindViewHolder(@NonNull final RequestsViewHolder holder, int position, @NonNull Contacts model) {
 
                              //here we get the user id of every request made in the "Chat_Requests" node
-                             list_user_id = getRef(position).getKey();
+                             // and save it into a constant.
+                            final String list_user_id = getRef(position).getKey();
 
                              Log.i(TAG, "onBindViewHolder: user id: " + list_user_id);
 
+                             requestTypeRef = getRef(position).child("request_type").getRef();
 
-                             DatabaseReference requestTypeRef = getRef(position).child("request_type").getRef();
-
-
-                             requestTypeRef.addValueEventListener(new ValueEventListener() {
+                                requestTypeRef.addValueEventListener(new ValueEventListener() {
                                  @Override
                                  public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
 
                                      if (dataSnapshot.exists()){
 
                                          String requestTypeFetched = dataSnapshot.getValue().toString();
 
+                                         Log.i(TAG, "onDataChange: other user ID: " + list_user_id);
+
+                                         //we show every request with state "received"
                                          if (requestTypeFetched.equals("received")){
 
                                              //we point to "Users" node to retrieve image and username
@@ -144,6 +144,9 @@ public class RequestsFragment extends Fragment {
 
                                                          String name = dataSnapshot.child("name").getValue().toString();
                                                          String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+
+                                                         Log.i(TAG, "onDataChange: name: " + name);
+
 
                                                          holder.userName.setText(name);
                                                          if ( image.equals("imgThumbnail")){
@@ -175,15 +178,16 @@ public class RequestsFragment extends Fragment {
                                                  }
                                              });
 
-                                         } else{
+                                         } else if (requestTypeFetched.equals("sent")){
                                              /* in case we have sent a request message we make sure not to
                                                 show any request in our request fragment, we need to hide only the CardView
                                                 as it is the container of the rest of the element*/
 
-                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.INVISIBLE);
+                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.GONE);
+                                             holder.itemView.findViewById(R.id.cardViewRequest).setLayoutParams( new RecyclerView.LayoutParams(0,0));
+
 
                                          }
-
 
 
                                      }
@@ -229,12 +233,9 @@ public class RequestsFragment extends Fragment {
             userName = itemView.findViewById(R.id.usernameRequestIndividual);
             cardViewRequest = itemView.findViewById(R.id.cardViewRequest);
 
-
-
         }
 
     }
-
 
     private void requestAnswer(String list_user_id) {
 

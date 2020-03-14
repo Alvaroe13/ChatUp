@@ -7,7 +7,6 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +25,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class OtherUserProfileActivity extends AppCompatActivity {
@@ -34,14 +35,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbNotificationsRef;
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
-    private Button buttonSendRequest, buttonRejectRequest;
+    private Button buttonFirst, buttonSecond;
     private CoordinatorLayout coordinatorLayout;
     //vars
-    private String otherUserId, senderRequestUserId;
+    private String otherUserId, currentUserID;
     private String current_database_state = "not_friend_yet";
     private String username, status, imageThumbnail;
 
@@ -62,8 +63,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         otherUserImg = findViewById(R.id.otherUsersImgProf);
         usernameOtherUser = findViewById(R.id.usernameOtherUser);
         statusOtherUser = findViewById(R.id.statusOtherUser);
-        buttonSendRequest = findViewById(R.id.buttonSendRequest);
-        buttonRejectRequest = findViewById(R.id.buttonDeclineRequest);
+        buttonFirst = findViewById(R.id.buttonSendRequest);
+        buttonSecond = findViewById(R.id.buttonDeclineRequest);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
     }
 
@@ -78,6 +79,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         dbChatRequestNodeRef = database.getReference().child("Chat_Requests");
         //we create "Contacts" node
         contactsNodeRef = database.getReference().child("Contacts");
+        //we create "Notifications" node
+        dbNotificationsRef = database.getReference().child("Notifications");
     }
 
     /**
@@ -112,7 +115,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * this method is in charge of setting the info fetched from the db into the UI
+     * this method is in charge of setting up the info fetched from the db into the UI
      * @param dataSnapshot
      */
     private void setInfo(DataSnapshot dataSnapshot) {
@@ -127,7 +130,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             otherUserImg.setImageResource(R.drawable.profile_image);
         } else{
             //here we set image from database into imageView
-            Glide.with(OtherUserProfileActivity.this).load(imageThumbnail).into(otherUserImg);
+            Glide.with(getApplicationContext()).load(imageThumbnail).into(otherUserImg);
 
         }
 
@@ -140,20 +143,20 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void manageChatRequest(){
 
         //we get current user id
-        senderRequestUserId = auth.getCurrentUser().getUid();
+        currentUserID = auth.getCurrentUser().getUid();
         current_database_state = "not_friend_yet";
 
         chatRequestStatus();
 
 
             //in case the current user open it's own profile in the "all users" page
-        if (senderRequestUserId.equals(otherUserId)){
+        if (currentUserID.equals(otherUserId)){
             //we hide "send request" button
-            buttonSendRequest.setVisibility(View.INVISIBLE);
+            buttonFirst.setVisibility(View.INVISIBLE);
 
         } else{
 
-            buttonSendRequest.setOnClickListener(new View.OnClickListener() {
+            buttonFirst.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -192,7 +195,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void chatRequestStatus() {
 
 
-        dbChatRequestNodeRef.child(senderRequestUserId).addValueEventListener(new ValueEventListener() {
+        dbChatRequestNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -208,18 +211,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     if (request_type.equals("sent")){
 
                         current_database_state = "request_sent";
-                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
-                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
+                        buttonFirst.setText(getString(R.string.cancelChatRequest));
+                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
                     }
                     //in case the user receives a chat request
                     else if (request_type.equals("received")){
 
                         current_database_state = "request_received";
-                        buttonSendRequest.setText(getString(R.string.acceptChatRequest));
-                        buttonSendRequest.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
-                        buttonRejectRequest.setVisibility(View.VISIBLE);
+                        buttonFirst.setText(getString(R.string.acceptChatRequest));
+                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+                        buttonSecond.setVisibility(View.VISIBLE);
 
-                        buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                        buttonSecond.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 //if user click "reject button" we don't do the binding in the DB
@@ -232,21 +235,21 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 //here in this part we update the UI from the user sending the request
                 else {
 
-                    contactsNodeRef.child(senderRequestUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                    contactsNodeRef.child(currentUserID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                             if (dataSnapshot.hasChild(otherUserId)){
                                 //here we update the UI and database status of the user who sent the request
                                 current_database_state = "contact_added";
-                                buttonSendRequest.setText(getString(R.string.removeContact));
+                                buttonFirst.setText(getString(R.string.removeContact));
 
-                                buttonRejectRequest.setVisibility(View.VISIBLE);
-                                buttonRejectRequest.setEnabled(true);
-                                buttonRejectRequest.setText(getString(R.string.sendMessage));
-                                buttonRejectRequest.setBackgroundColor(getResources()
+                                buttonSecond.setVisibility(View.VISIBLE);
+                                buttonSecond.setEnabled(true);
+                                buttonSecond.setText(getString(R.string.sendMessage));
+                                buttonSecond.setBackgroundColor(getResources()
                                         .getColor(R.color.colorPrimaryDark));
-                                buttonRejectRequest.setOnClickListener(new View.OnClickListener() {
+                                buttonSecond.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                         //take the current user to the chat room with new friend
@@ -280,7 +283,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         //now we create 2 nodes ( 1 for the sender request and the other for the receiver request
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+        dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                 .child("request_type").setValue("sent")
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -292,7 +295,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 */
                 if (task.isSuccessful()){
 
-                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                    dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                             .child("request_type").setValue("received")
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
@@ -301,12 +304,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                     //here we update the UI in the "all users" page
                                     if (task.isSuccessful()){
 
-                                        buttonSendRequest.setEnabled(true);
+                                        buttonFirst.setEnabled(true);
                                         current_database_state = "request_sent";
-                                        buttonSendRequest.setText(getString(R.string.cancelChatRequest));
+                                        buttonFirst.setText(getString(R.string.cancelChatRequest));
 
-                                        //show the user the request has been successfully sent
-                                        SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+                                        sendNotification();
+
 
                                     }
                                     //if something goes wrong show message to the user
@@ -324,13 +327,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     }
 
+
     /**
      * this method is in charge of removing the chat request info from both nodes created
      * when a user send a chat request
      */
     private void cancelChatRequest() {
 
-        dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+        dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -339,7 +343,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                            dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -348,18 +352,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                             //here we update the UI in the "all users" page
                                             if (task.isSuccessful()){
 
-                                                buttonSendRequest.setEnabled(true);
+                                                buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
-                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+                                                buttonFirst.setText(getString(R.string.sendChatRequest));
 
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                                   getString(R.string.canceledChatRequest));
 
-                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
-                                                buttonRejectRequest.setEnabled(false);
+                                                buttonFirst.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonSecond.setVisibility(View.INVISIBLE);
+                                                buttonSecond.setEnabled(false);
 
                                             }
                                             //if something goes wrong show message to the user
@@ -398,7 +402,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
         //here we create the "contacts" node for the user sending the request
-        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
+        contactsNodeRef.child(currentUserID).child(otherUserId)
                 .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -406,7 +410,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 if (task.isSuccessful()){
 
                     //here we create the "contacts" node for the user receiving the request
-                    contactsNodeRef.child(otherUserId).child(senderRequestUserId)
+                    contactsNodeRef.child(otherUserId).child(currentUserID)
                             .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -414,7 +418,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                             if (task.isSuccessful()){
 
                                 //here we delete the info of the user sending the request saved in the "Chat request" node
-                                dbChatRequestNodeRef.child(senderRequestUserId).child(otherUserId)
+                                dbChatRequestNodeRef.child(currentUserID).child(otherUserId)
                                         .removeValue()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
@@ -423,7 +427,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 if (task.isSuccessful()){
 
                                                     //here we delete the info of the user receiving the request saved in the "Chat request" node
-                                                    dbChatRequestNodeRef.child(otherUserId).child(senderRequestUserId)
+                                                    dbChatRequestNodeRef.child(otherUserId).child(currentUserID)
                                                             .removeValue()
                                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                 @Override
@@ -432,19 +436,19 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                                     //here we update the UI in the "all users" page
                                                                     if (task.isSuccessful()){
 
-                                                                        buttonSendRequest.setEnabled(true);
+                                                                        buttonFirst.setEnabled(true);
                                                                         current_database_state = "contact_added";
-                                                                        buttonSendRequest.setText(getString(R.string.removeContact));
-                                                                        buttonSendRequest.setBackgroundColor(getResources()
+                                                                        buttonFirst.setText(getString(R.string.removeContact));
+                                                                        buttonFirst.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
 
 
                                                                         SnackbarHelper.showSnackBarLong(coordinatorLayout,
                                                                                          getString(R.string.chatRequestAccepted));
-                                                                        buttonRejectRequest.setVisibility(View.VISIBLE);
-                                                                        buttonRejectRequest.setEnabled(true);
-                                                                        buttonRejectRequest.setText(getString(R.string.sendMessage));
-                                                                        buttonRejectRequest.setBackgroundColor(getResources()
+                                                                        buttonSecond.setVisibility(View.VISIBLE);
+                                                                        buttonSecond.setEnabled(true);
+                                                                        buttonSecond.setText(getString(R.string.sendMessage));
+                                                                        buttonSecond.setBackgroundColor(getResources()
                                                                                 .getColor(R.color.colorPrimaryDark));
 
                                                                     }
@@ -494,7 +498,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     private void removeContact() {
 
-        contactsNodeRef.child(senderRequestUserId).child(otherUserId)
+        contactsNodeRef.child(currentUserID).child(otherUserId)
                 .removeValue()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -503,7 +507,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
 
 
-                            contactsNodeRef.child(otherUserId).child(senderRequestUserId)
+                            contactsNodeRef.child(otherUserId).child(currentUserID)
                                     .removeValue()
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
@@ -512,17 +516,17 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                             //here we update the UI in the "all users" page
                                             if (task.isSuccessful()){
 
-                                                buttonSendRequest.setEnabled(true);
+                                                buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
-                                                buttonSendRequest.setText(getString(R.string.sendChatRequest));
+                                                buttonFirst.setText(getString(R.string.sendChatRequest));
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                         getString(R.string.contactRemoved));
 
-                                                buttonSendRequest.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                                                buttonRejectRequest.setVisibility(View.INVISIBLE);
-                                                buttonRejectRequest.setEnabled(false);
+                                                buttonFirst.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                                                buttonSecond.setVisibility(View.INVISIBLE);
+                                                buttonSecond.setEnabled(false);
 
                                             }
                                             //if something goes wrong show message to the user
@@ -585,6 +589,34 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                 .show();
 
         return popUpWindow;
+    }
+
+
+    /**
+     * method in charge of saving information in the "Notifications" node
+     */
+
+    private void sendNotification() {
+
+        HashMap<String, String> notificationsMap = new HashMap<>();
+        notificationsMap.put("sender" , otherUserId);
+        notificationsMap.put("type" , "request");
+
+        dbNotificationsRef.child(currentUserID).push()
+                .setValue(notificationsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+
+                    //show the user the request has been successfully sent
+                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
+                }
+            }
+        });
+
+
+
     }
 
 }

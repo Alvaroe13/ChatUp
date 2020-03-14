@@ -72,7 +72,7 @@
             android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:text="Decline"
-            android:background="@color/colorAccent"
+            android:background="@color/color_red"
             android:textColor="@color/color_white"
             android:layout_margin="15dp"/>
 

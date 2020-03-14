@@ -15,8 +15,8 @@
     <string name="contacts">Contacts</string>
     <string name="chatRoom">Chat Room</string>
     <string name="signing_Out">See you later!</string>
-    <string name="password_Length">Password must have at least 7 characters</string>
-    <string name="password_check">Verify your password</string>
+    <string name="password_Length">Password must be at least 7 characters long</string>
+    <string name="password_check">Password must match</string>
     <string name="account_created">Account created!</string>
     <string name="welcome">Welcome!</string>
     <string name="server_error">Server error, try again later!</string>
@@ -25,7 +25,7 @@
     <string name="email_exist">Email already in use</string>
     <string name="updateStatus">Update Status</string>
     <string name="user_status">User Status</string>
-    <string name="user_displayname">Your display name</string>
+    <string name="user_displayName">Your display name</string>
     <string name="enterEmail">Enter your email address</string>
     <string name="recoverPassword">Please check you mailbox</string>
     <string name="enterEmailForRecovery">You must enter a valid email address</string>
@@ -80,6 +80,9 @@
     <string name="textChatHint">Type your message here</string>
     <string name="deleteContact">Delete contact</string>
     <string name="deleteContactMessage">Are you sure you want to delete this contact?</string>
+    <string name="drawerOpen">Drawer Open</string>
+    <string name="drawerClose">Drawer Close</string>
+    <string name="signUp">Sign up</string>
 
 
 

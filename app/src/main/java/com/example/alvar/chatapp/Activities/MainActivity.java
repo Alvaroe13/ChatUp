@@ -3,14 +3,16 @@ package com.example.alvar.chatapp.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,8 +47,12 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbarMain;
     private ViewPager viewPager;
     private TabLayout tabLayout;
-    private CircleImageView imageToolbarMain;
-    private TextView usernameToolbarMain;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
+    private CircleImageView image;
+    private TextView usernameNav, statusNav;
+    private View navViewHeader;
+    private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
 
@@ -60,80 +66,110 @@ public class MainActivity extends AppCompatActivity {
         //init UI elements
         bindUI();
         //init toolbar and set title
-        setToolbar("", false);
+        setToolbar("ChatUp", true);
         //init firebase
         initFirebase();
         //set image and username from db to toolbar
         fetchInfoFromDb();
-        //when toolbar is clicked by the user
-        toolbarOnClick();
+        //when image within drawer is clicked by the user
+        drawerImagePressed();
         // viewPagerAdapter init
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+
+                drawerOptionsMenu(menuItem);
+
+
+                return false;
+            }
+        });
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
     }
 
 
+
     /**
-     * bind UI elements
+     * init UI elements
      */
-    private void bindUI(){
+    private void bindUI() {
+
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
-        imageToolbarMain = findViewById(R.id.imageToolbar);
-        usernameToolbarMain = findViewById(R.id.usernameMainToolbar);
+        navigationView = findViewById(R.id.navView);
+        //drawer layout
+        drawerLayout = findViewById(R.id.navigationDrawerLayout);
+        burgerIcon = new ActionBarDrawerToggle(MainActivity.this, drawerLayout , toolbarMain, R.string.drawerOpen, R.string.drawerClose );
+        drawerLayout.addDrawerListener(burgerIcon);
+        burgerIcon.syncState();
+        //elements within nav header
+        navViewHeader = navigationView.inflateHeaderView(R.layout.nav_header);
+        image = navViewHeader.findViewById(R.id.imageNavDrawer);
+        usernameNav = navViewHeader.findViewById(R.id.usernameNavDrawer);
+        statusNav = navViewHeader.findViewById(R.id.statusNavDrawer);
 
     }
 
     /**
-     * this method sets toolbar and it details
+     * this method sets toolbar and it's details
      * @param title
      */
-    private void setToolbar(String title, Boolean backOpion){
+    private void setToolbar(String title, Boolean backOption) {
         //create toolbar
         toolbarMain = findViewById(R.id.toolbarMain);
         //we set the toolbar
         setSupportActionBar(toolbarMain);
         //we pass the title
         getSupportActionBar().setTitle(title);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOpion);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //bind menu xml file to code
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-        return true;
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
     /**
-     * Metohod in charge of taking the user to pages from option menu
-     * @param item
-     * @return
+     * this methods handles the action taken in the drawer menu
+     * @param menuItem
      */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
+    private void drawerOptionsMenu(MenuItem menuItem) {
 
+        switch (menuItem.getItemId()) {
+
+            case R.id.contacts:
+                Intent intentContacts = new Intent(MainActivity.this, ContactsActivity.class);
+                startActivity(intentContacts);
+                break;
+            case R.id.maps:
+                Toast.makeText(this, "maps pressed", Toast.LENGTH_SHORT).show();
+                break;
             case R.id.settingsAccount:
                 goToSettingAccount();
                 Log.i(TAG, "onOptionsItemSelected: setting btn pressed");
-                return true;
+                break;
             case R.id.menuAllUsers:
                 goToAllUsers();
                 Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
-                return true;
+                break;
             case R.id.signOut:
                 alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
                 Log.i(TAG, "onOptionsItemSelected: log out button pressed");
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+                break;
+
         }
+
+
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (burgerIcon.onOptionsItemSelected(item)){
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     /**
      * init firebase services
@@ -143,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         //database init
         database = FirebaseDatabase.getInstance();
-        //database ref init
+        //database ref init and get access ti "Users" branch in the db
         dbUsersRef = database.getReference().child("Users");
     }
 
@@ -152,20 +188,20 @@ public class MainActivity extends AppCompatActivity {
      * this method is in charge of creating the tabs and setting it's title
      * @param viewPager
      */
-    private void initPageAdapter(ViewPager viewPager ){
+    private void initPageAdapter(ViewPager viewPager) {
 
-        ViewPagerAdapter Adapter  = new ViewPagerAdapter(getSupportFragmentManager());
+        ViewPagerAdapter Adapter = new ViewPagerAdapter(getSupportFragmentManager());
         Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
-        Adapter.addFragment(new  ChatsFragment(), getString(R.string.chat) );
-        Adapter.addFragment(new RequestsFragment(),getString(R.string.requests)  );
+        Adapter.addFragment(new ChatsFragment(), getString(R.string.chat));
+        Adapter.addFragment(new RequestsFragment(), getString(R.string.requests));
         viewPager.setAdapter(Adapter);
 
     }
 
     /**
-     * method in charge of signin out from firebase console
+     * method in charge of signing out from firebase console
      */
-    private void signOut(){
+    private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
         Intent intentSignOut = new Intent(MainActivity.this, LoginActivity.class);
@@ -176,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * this method is in charge of taking the user to settings page
      */
-    private void goToSettingAccount(){
+    private void goToSettingAccount() {
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
     }
@@ -197,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
      * @param message
      * @return
      */
-    private AlertDialog alertMessage(String title, String message){
+    private AlertDialog alertMessage(String title, String message) {
 
 
         AlertDialog popUpWindow = new AlertDialog.Builder(this)
@@ -221,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * this method is in charge of fetching info from the db and set it into the toolbar
      */
-    private void fetchInfoFromDb(){
+    private void fetchInfoFromDb() {
 
         currentUserID = mAuth.getCurrentUser().getUid();
 
@@ -229,23 +265,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
 
                     String imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
                     String usernameToolbar = dataSnapshot.child("name").getValue().toString();
+                    String status = dataSnapshot.child("status").getValue().toString();
 
                     Log.i(TAG, "onDataChange: username set");
-                    usernameToolbarMain.setText(usernameToolbar);
+                    usernameNav.setText(usernameToolbar);
+                    statusNav.setText(status);
 
-                    if (imageThumbnailToolbar.equals("imgThumbnail")){
-                        imageToolbarMain.setImageResource(R.drawable.profile_image);
-                    }else{
+                    if (imageThumbnailToolbar.equals("imgThumbnail")) {
+                        image.setImageResource(R.drawable.profile_image);
+                    } else {
                         Log.i(TAG, "onDataChange: image set");
-                        Glide.with(MainActivity.this).load(imageThumbnailToolbar).into(imageToolbarMain);
+                        Glide.with(getApplicationContext()).load(imageThumbnailToolbar).into(image);
                     }
 
-                } else{
-                    Toast.makeText(MainActivity.this, "Something went wrong with your network", Toast.LENGTH_SHORT).show();                    
+                } else {
+                    Toast.makeText(MainActivity.this, "Something went wrong with your network", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -260,12 +298,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * method handle even when toolbar has been clicked
+     * method handle events when toolbar has been clicked
      */
-    private void toolbarOnClick(){
+    private void drawerImagePressed(){
 
-        toolbarMain.setEnabled(true);
-        toolbarMain.setOnClickListener(new View.OnClickListener() {
+
+        image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -279,13 +317,28 @@ public class MainActivity extends AppCompatActivity {
     /**
      * method in charge of init "ImageProfileShow" dialog class
      */
-    private void showAlertDialog(){
+    private void showAlertDialog() {
 
         ImageProfileShow imageDialog = new ImageProfileShow();
-        imageDialog.show(getSupportFragmentManager(),"showImageProfile");
+        imageDialog.show(getSupportFragmentManager(), "showImageProfile");
 
     }
 
+    /**
+     * this method is in charge of closing the drawer when pressing back button
+     */
+    @Override
+    public void onBackPressed() {
 
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }else{
+            super.onBackPressed();
+        }
+
+
+
+    }
 }
 
