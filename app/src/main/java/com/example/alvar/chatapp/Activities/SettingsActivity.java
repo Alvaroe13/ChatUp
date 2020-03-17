@@ -50,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersReff;
+    private DatabaseReference dbUsersRef;
     private FirebaseUser currentUser;
     private StorageReference storageRef, thumbnailImageRef;
     private UploadTask uploadTask, uploadThumbnailTask;
@@ -61,7 +61,6 @@ public class SettingsActivity extends AppCompatActivity {
     private FloatingActionButton fabImage, fabStatus;
     //Vars
     private String currentUserID;
-    private String name, status, image, imageThumbnail, email;
     private Bitmap thumbnailImage = null;
     //galley const
     private static final int GALLERY_REQUEST_NUMBER = 1;
@@ -148,8 +147,8 @@ public class SettingsActivity extends AppCompatActivity {
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        dbUsersReff = database.getReference("Users");
-        dbUsersReff.keepSynced(true);
+        dbUsersRef = database.getReference("Users");
+        dbUsersRef.keepSynced(true);
         //init firebase storage
         storageRef = FirebaseStorage.getInstance().getReference();
         //we create a "Thumbnail_Images" folder in firebase storage
@@ -162,11 +161,17 @@ public class SettingsActivity extends AppCompatActivity {
     private void retrieveDataFromDb() {
 
         // Read from the database
-        dbUsersReff.child(currentUserID).addValueEventListener(new ValueEventListener() {
+        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i(TAG, "onDataChange: data retrieved :" + dataSnapshot);
-                infoFetched(dataSnapshot);
+                
+                if ( dataSnapshot.exists()){
+                        infoFetched(dataSnapshot);    
+                } else {
+                    Toast.makeText(SettingsActivity.this, "Unable to retrieve info from database", Toast.LENGTH_SHORT).show();
+                }
+                
 
             }
 
@@ -186,11 +191,11 @@ public class SettingsActivity extends AppCompatActivity {
     private void infoFetched(DataSnapshot dataSnapshot) {
 
         //save info retrieved from DB into String vars
-        name = dataSnapshot.child("name").getValue().toString();
-        email = dataSnapshot.child("email").getValue().toString();
-        status = dataSnapshot.child("status").getValue().toString();
-        image = dataSnapshot.child("image").getValue().toString();
-        imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+        String name = dataSnapshot.child("name").getValue().toString();
+        String email = dataSnapshot.child("email").getValue().toString();
+        String status = dataSnapshot.child("status").getValue().toString();
+        String image = dataSnapshot.child("image").getValue().toString();
+        String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
         //set values to display
         textUsername.setText(name);
         textStatus.setText(status);
@@ -229,7 +234,7 @@ public class SettingsActivity extends AppCompatActivity {
                     changeProfilePic(result);
 
                 } else {
-                    Toast.makeText(this, "Imager error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Image error", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -327,7 +332,7 @@ public class SettingsActivity extends AppCompatActivity {
             //lets save image from storage into database
             HashMap<String, Object> imgMap = new HashMap<>();
             imgMap.put("image", imgUri);
-            dbUsersReff.child(currentUserID).updateChildren(imgMap);
+            dbUsersRef.child(currentUserID).updateChildren(imgMap);
 
             ProgressBarHelper.hideProgressBar(progressBar);
 
@@ -376,7 +381,7 @@ public class SettingsActivity extends AppCompatActivity {
                         //here we pass the thumbnail from storage to database at the "imageThumbnail" node
                         HashMap<String, Object> hashThumbnail = new HashMap<>();
                         hashThumbnail.put("imageThumbnail", finalThumbnailUri);
-                        dbUsersReff.child(currentUserID).updateChildren(hashThumbnail);
+                        dbUsersRef.child(currentUserID).updateChildren(hashThumbnail);
                     }
 
                     ProgressBarHelper.hideProgressBar(progressBar);
