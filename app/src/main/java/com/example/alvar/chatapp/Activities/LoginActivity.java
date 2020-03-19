@@ -37,9 +37,9 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputLayout usernameLogin, passwordLogin;
     private ProgressBar loginProgressBar;
     private CoordinatorLayout coordinatorLayout;
-    private TextView txtCreateAccount, forgotPasswordTxt;
-    //vars
+    private TextView txtCreateAccount, forgotPasswordTxt, btnPhoneLogin;
     private Button btnLogin;
+    //vars
     private String email, password;
 
 
@@ -84,6 +84,13 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        btnPhoneLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(LoginActivity.this, "pressed...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
     }
 
@@ -94,6 +101,7 @@ public class LoginActivity extends AppCompatActivity {
         usernameLogin = findViewById(R.id.loginName);
         passwordLogin = findViewById(R.id.loginPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        btnPhoneLogin = findViewById(R.id.btnPhoneLogin);
         loginProgressBar = findViewById(R.id.loginProgressBar);
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
         txtCreateAccount = findViewById(R.id.txtCreateAccount);
