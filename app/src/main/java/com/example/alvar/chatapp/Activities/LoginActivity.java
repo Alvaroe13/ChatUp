@@ -87,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
         btnPhoneLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(LoginActivity.this, "pressed...", Toast.LENGTH_SHORT).show();
+                goToPhoneLogin();
             }
         });
 
@@ -215,6 +215,13 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intentToMain);
         finish(); //he cannot go back to login page
     }
+
+
+    private void goToPhoneLogin() {
+        Intent phoneIntent = new Intent(LoginActivity.this, PhoneLoginActivity.class );
+        startActivity(phoneIntent);
+    }
+
 
 
 }
