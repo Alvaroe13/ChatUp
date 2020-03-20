@@ -116,6 +116,21 @@
                     android:layout_marginRight="15dp"
                     android:layout_marginEnd="15dp"/>
 
+                <TextView
+                    android:id="@+id/btnPhoneLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_gravity="center"
+                    android:textColor="@color/color_white"
+                    android:text="Sign up with phone number"
+                    android:textStyle="bold|italic"
+                    android:clickable="true"
+                    android:drawableStart="@drawable/phone"
+                    android:drawableLeft="@drawable/phone"
+                    android:textSize="17sp"
+                    android:layout_marginTop="12dp"/>
+
             </LinearLayout>
 
             <android.support.design.widget.CoordinatorLayout
