@@ -14,13 +14,20 @@ import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
+import com.google.firebase.auth.PhoneAuthProvider;
+
+import java.util.concurrent.TimeUnit;
 
 public class PhoneLoginActivity extends AppCompatActivity {
 
     private static final String TAG = "PhoneLoginActivity";
-
+    //fields
     private EditText textPhoneNumber, textCode;
     private Button btnVerifyCode, btnSendCode;
+    //Firebase elements
+    private PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks;
+    //vars
+    String phoneNumber;
 
 
     @Override
@@ -58,7 +65,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 //we get the phone number and store it in a variable
-                String phoneNumber = textPhoneNumber.getText().toString();
+                phoneNumber = textPhoneNumber.getText().toString();
 
                 if (TextUtils.isEmpty(phoneNumber)){
                     Log.i(TAG, "onClick: field empty");
@@ -71,11 +78,15 @@ public class PhoneLoginActivity extends AppCompatActivity {
                     //and let's show these fields
                     textCode.setVisibility(View.VISIBLE);
                     btnVerifyCode.setVisibility(View.VISIBLE);
+
+                    sendCode();
+
                 }
             }
         });
 
     }
+
 
     /**
      * when login button is pressed
@@ -88,6 +99,18 @@ public class PhoneLoginActivity extends AppCompatActivity {
                     Toast.makeText(PhoneLoginActivity.this, "To be continued...", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    private void sendCode() {
+
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                phoneNumber,        // Phone number to verify
+                60,              // Timeout duration
+                TimeUnit.SECONDS,   // Unit of timeout
+                this,        // Activity (for callback binding)
+                callbacks);        // OnVerificationStateChangedCallbacks
+
     }
 
 
