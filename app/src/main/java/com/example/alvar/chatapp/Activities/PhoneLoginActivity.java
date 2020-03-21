@@ -1,14 +1,10 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.TextInputEditText;
-import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -17,8 +13,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.Utils.ProgressBarHelper;
-import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -32,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class PhoneLoginActivity extends AppCompatActivity {
 
     private static final String TAG = "PhoneLoginActivity";
-    //fields
+    //UI
     private EditText textPhoneNumber, textCode;
     private Button btnVerifyCode, btnSendCode;
     private ProgressDialog popUp;
@@ -42,7 +36,6 @@ public class PhoneLoginActivity extends AppCompatActivity {
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     //vars
     private String phoneNumber, verificationCode, mVerificationId;
-    
 
 
     @Override
@@ -51,14 +44,13 @@ public class PhoneLoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_phone_login);
 
         bindUI();
-        popUpInit();        
+        popUpInit();
+        firebaseInit();
+        callBacksMethod();
         sendCodeButton();
         loginButton();
-        firebaseInit();
-        
 
     }
-
 
     /**
      * UI elements
@@ -81,56 +73,17 @@ public class PhoneLoginActivity extends AppCompatActivity {
      * init firebase services
      */
     private void firebaseInit() {
+
+        //firebase authentication init.
         firebaseAuth = FirebaseAuth.getInstance();
-    }
-
-    /**
-     * when send code button is pressed,
-     */
-    private void sendCodeButton(){
-
-        //let's make sure these fields are invisible by default
-        textCode.setVisibility(View.INVISIBLE);
-        btnVerifyCode.setVisibility(View.INVISIBLE);
-
-        btnSendCode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //we get the phone number and store it in a variable
-                phoneNumber = textPhoneNumber.getText().toString();
-
-                if (TextUtils.isEmpty(phoneNumber)){
-                    Log.i(TAG, "onClick: field empty");
-                    Toast.makeText(PhoneLoginActivity.this, "You must insert a phone number", Toast.LENGTH_SHORT).show();
-
-                } else{
-                    Log.i(TAG, "onClick: We've sent code");
-
-                    popUp.setTitle("Verifying phone number");
-                    popUp.setMessage("Please wait while we verify phone number");
-                    popUp.setCanceledOnTouchOutside(false);
-                    popUp.show();;
-
-                    sendCode();
-                }
-            }
-        });
 
     }
 
-    /**
-     * method contains the logic behind sending the security code.
-     */
-    private void sendCode() {
 
-        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                phoneNumber,        // Phone number to verify
-                60,              // Timeout duration
-                TimeUnit.SECONDS,   // Unit of timeout
-                this,        // Activity (for callback binding)
-                callbacks           // OnVerificationStateChangedCallbacks
-        );
+    /**
+     * method in charge of verifying the code sent by Firebase
+     */
+    private void callBacksMethod() {
 
         callbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
@@ -149,7 +102,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 //Something failed
                 popUp.dismiss();
 
-                Toast.makeText(PhoneLoginActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(PhoneLoginActivity.this, "Please insert a valid phone number", Toast.LENGTH_SHORT).show();
 
                 textPhoneNumber.setVisibility(View.VISIBLE);
                 btnSendCode.setVisibility(View.VISIBLE);
@@ -178,6 +131,61 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 btnVerifyCode.setVisibility(View.VISIBLE);
             }
         };
+
+    }
+
+    /**
+     * when send code button is pressed,
+     */
+    private void sendCodeButton(){
+
+        //let's make sure these fields are invisible by default
+        textCode.setVisibility(View.INVISIBLE);
+        btnVerifyCode.setVisibility(View.INVISIBLE);
+
+        btnSendCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //we get the phone number and store it in a variable
+                phoneNumber = textPhoneNumber.getText().toString();
+
+                if (TextUtils.isEmpty(phoneNumber)) {
+                    Log.i(TAG, "onClick: field empty");
+                    Toast.makeText(PhoneLoginActivity.this, "You must insert a phone number", Toast.LENGTH_SHORT).show();
+
+                } else{
+
+                    Log.i(TAG, "onClick: We've sent code");
+
+                    popUp.setTitle("Verifying phone number");
+                    popUp.setMessage("Please wait while we verify phone number");
+                    popUp.setCanceledOnTouchOutside(false);
+                    popUp.show();;
+
+                    sendCode();
+
+                }
+            }
+        });
+
+    }
+
+    /**
+     * method contains the logic behind sending the security code.
+     */
+    private void sendCode() {
+
+        //Phone auth init   (Copied and paste from Firebase docs)
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                phoneNumber,        // Phone number to verify
+                60,              // Timeout duration
+                TimeUnit.SECONDS,   // Unit of timeout
+                PhoneLoginActivity.this,        // Activity (for callback binding)
+                callbacks           // OnVerificationStateChangedCallbacks
+        );
+
+
 
     }
 
