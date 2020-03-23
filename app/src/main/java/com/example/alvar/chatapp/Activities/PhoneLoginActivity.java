@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -20,6 +21,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,15 +31,27 @@ public class PhoneLoginActivity extends AppCompatActivity {
 
     private static final String TAG = "PhoneLoginActivity";
     //UI
-    private EditText textPhoneNumber, textCode;
+    private EditText nameField, textPhoneNumber, textCode;
     private Button btnVerifyCode, btnSendCode;
     private ProgressDialog popUp;
     //Firebase elements
     private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase database;
+    private DatabaseReference dbUsersNodeRef;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks;
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     //vars
-    private String phoneNumber, verificationCode, mVerificationId;
+    private String name, phoneNumber, mVerificationId;
+    //Constants
+    private static final String DEFAULT_EMAIL = "email";
+    public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
+    private static final String DEFAULT_IMAGE = "image";
+    private static final String DEFAULT_THUMBNAIL = "imgThumbnail";
+    private static final String DEFAULT_PASSWORD = "null";
+
+
+
+
 
 
     @Override
@@ -56,6 +72,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
      * UI elements
      */
     private void bindUI(){
+        nameField = findViewById(R.id.loginPhoneNumberNameTxt);
         textPhoneNumber = findViewById(R.id.loginPhoneNumberTxt);
         textCode = findViewById(R.id.loginCodeTxt);
         btnSendCode = findViewById(R.id.btnSendCode);
@@ -76,6 +93,10 @@ public class PhoneLoginActivity extends AppCompatActivity {
 
         //firebase authentication init.
         firebaseAuth = FirebaseAuth.getInstance();
+        //init firebase real time database
+        database = FirebaseDatabase.getInstance();
+        //create database Tree with name "Users" and child is the user ID
+        dbUsersNodeRef = database.getReference("Users");
 
     }
 
@@ -147,12 +168,13 @@ public class PhoneLoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                name = nameField .getText().toString();
                 //we get the phone number and store it in a variable
                 phoneNumber = textPhoneNumber.getText().toString();
 
-                if (TextUtils.isEmpty(phoneNumber)) {
+                if (TextUtils.isEmpty(phoneNumber) || TextUtils.isEmpty(name) ) {
                     Log.i(TAG, "onClick: field empty");
-                    Toast.makeText(PhoneLoginActivity.this, "You must insert a phone number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PhoneLoginActivity.this, "You must insert a phone number and name.", Toast.LENGTH_SHORT).show();
 
                 } else{
 
@@ -194,14 +216,15 @@ public class PhoneLoginActivity extends AppCompatActivity {
      */
     private void loginButton() {
 
-        verificationCode = textCode.getText().toString();
-
         btnVerifyCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (TextUtils.isEmpty(verificationCode)){
-                    Toast.makeText(PhoneLoginActivity.this, "Please insert code", Toast.LENGTH_SHORT).show();
+
+              String verificationCode = textCode.getText().toString();
+
+                if (TextUtils.isEmpty(verificationCode) ){
+                    Toast.makeText(PhoneLoginActivity.this, "Please insert code.", Toast.LENGTH_SHORT).show();
                 } else{
 
                     popUp.setTitle("Verifying code");
@@ -232,7 +255,8 @@ public class PhoneLoginActivity extends AppCompatActivity {
                             
                             popUp.dismiss();
                             Toast.makeText(PhoneLoginActivity.this, "Done!", Toast.LENGTH_SHORT).show();
-                            sendUserToMainActivity();
+
+                            saveInfoInDB();
 
                         } else {
                                 //let's get the error in a var
@@ -244,10 +268,43 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 });
     }
 
+    private void saveInfoInDB() {
+
+
+        //we get user unique ID in Firebase
+        String currentUserID = firebaseAuth.getCurrentUser().getUid();
+        //here we get user's device token  (NOT APPLIED TO THE APP JUST YET)
+        String deviceToken = FirebaseInstanceId.getInstance().getToken();
+
+        User user = new User(name,DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_STATUS,DEFAULT_IMAGE,DEFAULT_THUMBNAIL,deviceToken);
+
+        //save info into database and we do a last check
+        dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                //if everything goes well
+                if (task.isSuccessful()) {
+                    //show welcome message to user
+                    Toast.makeText(PhoneLoginActivity.this, getString(R.string.welcome), Toast.LENGTH_SHORT).show();
+                    //we take user to main page
+                    goToMain();
+                    //if there is a problem with the server
+                } else {
+                    Log.i(TAG, "onComplete: error" + task.getException());
+                    String error = task.getException().toString();
+                    Toast.makeText(PhoneLoginActivity.this, "Something went wrong: " + error, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+
+    }
+
     /**
      * we send the user to the main activity
      */
-    private void sendUserToMainActivity() {
+    private void goToMain() {
 
         Intent intent   = new Intent(PhoneLoginActivity.this, MainActivity.class);
         startActivity(intent);

@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Activities.PhoneLoginActivity"></activity>
+        <activity android:name=".Activities.PhoneLoginActivity" />
         <activity android:name=".Activities.AnswerRequestActivity" />
         <activity android:name=".Activities.MainActivity" /> <!-- Let's make the login activity the default one to be open first when app launched -->
         <activity android:name=".Activities.LoginActivity">
@@ -53,9 +53,9 @@
             android:name=".Activities.ChatActivity"
             android:parentActivityName=".Activities.ContactsActivity" />
     </application>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
 </manifest>
