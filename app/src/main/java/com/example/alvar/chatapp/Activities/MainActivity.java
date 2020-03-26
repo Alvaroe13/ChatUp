@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
 
         Calendar calendar =  Calendar.getInstance();
 
-        SimpleDateFormat date = new SimpleDateFormat("MMM ddd, yyyy");
+        SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
 
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
