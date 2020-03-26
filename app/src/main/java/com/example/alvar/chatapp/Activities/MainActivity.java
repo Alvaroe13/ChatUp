@@ -27,11 +27,16 @@ import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
+    private FirebaseUser currentUser;
     private DatabaseReference dbUsersRef;
     //UI elements
     private Toolbar toolbarMain;
@@ -89,7 +95,39 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        if (currentUser!= null){
+            //this method will pass "Online" to the database as soon as the user is using the app
+            updateDateTime("Online");
+        }
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (currentUser!= null){
+            //When the user closes the app we update state in the database as "offline"
+            updateDateTime("Offline");
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+         if (currentUser!= null){
+            //When the user closes the app we update state in the database as "offline"
+            updateDateTime("Offline");
+        }
+
+    }
 
     /**
      * init UI elements
@@ -177,6 +215,8 @@ public class MainActivity extends AppCompatActivity {
     private void initFirebase() {
         //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
+
+        currentUser = mAuth.getCurrentUser();
         //database init
         database = FirebaseDatabase.getInstance();
         //database ref init and get access ti "Users" branch in the db
@@ -336,5 +376,37 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-}
 
+
+    /**
+     * method in charge of getting the date to update the users online/offline status
+     */
+
+    private void updateDateTime(String state){
+
+        String currentTime, currentDate;
+
+        Calendar calendar =  Calendar.getInstance();
+
+        SimpleDateFormat date = new SimpleDateFormat("MMM ddd, yyyy");
+        currentDate = date.format(calendar.getTime());
+
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
+        currentTime = time.format(calendar.getTime());
+
+        //lets save all this info in a map to uploaded to the Firebase database.
+        //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
+        // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
+        HashMap<String , Object> userState = new HashMap<>();
+        userState.put("time", currentTime);
+        userState.put("date", currentDate);
+        userState.put("state", state);
+
+        dbUsersRef.child(currentUserID).child("userState").updateChildren(userState);
+
+
+    }
+
+
+
+}
