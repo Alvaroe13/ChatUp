@@ -83,6 +83,9 @@
     <string name="drawerOpen">Drawer Open</string>
     <string name="drawerClose">Drawer Close</string>
     <string name="signUp">Sign up</string>
+    <string name="lastSeen">Last seen: </string>
+    <string name="activeNow">Active now"</string>
+    <string name="Offline">Offline"</string>
 
 
 </resources>

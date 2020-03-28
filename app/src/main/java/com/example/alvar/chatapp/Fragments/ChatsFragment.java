@@ -38,7 +38,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ChatsFragment extends Fragment {
 
     private static final String TAG = "ChatsFragmentPage";
-    //fireabse
+    //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
     private DatabaseReference dbChatsNodeRef, dbUsersNodeRef;
@@ -98,7 +98,7 @@ public class ChatsFragment extends Fragment {
     }
 
     /**
-     * this method handles event when fab button in pressed
+     * this method handles event when fab button is pressed
      */
     private void fabButtonPressed() {
         fabContacts.setOnClickListener(new View.OnClickListener() {
@@ -167,6 +167,31 @@ public class ChatsFragment extends Fragment {
 
                                     }
 
+                                    //here we show the last Seen of the other user
+                                    if (dataSnapshot.child("userState").hasChild("state")){
+
+                                        //here we get the other user's current state and we store it in each var
+                                        String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
+                                        String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
+                                        String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+                                                //if other user's state is "offline"
+                                            if ( saveSate.equals("Offline")){
+
+                                                //we show last seen
+                                                holder.lastSeen.setText( getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+
+                                            } else if(saveSate.equals("Online")){
+
+                                                holder.lastSeen.setText(R.string.activeNow);
+                                            }
+
+                                    } else{
+
+                                        //set offline state as default.
+                                        holder.lastSeen.setText(R.string.Offline);
+                                    }
+
 
                                     holder.chatLayout.setOnClickListener(new View.OnClickListener() {
                                         @Override
@@ -226,7 +251,7 @@ public class ChatsFragment extends Fragment {
 
         LinearLayout chatLayout;
         CircleImageView chatImageContact;
-        TextView username, message;
+        TextView username, lastSeen;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -235,7 +260,7 @@ public class ChatsFragment extends Fragment {
             chatLayout = itemView.findViewById(R.id.chatLayout);
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
-            message = itemView.findViewById(R.id.messageChat);
+            lastSeen = itemView.findViewById(R.id.userLastSeen);
         }
 
 
