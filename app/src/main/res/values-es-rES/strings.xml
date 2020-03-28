@@ -84,4 +84,7 @@
     <string name="drawerOpen">Drawer Abierto</string>
     <string name="drawerClose">Drawer Cerrado</string>
     <string name="signUp">Crear cuenta</string>
+    <string name="lastSeen">Ultima vez: </string>
+    <string name="activeNow">En línea"</string>
+    <string name="Offline">Fuera de línea"</string>
 </resources>
