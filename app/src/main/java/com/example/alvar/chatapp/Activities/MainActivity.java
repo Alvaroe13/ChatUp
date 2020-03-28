@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * method in charge of getting the date to update the users online/offline status
+     * method in charge of getting the user's current state, time and Date to update in db
      */
 
     private void updateDateTime(String state){
@@ -398,12 +398,11 @@ public class MainActivity extends AppCompatActivity {
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
         HashMap<String , Object> userState = new HashMap<>();
-        userState.put("time", currentTime);
-        userState.put("date", currentDate);
         userState.put("state", state);
+        userState.put("date", currentDate);
+        userState.put("time", currentTime);
 
         dbUsersRef.child(currentUserID).child("userState").updateChildren(userState);
-
 
     }
 
