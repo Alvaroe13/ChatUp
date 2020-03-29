@@ -157,12 +157,11 @@ public class ChatsFragment extends Fragment {
                                     } else {
 
                                         try {
-                                            Glide.with(getContext())
+                                            Glide.with(getActivity())
                                                     .load(image).into(holder.chatImageContact);
                                         } catch (NullPointerException e) {
                                             String exception = e.getMessage();
                                             Log.i(TAG, "onDataChange: exception: " + exception);
-                                            Toast.makeText(getContext(), exception, Toast.LENGTH_SHORT).show();
                                         }
 
                                     }
@@ -179,7 +178,7 @@ public class ChatsFragment extends Fragment {
                                             if ( saveSate.equals("Offline")){
 
                                                 //we show last seen
-                                                holder.lastSeen.setText( getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                                                holder.lastSeen.setText( "Last seen: " +  saveLastSeenDate + " " + saveLastSeenTime);
 
                                             } else if(saveSate.equals("Online")){
 
