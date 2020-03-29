@@ -52,7 +52,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView recyclerViewChat;
     private EditText chatEditText;
     private ImageButton buttonSend;
-    private CircleImageView imageProfile;
+    private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
     //vars
@@ -126,6 +126,7 @@ public class ChatActivity extends AppCompatActivity {
         imageProfile = findViewById(R.id.imageToolbarChat);
         usernameToolbarChat = findViewById(R.id.usernameToolbarChat);
         lastSeenToolbarChat = findViewById(R.id.lastSeenChatToolbar);
+        onlineIcon = findViewById(R.id.onlineIcon);
 
         //here we set info from bundles into the ui elements in custom toolbar
         usernameToolbarChat.setText(contactName);
@@ -144,8 +145,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void otherUserState(){
 
-        dbUsersNodeRef.child(contactID)
-                .addValueEventListener(new ValueEventListener() {
+        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -158,8 +158,10 @@ public class ChatActivity extends AppCompatActivity {
 
                         if (saveSate.equals("Online")){
                             lastSeenToolbarChat.setText("Active now");
+                            onlineIcon.setVisibility(View.VISIBLE);
                         } else if(saveSate.equals("Offline")){
                             lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                            onlineIcon.setVisibility(View.INVISIBLE);
                         }
  
             }

@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
             updateDateTime("Offline");
     }
 
+
     /**
      * init UI elements
      */

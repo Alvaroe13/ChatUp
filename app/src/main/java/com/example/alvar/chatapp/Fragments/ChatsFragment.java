@@ -179,10 +179,13 @@ public class ChatsFragment extends Fragment {
 
                                                 //we show last seen
                                                 holder.lastSeen.setText( "Last seen: " +  saveLastSeenDate + " " + saveLastSeenTime);
+                                                holder.onlineIcon.setVisibility(View.INVISIBLE);
 
                                             } else if(saveSate.equals("Online")){
 
                                                 holder.lastSeen.setText(R.string.activeNow);
+                                                holder.onlineIcon.setVisibility(View.VISIBLE);
+
                                             }
 
                                     } else{
@@ -249,7 +252,7 @@ public class ChatsFragment extends Fragment {
     public class ChatsViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout chatLayout;
-        CircleImageView chatImageContact;
+        CircleImageView chatImageContact, onlineIcon;
         TextView username, lastSeen;
 
 
@@ -260,6 +263,7 @@ public class ChatsFragment extends Fragment {
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
             lastSeen = itemView.findViewById(R.id.userLastSeen);
+            onlineIcon = itemView.findViewById(R.id.onlineIcon);
         }
 
 
