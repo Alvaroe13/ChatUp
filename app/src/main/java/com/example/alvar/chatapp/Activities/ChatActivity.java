@@ -30,7 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +46,7 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbMessagesNodeRef, messagePushID;
+    private DatabaseReference dbMessagesNodeRef, messagePushID, dbUsersNodeRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -99,6 +101,7 @@ public class ChatActivity extends AppCompatActivity {
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
+        dbUsersNodeRef = database.getReference().child("Users");
         dbMessagesNodeRef = database.getReference().child("Chats").child("Messages");
     }
 
@@ -131,6 +134,44 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             Glide.with(getApplicationContext()).load(contactImage).into(imageProfile);
         }
+
+
+    }
+
+    private void otherUserState(){
+
+
+        Log.i(TAG, "onDataChange: other User ID bfore:" + contactID);
+
+        dbUsersNodeRef.child(contactID)
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.i(TAG, "onDataChange: other User ID after: " + contactID);
+
+
+                        //here we get the other user's current state and we store it in each var
+                        String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
+                        String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
+                        String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+                        if (saveSate.equals("Online")){
+                            lastSeenToolbarChat.setText("Active now");
+                        } else if(saveSate.equals("Offline")){
+                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                        }
+
+
+                    
+ 
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
     }
@@ -229,6 +270,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        otherUserState();
+
         dbMessagesNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -257,6 +300,8 @@ public class ChatActivity extends AppCompatActivity {
                 });
 
     }
+
+
 
 
 }

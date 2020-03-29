@@ -2,6 +2,7 @@ package com.example.alvar.chatapp.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -11,9 +12,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -23,8 +23,8 @@ import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
-import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
+import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -96,37 +96,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (currentUser!= null){
+    protected void onResume() {
+        super.onResume();
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
-        }
-
-
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
-        if (currentUser!= null){
-            //When the user closes the app we update state in the database as "offline"
-            updateDateTime("Offline");
-        }
-
+    protected void onPause() {
+        super.onPause();
+             updateDateTime("Online");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-         if (currentUser!= null){
-            //When the user closes the app we update state in the database as "offline"
             updateDateTime("Offline");
-        }
-
     }
 
     /**
