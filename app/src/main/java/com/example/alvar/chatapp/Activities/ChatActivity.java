@@ -138,10 +138,11 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Here in this method we read the current state of the other user in real time to show it
+     * in the toolbar.
+     */
     private void otherUserState(){
-
-
-        Log.i(TAG, "onDataChange: other User ID bfore:" + contactID);
 
         dbUsersNodeRef.child(contactID)
                 .addValueEventListener(new ValueEventListener() {
@@ -149,7 +150,6 @@ public class ChatActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 Log.i(TAG, "onDataChange: other User ID after: " + contactID);
-
 
                         //here we get the other user's current state and we store it in each var
                         String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
@@ -161,9 +161,6 @@ public class ChatActivity extends AppCompatActivity {
                         } else if(saveSate.equals("Offline")){
                             lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
                         }
-
-
-                    
  
             }
 
