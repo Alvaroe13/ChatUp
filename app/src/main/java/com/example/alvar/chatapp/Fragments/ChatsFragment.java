@@ -178,7 +178,7 @@ public class ChatsFragment extends Fragment {
                                             if ( saveSate.equals("Offline")){
 
                                                 //we show last seen
-                                                holder.lastSeen.setText( "Last seen: " +  saveLastSeenDate + " " + saveLastSeenTime);
+                                                holder.lastSeen.setText( getContext().getString(R.string.lastSeen) +  saveLastSeenDate + " " + saveLastSeenTime);
                                                 holder.onlineIcon.setVisibility(View.INVISIBLE);
 
                                             } else if(saveSate.equals("Online")){
