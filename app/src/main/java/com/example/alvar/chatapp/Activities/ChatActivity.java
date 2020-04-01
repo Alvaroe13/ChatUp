@@ -30,7 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +46,13 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbMessagesNodeRef, messagePushID;
+    private DatabaseReference dbMessagesNodeRef, messagePushID, dbUsersNodeRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
     private EditText chatEditText;
     private ImageButton buttonSend;
-    private CircleImageView imageProfile;
+    private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
     //vars
@@ -99,6 +101,7 @@ public class ChatActivity extends AppCompatActivity {
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
+        dbUsersNodeRef = database.getReference().child("Users");
         dbMessagesNodeRef = database.getReference().child("Chats").child("Messages");
     }
 
@@ -123,6 +126,7 @@ public class ChatActivity extends AppCompatActivity {
         imageProfile = findViewById(R.id.imageToolbarChat);
         usernameToolbarChat = findViewById(R.id.usernameToolbarChat);
         lastSeenToolbarChat = findViewById(R.id.lastSeenChatToolbar);
+        onlineIcon = findViewById(R.id.onlineIcon);
 
         //here we set info from bundles into the ui elements in custom toolbar
         usernameToolbarChat.setText(contactName);
@@ -131,6 +135,50 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             Glide.with(getApplicationContext()).load(contactImage).into(imageProfile);
         }
+
+
+    }
+
+    /**
+     * Here in this method we read the current state of the other user in real time to show it
+     * in the toolbar.
+     */
+    private void otherUserState(){
+
+        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists()){
+
+                    Log.i(TAG, "onDataChange: other User ID after: " + contactID);
+
+                    //here we get the other user's current state and we store it in each var
+                    String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
+                    String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
+                    String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+                    if (saveSate.equals("Online")){
+                        lastSeenToolbarChat.setText("Active now");
+                        onlineIcon.setVisibility(View.VISIBLE);
+                    } else if(saveSate.equals("Offline")){
+                        lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                        onlineIcon.setVisibility(View.INVISIBLE);
+                    }
+
+                } else{
+
+                    Toast.makeText(ChatActivity.this, "Error with the network", Toast.LENGTH_SHORT).show();
+                }
+
+ 
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
     }
@@ -229,6 +277,9 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        otherUserState();
+        updateDateTime("Online");
+
         dbMessagesNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -257,6 +308,44 @@ public class ChatActivity extends AppCompatActivity {
                 });
 
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        updateDateTime("Offline");
+    }
+
+    /**
+     * method in charge of getting the user's current state, time and Date to update in db
+     */
+
+    private void updateDateTime(String state){
+
+        String currentTime, currentDate;
+
+        Calendar calendar =  Calendar.getInstance();
+
+        SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
+        currentDate = date.format(calendar.getTime());
+
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
+        currentTime = time.format(calendar.getTime());
+
+        //lets save all this info in a map to uploaded to the Firebase database.
+        //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
+        // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
+        HashMap<String , Object> userState = new HashMap<>();
+        userState.put("state", state);
+        userState.put("date", currentDate);
+        userState.put("time", currentTime);
+
+        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
+
+    }
+
+
+
+
 
 
 }

@@ -93,7 +93,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     if (imageThumbnail.equals("imgThumbnail")){
                         messageViewHolder.imageContact.setImageResource(R.drawable.profile_image);
                     }else{
-                        Glide.with(mContext).load(imageThumbnail).into(messageViewHolder.imageContact);
+                        Glide.with(mContext.getApplicationContext()).load(imageThumbnail).into(messageViewHolder.imageContact);
                     }
                 }
             }

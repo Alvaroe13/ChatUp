@@ -157,12 +157,11 @@ public class ChatsFragment extends Fragment {
                                     } else {
 
                                         try {
-                                            Glide.with(getContext())
+                                            Glide.with(getActivity())
                                                     .load(image).into(holder.chatImageContact);
                                         } catch (NullPointerException e) {
                                             String exception = e.getMessage();
                                             Log.i(TAG, "onDataChange: exception: " + exception);
-                                            Toast.makeText(getContext(), exception, Toast.LENGTH_SHORT).show();
                                         }
 
                                     }
@@ -178,20 +177,16 @@ public class ChatsFragment extends Fragment {
                                                 //if other user's state is "offline"
                                             if ( saveSate.equals("Offline")){
 
-                                                //we show last seen
-                                                holder.lastSeen.setText( getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                                                //we show last message
+                                                holder.onlineIcon.setVisibility(View.INVISIBLE);
 
                                             } else if(saveSate.equals("Online")){
 
-                                                holder.lastSeen.setText(R.string.activeNow);
+                                                holder.onlineIcon.setVisibility(View.VISIBLE);
+
                                             }
 
-                                    } else{
-
-                                        //set offline state as default.
-                                        holder.lastSeen.setText(R.string.Offline);
                                     }
-
 
                                     holder.chatLayout.setOnClickListener(new View.OnClickListener() {
                                         @Override
@@ -250,7 +245,7 @@ public class ChatsFragment extends Fragment {
     public class ChatsViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout chatLayout;
-        CircleImageView chatImageContact;
+        CircleImageView chatImageContact, onlineIcon;
         TextView username, lastSeen;
 
 
@@ -261,6 +256,7 @@ public class ChatsFragment extends Fragment {
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
             lastSeen = itemView.findViewById(R.id.userLastSeen);
+            onlineIcon = itemView.findViewById(R.id.onlineIcon);
         }
 
 
