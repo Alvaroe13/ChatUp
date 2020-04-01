@@ -177,23 +177,16 @@ public class ChatsFragment extends Fragment {
                                                 //if other user's state is "offline"
                                             if ( saveSate.equals("Offline")){
 
-                                                //we show last seen
-                                                holder.lastSeen.setText( getContext().getString(R.string.lastSeen) +  saveLastSeenDate + " " + saveLastSeenTime);
+                                                //we show last message
                                                 holder.onlineIcon.setVisibility(View.INVISIBLE);
 
                                             } else if(saveSate.equals("Online")){
 
-                                                holder.lastSeen.setText(R.string.activeNow);
                                                 holder.onlineIcon.setVisibility(View.VISIBLE);
 
                                             }
 
-                                    } else{
-
-                                        //set offline state as default.
-                                        holder.lastSeen.setText(R.string.Offline);
                                     }
-
 
                                     holder.chatLayout.setOnClickListener(new View.OnClickListener() {
                                         @Override
