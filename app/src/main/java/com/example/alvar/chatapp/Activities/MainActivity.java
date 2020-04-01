@@ -105,14 +105,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-             updateDateTime("Online");
+             updateDateTime("Offline");
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-            updateDateTime("Offline");
-    }
 
 
     /**

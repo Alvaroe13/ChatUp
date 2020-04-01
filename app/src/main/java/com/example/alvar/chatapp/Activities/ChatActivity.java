@@ -149,20 +149,28 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                Log.i(TAG, "onDataChange: other User ID after: " + contactID);
+                if (dataSnapshot.exists()){
 
-                        //here we get the other user's current state and we store it in each var
-                        String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
-                        String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
-                        String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+                    Log.i(TAG, "onDataChange: other User ID after: " + contactID);
 
-                        if (saveSate.equals("Online")){
-                            lastSeenToolbarChat.setText("Active now");
-                            onlineIcon.setVisibility(View.VISIBLE);
-                        } else if(saveSate.equals("Offline")){
-                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
-                            onlineIcon.setVisibility(View.INVISIBLE);
-                        }
+                    //here we get the other user's current state and we store it in each var
+                    String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
+                    String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
+                    String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+                    if (saveSate.equals("Online")){
+                        lastSeenToolbarChat.setText("Active now");
+                        onlineIcon.setVisibility(View.VISIBLE);
+                    } else if(saveSate.equals("Offline")){
+                        lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                        onlineIcon.setVisibility(View.INVISIBLE);
+                    }
+
+                } else{
+
+                    Toast.makeText(ChatActivity.this, "Error with the network", Toast.LENGTH_SHORT).show();
+                }
+
  
             }
 
@@ -270,6 +278,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onStart();
 
         otherUserState();
+        updateDateTime("Online");
 
         dbMessagesNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
@@ -299,6 +308,42 @@ public class ChatActivity extends AppCompatActivity {
                 });
 
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        updateDateTime("Offline");
+    }
+
+    /**
+     * method in charge of getting the user's current state, time and Date to update in db
+     */
+
+    private void updateDateTime(String state){
+
+        String currentTime, currentDate;
+
+        Calendar calendar =  Calendar.getInstance();
+
+        SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
+        currentDate = date.format(calendar.getTime());
+
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
+        currentTime = time.format(calendar.getTime());
+
+        //lets save all this info in a map to uploaded to the Firebase database.
+        //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
+        // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
+        HashMap<String , Object> userState = new HashMap<>();
+        userState.put("state", state);
+        userState.put("date", currentDate);
+        userState.put("time", currentTime);
+
+        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
+
+    }
+
+
 
 
 
