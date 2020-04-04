@@ -244,16 +244,28 @@ public class ChatsFragment extends Fragment {
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                    //we bind the Message node in firebase database with the JAVA model "Messages"
-                    Messages message = snapshot.getValue(Messages.class);
+                    if (dataSnapshot.exists()) {
 
-                    if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
-                            message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
+                        //we bind the Message node in firebase database with the JAVA model "Messages"
+                        Messages message = snapshot.getValue(Messages.class);
 
-                        lastMessage = message.getMessage();
-                        lastMessageField.setText(lastMessage);
+                        Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
+                        Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
+
+                        if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
+                                message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
+
+                            lastMessage = message.getMessage();
+                            lastMessageField.setText(lastMessage);
+
+                        } else {
+                            Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
+                            Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
+                        }
 
                     }
+
+
 
                 }
             }
