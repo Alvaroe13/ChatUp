@@ -2,16 +2,18 @@ package com.example.alvar.chatapp.Model;
 
 public class Messages {
 
-    private String message, senderByID, type;
+    private String message, senderID, type, receiverID;
     private Boolean seen;
 
 
     public Messages() {
     }
 
-    public Messages(String message, String senderByID, String type, Boolean seen) {
+
+    public Messages(String message, String senderID, String receiverID, String type, Boolean seen) {
         this.message = message;
-        this.senderByID = senderByID;
+        this.senderID = senderID;
+        this.receiverID = receiverID;
         this.type = type;
         this.seen = seen;
     }
@@ -25,12 +27,12 @@ public class Messages {
         this.message = message;
     }
 
-    public String getSenderByID() {
-        return senderByID;
+    public String getSenderID() {
+        return senderID;
     }
 
-    public void setSenderByID(String senderByID) {
-        this.senderByID = senderByID;
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
     }
 
     public String getType() {
@@ -47,5 +49,13 @@ public class Messages {
 
     public void setSeen(Boolean seen) {
         this.seen = seen;
+    }
+
+    public String getReceiverID() {
+        return receiverID;
+    }
+
+    public void setReceiverID(String receiverID) {
+        this.receiverID = receiverID;
     }
 }

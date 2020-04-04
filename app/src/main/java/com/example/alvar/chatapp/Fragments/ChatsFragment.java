@@ -14,12 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Activities.ContactsActivity;
 import com.example.alvar.chatapp.Model.Contacts;
+import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -38,17 +38,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ChatsFragment extends Fragment {
 
     private static final String TAG = "ChatsFragmentPage";
-    //firebase
-    private FirebaseAuth auth;
-    private FirebaseDatabase database;
-    private DatabaseReference dbChatsNodeRef, dbUsersNodeRef;
+
     //ui elements
     private FloatingActionButton fabContacts;
     private View viewContacts;
     private RecyclerView chatRecyclerView;
-    private LinearLayoutManager linearLayoutManager;
+    //firebase
+    private DatabaseReference dbChatsNodeRef, dbUsersNodeRef;
     //vars
-    private String currentUserID;
+    private String currentUserID, lastMessage;
     private FirebaseRecyclerOptions<Contacts> options;
     private FirebaseRecyclerAdapter<Contacts, ChatsViewHolder> adapter;
 
@@ -65,21 +63,22 @@ public class ChatsFragment extends Fragment {
         viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
         initFirebase();
-
-        currentUserID = auth.getCurrentUser().getUid();
-
         bind();
         initRecyclerView();
         fabButtonPressed();
         initFirebaseAdapter();
 
-
         return viewContacts;
     }
 
+    /**
+     * we init firebase services.
+     */
     private void initFirebase() {
-        auth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
+        //firebase
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        currentUserID = auth.getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
         dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
         dbUsersNodeRef = database.getReference().child("Users");
     }
@@ -91,7 +90,7 @@ public class ChatsFragment extends Fragment {
 
     private void initRecyclerView() {
         chatRecyclerView = viewContacts.findViewById(R.id.chatRecyclerView);
-        linearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         chatRecyclerView.setLayoutManager(linearLayoutManager);
         chatRecyclerView.setHasFixedSize(true);
 
@@ -109,12 +108,17 @@ public class ChatsFragment extends Fragment {
         });
     }
 
+    /**
+     * we take the user to the contacts activity.
+     */
     private void goToContacts() {
         Intent intentContacts = new Intent(getContext(), ContactsActivity.class);
         startActivity(intentContacts);
     }
 
-
+    /**
+     * Contains the logic behind the firebase Adapter library.
+     */
     private void initFirebaseAdapter() {
 
 
@@ -126,8 +130,6 @@ public class ChatsFragment extends Fragment {
         adapter = new FirebaseRecyclerAdapter<Contacts, ChatsViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position, @NonNull Contacts model) {
-
-                //here lies the issue, it does not iterates through the whole list of messages node
 
                 final String otherUserID = getRef(position).getKey();
 
@@ -142,20 +144,15 @@ public class ChatsFragment extends Fragment {
 
                                 if (dataSnapshot.exists()) {
 
-
                                     //here we fetch info from db
                                     final String name = dataSnapshot.child("name").getValue().toString();
                                     final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-
-                                    Log.i(TAG, "onDataChange: name " + name);
-                                    Log.i(TAG, "onDataChange: image " + image);
 
                                     //here we set info from db to the UI
                                     holder.username.setText(name);
                                     if (image.equals("imgThumbnail")) {
                                         holder.chatImageContact.setImageResource(R.drawable.profile_image);
                                     } else {
-
                                         try {
                                             Glide.with(getActivity())
                                                     .load(image).into(holder.chatImageContact);
@@ -166,25 +163,26 @@ public class ChatsFragment extends Fragment {
 
                                     }
 
+                                    //this method show last message in the fragment list with conversations started
+                                    showLastMessage(currentUserID, otherUserID, holder.lastMessage);
+
                                     //here we show the last Seen of the other user
-                                    if (dataSnapshot.child("userState").hasChild("state")){
+                                    if (dataSnapshot.child("userState").hasChild("state")) {
 
                                         //here we get the other user's current state and we store it in each var
-                                        String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
-                                        String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
                                         String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
 
-                                                //if other user's state is "offline"
-                                            if ( saveSate.equals("Offline")){
+                                        //if other user's state is "offline"
+                                        if (saveSate.equals("Offline")) {
 
-                                                //we show last message
-                                                holder.onlineIcon.setVisibility(View.INVISIBLE);
+                                            //we show last message
+                                            holder.onlineIcon.setVisibility(View.INVISIBLE);
 
-                                            } else if(saveSate.equals("Online")){
+                                        } else if (saveSate.equals("Online")) {
 
-                                                holder.onlineIcon.setVisibility(View.VISIBLE);
+                                            holder.onlineIcon.setVisibility(View.VISIBLE);
 
-                                            }
+                                        }
 
                                     }
 
@@ -230,6 +228,45 @@ public class ChatsFragment extends Fragment {
 
     }
 
+    /**
+     * This method is the one in charge of showing the last message in a conversation
+     *
+     * @param currentUserID
+     * @param otherUserID
+     * @param lastMessageField
+     */
+    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField) {
+
+        //retrieve info from the db node "Chats" / "Messages"
+        dbChatsNodeRef.child(currentUserID).child(otherUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    //we bind the Message node in firebase database with the JAVA model "Messages"
+                    Messages message = snapshot.getValue(Messages.class);
+
+                    if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
+                            message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
+
+                        lastMessage = message.getMessage();
+                        lastMessageField.setText(lastMessage);
+
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
 
     @Override
     public void onStart() {
@@ -246,7 +283,7 @@ public class ChatsFragment extends Fragment {
 
         LinearLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
-        TextView username, lastSeen;
+        TextView username, lastMessage;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -255,7 +292,7 @@ public class ChatsFragment extends Fragment {
             chatLayout = itemView.findViewById(R.id.chatLayout);
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
-            lastSeen = itemView.findViewById(R.id.userLastSeen);
+            lastMessage = itemView.findViewById(R.id.lastMessage);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
         }
 
