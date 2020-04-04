@@ -319,6 +319,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
+
     private void updateDateTime(String state){
 
         String currentTime, currentDate;
@@ -331,7 +332,7 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         currentTime = time.format(calendar.getTime());
 
-        //lets save all this info in a map to upload it into the Firebase database.
+        //lets save all this info in a map to uploaded to the Firebase database.
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
         HashMap<String , Object> userState = new HashMap<>();
