@@ -76,7 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         Messages messages = messagesList.get(position);
 
-        String messageSenderID = messages.getSenderByID();
+        String messageSenderID = messages.getSenderID();
         String messageType = messages.getType();
 
         Log.i(TAG, "onBindViewHolder: sender ID: " + messageSenderID);
