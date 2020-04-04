@@ -246,6 +246,7 @@ public class ChatActivity extends AppCompatActivity {
         messageDetails.put("message", messageText);
         messageDetails.put("type", "text");
         messageDetails.put("senderByID", currentUserID);
+        messageDetails.put("receiverID", contactID);
         messageDetails.put("time", ServerValue.TIMESTAMP);
         messageDetails.put("seen", false);
 

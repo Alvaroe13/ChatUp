@@ -14,16 +14,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Activities.ContactsActivity;
 import com.example.alvar.chatapp.Model.Contacts;
+import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,7 +49,7 @@ public class ChatsFragment extends Fragment {
     private RecyclerView chatRecyclerView;
     private LinearLayoutManager linearLayoutManager;
     //vars
-    private String currentUserID;
+    private String currentUserID, lastMessage;
     private FirebaseRecyclerOptions<Contacts> options;
     private FirebaseRecyclerAdapter<Contacts, ChatsViewHolder> adapter;
 
@@ -147,8 +148,6 @@ public class ChatsFragment extends Fragment {
                                     final String name = dataSnapshot.child("name").getValue().toString();
                                     final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
 
-                                    Log.i(TAG, "onDataChange: name " + name);
-                                    Log.i(TAG, "onDataChange: image " + image);
 
                                     //here we set info from db to the UI
                                     holder.username.setText(name);
@@ -166,12 +165,15 @@ public class ChatsFragment extends Fragment {
 
                                     }
 
+                                    //this method show last message in the fragment list with conversations started
+
+                                    showLastMessage(currentUserID, otherUserID, holder.lastMessage);
+
+
                                     //here we show the last Seen of the other user
                                     if (dataSnapshot.child("userState").hasChild("state")){
 
                                         //here we get the other user's current state and we store it in each var
-                                        String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
-                                        String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
                                         String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
 
                                                 //if other user's state is "offline"
@@ -230,6 +232,52 @@ public class ChatsFragment extends Fragment {
 
     }
 
+    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField){
+
+        lastMessage = "default";
+
+       dbChatsNodeRef.child(currentUserID).child(otherUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                    Messages message = snapshot.getValue(Messages.class);
+
+                        if (message.getSenderByID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
+                                 message.getSenderByID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
+
+                            lastMessage = message.getMessage();
+
+                        }
+
+                        switch ( lastMessage ){
+
+                            case "default":
+                                lastMessageField.setText("Empty");
+                                break;
+
+                            default:
+                                lastMessageField.setText(lastMessage);
+                                break;
+
+                        }
+
+                        lastMessage = "default";
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
+
 
     @Override
     public void onStart() {
@@ -246,7 +294,7 @@ public class ChatsFragment extends Fragment {
 
         LinearLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
-        TextView username, lastSeen;
+        TextView username, lastMessage;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -255,7 +303,7 @@ public class ChatsFragment extends Fragment {
             chatLayout = itemView.findViewById(R.id.chatLayout);
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
-            lastSeen = itemView.findViewById(R.id.userLastSeen);
+            lastMessage = itemView.findViewById(R.id.lastMessage);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
         }
 
