@@ -52,14 +52,13 @@
 
         <TextView
             android:id="@+id/lastMessageDate"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
             android:layout_marginTop="7dp"
-            android:layout_marginRight="25dp"
             android:layout_marginEnd="25dp"
-            android:layout_toEndOf="@+id/usernameChat"
-            android:layout_toRightOf="@+id/usernameChat"
+            android:layout_marginRight="25dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:text="date"
             android:textSize="10sp" />
 
