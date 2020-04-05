@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -46,7 +47,7 @@ public class ChatsFragment extends Fragment {
     //firebase
     private DatabaseReference dbChatsNodeRef, dbUsersNodeRef;
     //vars
-    private String currentUserID, lastMessage;
+    private String currentUserID, lastMessage, lastMessageDate;
     private FirebaseRecyclerOptions<Contacts> options;
     private FirebaseRecyclerAdapter<Contacts, ChatsViewHolder> adapter;
 
@@ -164,7 +165,7 @@ public class ChatsFragment extends Fragment {
                                     }
 
                                     //this method show last message in the fragment list with conversations started
-                                    showLastMessage(currentUserID, otherUserID, holder.lastMessage);
+                                    showLastMessage(currentUserID, otherUserID, holder.lastMessage, holder.lastMessageDateField);
 
                                     //here we show the last Seen of the other user
                                     if (dataSnapshot.child("userState").hasChild("state")) {
@@ -235,7 +236,7 @@ public class ChatsFragment extends Fragment {
      * @param otherUserID
      * @param lastMessageField
      */
-    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField) {
+    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField, final TextView lastMessageDateField) {
 
         //retrieve info from the db node "Chats" / "Messages"
         dbChatsNodeRef.child(currentUserID).child(otherUserID).addValueEventListener(new ValueEventListener() {
@@ -258,9 +259,15 @@ public class ChatsFragment extends Fragment {
                             lastMessage = message.getMessage();
                             lastMessageField.setText(lastMessage);
 
+                            lastMessageDate = message.getMessageDate();
+                            lastMessageDateField.setText(lastMessageDate);
+
+
+
                         } else {
                             Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
                             Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
+                            Log.i(TAG, "onDataChange: last message date: " + message.getMessageDate());
                         }
 
                     }
@@ -293,9 +300,9 @@ public class ChatsFragment extends Fragment {
 
     public class ChatsViewHolder extends RecyclerView.ViewHolder {
 
-        LinearLayout chatLayout;
+        RelativeLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
-        TextView username, lastMessage;
+        TextView username, lastMessage, lastMessageDateField;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -305,6 +312,7 @@ public class ChatsFragment extends Fragment {
             chatImageContact = itemView.findViewById(R.id.imageChat);
             username = itemView.findViewById(R.id.usernameChat);
             lastMessage = itemView.findViewById(R.id.lastMessage);
+            lastMessageDateField = itemView.findViewById(R.id.lastMessageDate);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
         }
 

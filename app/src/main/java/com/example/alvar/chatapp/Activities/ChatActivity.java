@@ -236,6 +236,16 @@ public class ChatActivity extends AppCompatActivity {
         String messageSenderRef =  currentUserID + "/" + contactID;
         String messageReceiverRef = contactID + "/" + currentUserID;
 
+        String lastMessageTime, lastMessageDate;
+
+        Calendar calendar =  Calendar.getInstance();
+
+        SimpleDateFormat date = new SimpleDateFormat("dd/MM/yy");
+        lastMessageDate = date.format(calendar.getTime());
+
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm aa");
+        lastMessageTime = time.format(calendar.getTime());
+
 
         messagePushID = dbMessagesNodeRef.child(currentUserID).child(contactID).push();
 
@@ -248,6 +258,8 @@ public class ChatActivity extends AppCompatActivity {
         messageDetails.put("senderID", currentUserID);
         messageDetails.put("receiverID", contactID);
         messageDetails.put("time", ServerValue.TIMESTAMP);
+        messageDetails.put("messageDate", lastMessageDate);
+        messageDetails.put("messageTime", lastMessageTime);
         messageDetails.put("seen", false);
 
         //this map is for the info shown in the "Messages" node
