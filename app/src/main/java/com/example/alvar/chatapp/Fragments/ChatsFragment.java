@@ -300,7 +300,7 @@ public class ChatsFragment extends Fragment {
 
         RelativeLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
-        TextView username, lastMessage, lastMessageDateField, messageTime;
+        TextView username, lastMessage, lastMessageDateField;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -312,7 +312,6 @@ public class ChatsFragment extends Fragment {
             lastMessage = itemView.findViewById(R.id.lastMessage);
             lastMessageDateField = itemView.findViewById(R.id.lastMessageDate);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
-            messageTime = itemView.findViewById(R.id.messageTime);
         }
 
 

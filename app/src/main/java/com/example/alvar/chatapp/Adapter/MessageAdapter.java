@@ -108,6 +108,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.imageContact.setVisibility(View.INVISIBLE);
             messageViewHolder.textRightSide.setVisibility(View.INVISIBLE);
             messageViewHolder.textLeftSide.setVisibility(View.INVISIBLE);
+            messageViewHolder.messageTimeFieldLeft.setVisibility(View.INVISIBLE);
+            messageViewHolder.messageTimeFieldRight.setVisibility(View.INVISIBLE);
 
 
             //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
@@ -116,7 +118,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
                 messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
                 messageViewHolder.textRightSide.setText(messages.getMessage());
-                messageViewHolder.messageTimeField.setText(messages.getMessageTime());
+                messageViewHolder.messageTimeFieldRight.setVisibility(View.VISIBLE);
+                messageViewHolder.messageTimeFieldRight.setText(messages.getMessageTime());
             }
             //if the other user is the one sending the message
             else{
@@ -125,6 +128,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.imageContact.setVisibility(View.VISIBLE);
                 messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
                 messageViewHolder.textLeftSide.setText(messages.getMessage());
+                messageViewHolder.messageTimeFieldLeft.setVisibility(View.VISIBLE);
+                messageViewHolder.messageTimeFieldLeft.setText(messages.getMessageTime());
 
             }
 
@@ -151,7 +156,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public class MessageViewHolder extends RecyclerView.ViewHolder{
 
         //UI elements
-        TextView textRightSide, textLeftSide, messageTimeField;
+        TextView textRightSide, textLeftSide, messageTimeFieldRight, messageTimeFieldLeft;
         CircleImageView imageContact;
 
         public MessageViewHolder(@NonNull View itemView) {
@@ -160,7 +165,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             textLeftSide = itemView.findViewById(R.id.textLeft);
             textRightSide = itemView.findViewById(R.id.textRight);
             imageContact = itemView.findViewById(R.id.imageChat);
-            messageTimeField = itemView.findViewById(R.id.messageTime);
+            messageTimeFieldRight = itemView.findViewById(R.id.messageTimeRight);
+            messageTimeFieldLeft = itemView.findViewById(R.id.messageTimeLeft);
 
         }
 

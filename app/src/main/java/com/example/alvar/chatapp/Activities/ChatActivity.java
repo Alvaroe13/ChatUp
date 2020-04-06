@@ -243,7 +243,7 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat date = new SimpleDateFormat("dd/MM/yy");
         lastMessageDate = date.format(calendar.getTime());
 
-        SimpleDateFormat time = new SimpleDateFormat("hh:mm aa");
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         lastMessageTime = time.format(calendar.getTime());
 
 

@@ -37,6 +37,18 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/messageTimeLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="60dp"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="40dp"
+            android:text="hour"
+            android:textSize="10sp" />
+
+        <TextView
             android:id="@+id/textRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,22 +60,24 @@
             android:layout_marginStart="70dp"
             android:layout_marginBottom="3dp"
             android:background="@drawable/right_message_layout"
-            android:padding="12dp"
+            android:padding="9dp"
             android:text="text left"
             android:textColor="@color/color_grey"
             android:textSize="16sp"/>
 
         <TextView
-            android:id="@+id/messageTime"
+            android:id="@+id/messageTimeRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="45dp"
+            android:layout_marginTop="40dp"
             android:layout_marginEnd="7dp"
             android:layout_marginRight="7dp"
             android:text="hour"
             android:textSize="10sp" />
+
+
 
 
     </RelativeLayout>
