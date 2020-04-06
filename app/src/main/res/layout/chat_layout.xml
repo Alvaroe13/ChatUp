@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="60dp"
     android:orientation="horizontal">
 
     <RelativeLayout
@@ -12,8 +12,8 @@
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imageChat"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="5dp"
@@ -48,10 +48,22 @@
             android:layout_marginStart="70dp"
             android:layout_marginBottom="3dp"
             android:background="@drawable/right_message_layout"
-            android:padding="9dp"
+            android:padding="12dp"
             android:text="text left"
             android:textColor="@color/color_grey"
             android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/messageTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="45dp"
+            android:layout_marginEnd="7dp"
+            android:layout_marginRight="7dp"
+            android:text="hour"
+            android:textSize="10sp" />
 
 
     </RelativeLayout>

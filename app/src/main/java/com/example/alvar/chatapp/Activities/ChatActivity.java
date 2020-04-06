@@ -341,7 +341,7 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
 
-        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
+        SimpleDateFormat time = new SimpleDateFormat("k:mm a");
         currentTime = time.format(calendar.getTime());
 
         //lets save all this info in a map to uploaded to the Firebase database.

@@ -262,8 +262,6 @@ public class ChatsFragment extends Fragment {
                             lastMessageDate = message.getMessageDate();
                             lastMessageDateField.setText(lastMessageDate);
 
-
-
                         } else {
                             Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
                             Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
@@ -302,7 +300,7 @@ public class ChatsFragment extends Fragment {
 
         RelativeLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
-        TextView username, lastMessage, lastMessageDateField;
+        TextView username, lastMessage, lastMessageDateField, messageTime;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -314,6 +312,7 @@ public class ChatsFragment extends Fragment {
             lastMessage = itemView.findViewById(R.id.lastMessage);
             lastMessageDateField = itemView.findViewById(R.id.lastMessageDate);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
+            messageTime = itemView.findViewById(R.id.messageTime);
         }
 
 

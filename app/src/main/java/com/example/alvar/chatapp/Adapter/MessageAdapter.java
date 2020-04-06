@@ -79,8 +79,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String messageSenderID = messages.getSenderID();
         String messageType = messages.getType();
 
-        Log.i(TAG, "onBindViewHolder: sender ID: " + messageSenderID);
-
         //here we fetch image from db
         dbUsersNodeRef.child(messageSenderID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -118,6 +116,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
                 messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
                 messageViewHolder.textRightSide.setText(messages.getMessage());
+                messageViewHolder.messageTimeField.setText(messages.getMessageTime());
             }
             //if the other user is the one sending the message
             else{
@@ -152,7 +151,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public class MessageViewHolder extends RecyclerView.ViewHolder{
 
         //UI elements
-        TextView textRightSide, textLeftSide;
+        TextView textRightSide, textLeftSide, messageTimeField;
         CircleImageView imageContact;
 
         public MessageViewHolder(@NonNull View itemView) {
@@ -161,6 +160,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             textLeftSide = itemView.findViewById(R.id.textLeft);
             textRightSide = itemView.findViewById(R.id.textRight);
             imageContact = itemView.findViewById(R.id.imageChat);
+            messageTimeField = itemView.findViewById(R.id.messageTime);
 
         }
 
