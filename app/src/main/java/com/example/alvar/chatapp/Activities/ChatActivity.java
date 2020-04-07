@@ -159,7 +159,7 @@ public class ChatActivity extends AppCompatActivity {
                     String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
 
                     if (saveSate.equals("Online")){
-                        lastSeenToolbarChat.setText("Active now");
+                        lastSeenToolbarChat.setText(R.string.activeNow);
                         onlineIcon.setVisibility(View.VISIBLE);
                     } else if(saveSate.equals("Offline")){
                         lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
@@ -257,7 +257,6 @@ public class ChatActivity extends AppCompatActivity {
         messageDetails.put("type", "text");
         messageDetails.put("senderID", currentUserID);
         messageDetails.put("receiverID", contactID);
-        messageDetails.put("time", ServerValue.TIMESTAMP);
         messageDetails.put("messageDate", lastMessageDate);
         messageDetails.put("messageTime", lastMessageTime);
         messageDetails.put("seen", false);
@@ -341,7 +340,7 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
 
-        SimpleDateFormat time = new SimpleDateFormat("k:mm a");
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         currentTime = time.format(calendar.getTime());
 
         //lets save all this info in a map to uploaded to the Firebase database.
