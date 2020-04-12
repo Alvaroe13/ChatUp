@@ -224,6 +224,16 @@ public class RequestsFragment extends Fragment {
     }
 
 
+    private void requestAnswer(String list_user_id) {
+
+        Intent intentRequestAnswer = new Intent(getActivity(), AnswerRequestActivity.class);
+        intentRequestAnswer.putExtra("otherUserID", list_user_id);
+        Log.i(TAG, "onClick:  other user id: " + list_user_id);
+        startActivity(intentRequestAnswer);
+    }
+
+
+
     //here we bind and init elements from the UI in the individual request layout
     public class RequestsViewHolder extends RecyclerView.ViewHolder{
 
@@ -240,14 +250,6 @@ public class RequestsFragment extends Fragment {
 
         }
 
-    }
-
-    private void requestAnswer(String list_user_id) {
-
-        Intent intentRequestAnswer = new Intent(getActivity(), AnswerRequestActivity.class);
-        intentRequestAnswer.putExtra("otherUserID", list_user_id);
-        Log.i(TAG, "onClick:  other user id: " + list_user_id);
-        startActivity(intentRequestAnswer);
     }
 
 

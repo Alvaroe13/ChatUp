@@ -12,14 +12,18 @@
         android:layout_height="wrap_content"
         app:cardElevation="6dp"
         app:cardCornerRadius="5dp"
-        android:layout_margin="5dp"
-        android:layout_marginBottom="2dp">
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp" >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="85dp"
             android:orientation="horizontal"
-            android:layout_margin="7dp">
+            android:layout_margin="10dp">
 
 
             <de.hdodenhof.circleimageview.CircleImageView
@@ -31,54 +35,42 @@
                 android:layout_alignParentTop="true"
                 android:src="@drawable/profile_image"
                 android:layout_marginLeft="5dp"
-                android:visibility="visible"/>
+                android:layout_marginTop="5dp"/>
 
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="1dp"
+                android:padding="6dp"
+                android:layout_marginTop="5dp"
                 android:layout_marginLeft="10dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/usernameRequestIndividual"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:text="Username"
+                    android:maxLength="15"
+                    android:textSize="17sp"
+                    android:textStyle="bold"/>
 
-                    <TextView
-                        android:id="@+id/usernameRequestIndividual"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Username"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="3dp"/>
+                <TextView
+                    android:id="@+id/statusContactUsers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/wantsToConnect"
+                    android:textSize="15sp"
+                    android:maxLength="65"
+                    android:textStyle="italic"/>
 
-                    <TextView
-                        android:id="@+id/textRequest"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/wantsToConnect"
-                        android:layout_marginTop="9dp"
-                        android:textSize="15sp"/>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-
-                    </LinearLayout>
-
-                </LinearLayout>
 
             </LinearLayout>
 
         </LinearLayout>
 
     </android.support.v7.widget.CardView>
-
 
 
 </LinearLayout>
