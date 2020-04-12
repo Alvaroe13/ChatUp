@@ -35,7 +35,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbNotificationsRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbNotificationsRef, dbChatsNodeRef;
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
@@ -81,6 +81,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         contactsNodeRef = database.getReference().child("Contacts");
         //we create "Notifications" node
         dbNotificationsRef = database.getReference().child("Notifications");
+        //We create chat node ref.
+        dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
     }
 
     /**
@@ -95,7 +97,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * here in this method is th logic to fetch info from the databse
+     * here in this method is th logic to fetch info from the database
      */
     private void retrieveInfo(){
 
@@ -520,6 +522,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                 current_database_state = "not_friend_yet";
                                                 buttonFirst.setText(getString(R.string.sendChatRequest));
 
+                                                //we delete chat between contacts
+                                                deleteChat(currentUserID, otherUserId);
+
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
                                                         getString(R.string.contactRemoved));
@@ -615,6 +620,46 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             }
         });
 
+
+
+    }
+
+    /**
+     * method in charge of deleting chats in fragment chats (called in remove contact)
+     */
+    private void deleteChat(final String currentUSer, final String otherUSer){
+
+        dbChatsNodeRef.child(currentUSer).child(otherUSer)
+                .removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()) {
+
+                    dbChatsNodeRef.child(otherUSer).child(currentUSer)
+                            .removeValue()
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                                if ( task.isSuccessful() ) {
+
+                                Log.i(TAG, "onComplete: chat deleted");
+                                Toast.makeText(OtherUserProfileActivity.this, "chat deleted", Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                    Toast.makeText(OtherUserProfileActivity.this, "error with this", Toast.LENGTH_SHORT).show();
+                                }
+                        }
+                    });
+
+                } else{
+                    Toast.makeText(OtherUserProfileActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
 
 
     }

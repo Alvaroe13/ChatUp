@@ -152,7 +152,12 @@ public class RequestsFragment extends Fragment {
                                                          if ( image.equals("imgThumbnail")){
                                                              holder.imageRequest.setImageResource(R.drawable.profile_image);
                                                          } else{
-                                                                 Glide.with(getActivity()).load(image).into(holder.imageRequest);
+                                                             try{
+                                                                 Glide.with(getContext()).load(image).into(holder.imageRequest);
+                                                             } catch (NullPointerException e) {
+                                                                 String exception = e.getMessage();
+                                                                 Log.i(TAG, "onDataChange: exception: " + exception);
+                                                             }
 
                                                          }
 
