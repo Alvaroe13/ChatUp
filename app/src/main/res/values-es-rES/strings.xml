@@ -87,4 +87,6 @@
     <string name="lastSeen">Ultima vez: </string>
     <string name="activeNow">En línea"</string>
     <string name="Offline">Fuera de línea"</string>
+    <string name="typing">Escribiendo…</string>
+
 </resources>

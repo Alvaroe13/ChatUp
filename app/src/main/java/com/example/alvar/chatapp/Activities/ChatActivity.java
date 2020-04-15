@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,9 +76,10 @@ public class ChatActivity extends AppCompatActivity {
         UIElements();
         initRecycleView();
         sendButtonPressed();
+        editTextStatus();
+        otherUserState();
 
     }
-
 
     private void UIElements(){
         chatEditText = findViewById(R.id.chatEditText);
@@ -151,20 +154,32 @@ public class ChatActivity extends AppCompatActivity {
 
                 if (dataSnapshot.exists()){
 
-                    Log.i(TAG, "onDataChange: other User ID after: " + contactID);
-
                     //here we get the other user's current state and we store it in each var
                     String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
                     String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
                     String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+                    //retrieving other user's typing state
+                    String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
 
-                    if (saveSate.equals("Online")){
-                        lastSeenToolbarChat.setText(R.string.activeNow);
-                        onlineIcon.setVisibility(View.VISIBLE);
-                    } else if(saveSate.equals("Offline")){
-                        lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
-                        onlineIcon.setVisibility(View.INVISIBLE);
+                    //if typing state in db is yes we should in toolbar that other user is typing
+                    if (typingState.equals("yes")) {
+
+                        lastSeenToolbarChat.setText(R.string.typing);
+
+                    } else {
+                            //if user is online but not typing we show online on the toolbar
+                        if (saveSate.equals("Online")){
+                            lastSeenToolbarChat.setText(R.string.activeNow);
+                            onlineIcon.setVisibility(View.VISIBLE);
+
+                            //if user is not typing nor "online" we show "offline" on the toolbar.
+                        } else if(saveSate.equals("Offline")){
+                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                            onlineIcon.setVisibility(View.INVISIBLE);
+                        }
+
                     }
+
 
                 } else{
 
@@ -289,7 +304,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        otherUserState();
+
         updateDateTime("Online");
 
         dbMessagesNodeRef.child(currentUserID).child(contactID)
@@ -324,13 +339,15 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        //in case the other close the chat activity the state changes to "offline"
         updateDateTime("Offline");
+        //in the the other user close the chat activity the typing state changes to "no"
+        typingState("no");
     }
 
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
-
     private void updateDateTime(String state){
 
         String currentTime, currentDate;
@@ -355,9 +372,52 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method in charge of checking if edit txt is empty or not
+     */
+    private void editTextStatus() {
 
+        chatEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                String text = s.toString();
+
+                //in edit text is empty we set typing state as "no"
+                if (text.isEmpty()){
+                    typingState("no");
+                }
+                    //if edit text is not empty we set typing state as "yes"
+                    else {
+                    typingState("yes");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+    }
+
+    /**
+     * method in charge of updating the other user's typing state in the db in real time
+     * @param typingState
+     */
+    private void typingState(String typingState){
+
+        HashMap<String, Object> typingStateMap = new HashMap<>();
+        typingStateMap.put("typing" , typingState);
+
+        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
+
+    }
 
 
 }

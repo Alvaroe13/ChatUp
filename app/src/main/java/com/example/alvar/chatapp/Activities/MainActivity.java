@@ -84,15 +84,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-
                 drawerOptionsMenu(menuItem);
-
 
                 return false;
             }
         });
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
+        typingState("no");
     }
 
     @Override
@@ -384,6 +383,15 @@ public class MainActivity extends AppCompatActivity {
         userState.put("time", currentTime);
 
         dbUsersRef.child(currentUserID).child("userState").updateChildren(userState);
+
+    }
+
+    private void typingState(String typingState){
+
+        HashMap<String, Object> typingStateMap = new HashMap<>();
+        typingStateMap.put("typing" , typingState);
+
+        dbUsersRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
 
     }
 
