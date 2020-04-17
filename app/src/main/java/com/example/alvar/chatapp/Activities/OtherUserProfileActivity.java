@@ -97,7 +97,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * here in this method is th logic to fetch info from the database
+     * here in this method is the logic to fetch info from the database
      */
     private void retrieveInfo(){
 
@@ -140,7 +140,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * this method is in charge of the chat requests
+     * this method is in charge of managing the chat requests
      */
     private void manageChatRequest(){
 
@@ -188,8 +188,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             
         }
     }
-
-
 
     /**
      * this method is in charge of uploading the current status of a chat request
@@ -277,7 +275,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         });
     }
 
-
     /**
      * this method is in charge of sending a chat request
      */
@@ -328,7 +325,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
     }
-
 
     /**
      * this method is in charge of removing the chat request info from both nodes created
@@ -393,7 +389,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
     }
-
 
     /**
      * this method contains the logic of the db when a user accepts a request chat,
@@ -497,7 +492,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * this method is in charge of removing a contact
+     */
     private void removeContact() {
 
         contactsNodeRef.child(currentUserID).child(otherUserId)
@@ -568,7 +565,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         intentChatRoom.putExtra("contactName", username);
         intentChatRoom.putExtra("contactImage", imageThumbnail);
         startActivity(intentChatRoom);
+        finish();
     }
+
     /**
      * this method contains the pop-up message when user wants to remove a contact
      * (standard alert dialog)
@@ -595,7 +594,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         return popUpWindow;
     }
-
 
     /**
      * method in charge of saving information in the "Notifications" node
@@ -646,7 +644,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                 if ( task.isSuccessful() ) {
 
                                 Log.i(TAG, "onComplete: chat deleted");
-                                Toast.makeText(OtherUserProfileActivity.this, "chat deleted", Toast.LENGTH_SHORT).show();
 
                             } else {
                                     Toast.makeText(OtherUserProfileActivity.this, "error with this", Toast.LENGTH_SHORT).show();

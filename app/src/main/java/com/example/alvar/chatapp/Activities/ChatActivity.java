@@ -73,7 +73,7 @@ public class ChatActivity extends AppCompatActivity {
 
         fetchInfoIntent();
         initFirebase();
-        setToolbar("",true);
+        setToolbar("",false);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -439,6 +439,17 @@ public class ChatActivity extends AppCompatActivity {
         dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
 
     }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        startActivity(intent);
+
+    }
+
 
 
 }
