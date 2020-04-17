@@ -1,6 +1,7 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
@@ -78,8 +79,10 @@ public class ChatActivity extends AppCompatActivity {
         sendButtonPressed();
         editTextStatus();
         otherUserState();
+        toolbarPressed();
 
     }
+
 
     private void UIElements(){
         chatEditText = findViewById(R.id.chatEditText);
@@ -141,6 +144,8 @@ public class ChatActivity extends AppCompatActivity {
 
 
     }
+
+
 
     /**
      * Here in this method we read the current state of the other user in real time to show it
@@ -404,6 +409,22 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * method oni charge of taking the user to other user's profile when toolbar pressed in the chat room
+     */
+    private void toolbarPressed() {
+
+        toolbarChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentOtherUserProf = new Intent(ChatActivity.this, OtherUserProfileActivity.class);
+                //we send user id through an intent
+                intentOtherUserProf.putExtra("otherUserId" , contactID);
+                startActivity(intentOtherUserProf);
+            }
+        });
     }
 
     /**
