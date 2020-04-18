@@ -362,7 +362,7 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
 
-        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
+        SimpleDateFormat time = new SimpleDateFormat("hh:mm aaa");
         currentTime = time.format(calendar.getTime());
 
         //lets save all this info in a map to uploaded to the Firebase database.
@@ -440,7 +440,10 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * this method ensures when back button is pressed when in the chat room it takes the user to the
+     * main activity
+     */
     @Override
     public void onBackPressed() {
         super.onBackPressed();

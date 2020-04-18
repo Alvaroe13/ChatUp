@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         });
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
+        //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
     }
 
@@ -215,7 +216,8 @@ public class MainActivity extends AppCompatActivity {
         Adapter.addFragment(new ChatsFragment(), getString(R.string.chat));
         Adapter.addFragment(new RequestsFragment(), getString(R.string.requests));
         viewPager.setAdapter(Adapter);
-
+        //this line sets the second fragment as default when app is launched.
+        viewPager.setCurrentItem(1);
     }
 
     /**
@@ -386,6 +388,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method in charge of updating the other user's typing state in the db in real time
+     * @param typingState
+     */
     private void typingState(String typingState){
 
         HashMap<String, Object> typingStateMap = new HashMap<>();
