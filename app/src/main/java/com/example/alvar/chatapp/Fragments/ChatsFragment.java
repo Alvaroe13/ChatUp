@@ -147,6 +147,7 @@ public class ChatsFragment extends Fragment {
                                     //here we fetch info from db
                                     final String name = dataSnapshot.child("name").getValue().toString();
                                     final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+                                    final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
 
                                     //here we set info from db to the UI
                                     holder.username.setText(name);
@@ -163,8 +164,17 @@ public class ChatsFragment extends Fragment {
 
                                     }
 
-                                    //this method show last message in the fragment list with conversations started
-                                    showLastMessage(currentUserID, otherUserID, holder.lastMessage, holder.lastMessageDateField);
+
+                                    if (typingState.equals("yes")){
+                                        holder.lastMessage.setText(R.string.typing);
+                                        holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
+                                    } else{
+                                        //this method show last message in the fragment list with conversations started
+                                        showLastMessage(currentUserID, otherUserID, holder.lastMessage, holder.lastMessageDateField);
+                                        holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
+                                    }
+
+
 
                                     //here we show the last Seen of the other user
                                     if (dataSnapshot.child("userState").hasChild("state")) {
