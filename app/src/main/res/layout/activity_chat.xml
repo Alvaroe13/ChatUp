@@ -42,11 +42,21 @@
 
         <ImageButton
             android:id="@+id/buttonChat"
-            android:layout_width="50dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
+            android:background="@color/color_white"
             android:src="@drawable/icons8_email_send_16" />
+
+        <ImageButton
+            android:id="@+id/buttonAttachFile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toLeftOf="@+id/buttonChat"
+            android:layout_toStartOf="@+id/buttonChat"
+            android:background="@color/color_white"
+            android:src="@drawable/send_files" />
 
     </RelativeLayout>
 

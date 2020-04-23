@@ -8,23 +8,25 @@ public class Messages {
     private String receiverID;
     private String messageDate;
     private String messageTime;
+    private String nameFile;
+    private String messageID;
     private Boolean seen;
 
 
     public Messages() {
     }
 
-
-    public Messages(String message, String senderID, String receiverID, String type, String messageDate ,String messageTime ,Boolean seen) {
+    public Messages(String message, String senderID, String type, String receiverID, String messageDate, String messageTime, String nameFile, String messageID, Boolean seen) {
         this.message = message;
         this.senderID = senderID;
+        this.type = type;
         this.receiverID = receiverID;
         this.messageDate = messageDate;
         this.messageTime = messageTime;
-        this.type = type;
+        this.nameFile = nameFile;
+        this.messageID = messageID;
         this.seen = seen;
     }
-
 
     public String getMessage() {
         return message;
@@ -50,14 +52,6 @@ public class Messages {
         this.type = type;
     }
 
-    public Boolean getSeen() {
-        return seen;
-    }
-
-    public void setSeen(Boolean seen) {
-        this.seen = seen;
-    }
-
     public String getReceiverID() {
         return receiverID;
     }
@@ -80,5 +74,29 @@ public class Messages {
 
     public void setMessageTime(String messageTime) {
         this.messageTime = messageTime;
+    }
+
+    public String getNameFile() {
+        return nameFile;
+    }
+
+    public void setNameFile(String nameFile) {
+        this.nameFile = nameFile;
+    }
+
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
+
+    public Boolean getSeen() {
+        return seen;
+    }
+
+    public void setSeen(Boolean seen) {
+        this.seen = seen;
     }
 }

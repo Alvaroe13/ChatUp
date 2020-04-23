@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -105,9 +106,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         if (messageType.equals("text")){
 
-            messageViewHolder.imageContact.setVisibility(View.INVISIBLE);
-            messageViewHolder.textRightSide.setVisibility(View.INVISIBLE);
-            messageViewHolder.textLeftSide.setVisibility(View.INVISIBLE);
+            messageViewHolder.imageContact.setVisibility(View.GONE);
+            messageViewHolder.textRightSide.setVisibility(View.GONE);
+            messageViewHolder.textLeftSide.setVisibility(View.GONE);
 
 
             //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
@@ -154,6 +155,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         //UI elements
         TextView textRightSide, textLeftSide ;
         CircleImageView imageContact;
+        ImageView sendImageLeft, sendImageRight;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -161,6 +163,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             textLeftSide = itemView.findViewById(R.id.textLeft);
             textRightSide = itemView.findViewById(R.id.textRight);
             imageContact = itemView.findViewById(R.id.imageChat);
+            sendImageLeft = itemView.findViewById(R.id.imageLeft);
+            sendImageRight = itemView.findViewById(R.id.imageRight);
 
         }
 

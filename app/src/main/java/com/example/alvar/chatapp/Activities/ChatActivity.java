@@ -1,10 +1,12 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
     private EditText chatEditText;
-    private ImageButton buttonSend;
+    private ImageButton buttonSend, buttonAttachFile;
     private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
@@ -63,6 +65,8 @@ public class ChatActivity extends AppCompatActivity {
     private String messageText;
     private MessageAdapter adapter;
     private List<Messages> messagesList;
+    //gallery const
+    private static final int GALLERY_REQUEST_NUMBER = 1;
 
 
     @Override
@@ -79,13 +83,16 @@ public class ChatActivity extends AppCompatActivity {
         editTextStatus();
         otherUserState();
         toolbarPressed();
+        
+        attachFileButtonPressed();
+
 
     }
-
 
     private void UIElements(){
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonChat);
+        buttonAttachFile = findViewById(R.id.buttonAttachFile);
     }
 
     /**
@@ -278,6 +285,7 @@ public class ChatActivity extends AppCompatActivity {
         messageDetails.put("receiverID", contactID);
         messageDetails.put("messageDate", lastMessageDate);
         messageDetails.put("messageTime", lastMessageTime);
+        messageDetails.put("messageID", messagePushID);
         messageDetails.put("seen", false);
 
         //this map is for the info shown in the "Messages" node
@@ -450,6 +458,54 @@ public class ChatActivity extends AppCompatActivity {
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
         startActivity(intent);
 
+    }
+
+    /**
+     * when attach file button is pressed
+     */
+    private void attachFileButtonPressed() {
+        buttonAttachFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showAlertDialog();
+                
+            }
+        });
+    }
+
+    /**
+     * here we show the option for the user to choose.
+     */
+    private void showAlertDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+        builder.setTitle("Choose file");
+        builder.setIcon(R.drawable.send_files);
+        builder.setPositiveButton("Document", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(ChatActivity.this, "Document option selected", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("Photo", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                openGallery();
+            }
+        });
+
+        builder.show();
+    }
+
+    /**
+     * this method opens gallery to select the image
+     */
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "SELECT IMAGE"), GALLERY_REQUEST_NUMBER);
     }
 
 
