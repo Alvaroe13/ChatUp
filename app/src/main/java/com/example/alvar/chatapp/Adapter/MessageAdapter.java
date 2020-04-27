@@ -109,6 +109,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.imageContact.setVisibility(View.GONE);
             messageViewHolder.textRightSide.setVisibility(View.GONE);
             messageViewHolder.textLeftSide.setVisibility(View.GONE);
+            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
+            messageViewHolder.sendImageRight.setVisibility(View.GONE);
 
 
             //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
@@ -130,6 +132,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             }
 
+        }
+
+        else if (messageType.equals("image") ){
+
+            messageViewHolder.imageContact.setVisibility(View.GONE);
+            messageViewHolder.textRightSide.setVisibility(View.GONE);
+            messageViewHolder.textLeftSide.setVisibility(View.GONE);
+            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
+            messageViewHolder.sendImageRight.setVisibility(View.GONE);
+
+                if (currentUserID.equals(messageSenderID) ){
+                    messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+                    Glide.with(mContext.getApplicationContext()).load(messages.getMessage()).into(messageViewHolder.sendImageRight);
+                }
+
+        } else {
+
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messages.getMessage()).into(messageViewHolder.sendImageLeft);
 
         }
 

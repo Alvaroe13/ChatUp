@@ -87,6 +87,10 @@
     <string name="activeNow">Active now</string>
     <string name="Offline">Offline"</string>
     <string name="typing">Typing…</string>
+    <string name="Choose_file">Choose file</string>
+    <string name="photo">Photo</string>
+    <string name="PDF">PDF file</string>
+    <string name="Word_Document">Word document</string>
 
 
 </resources>

@@ -88,5 +88,10 @@
     <string name="activeNow">En línea"</string>
     <string name="Offline">Fuera de línea"</string>
     <string name="typing">Escribiendo…</string>
+    <string name="Choose_file">Selecciona archivo</string>
+    <string name="photo">Foto</string>
+    <string name="PDF">Archivo PDF </string>
+    <string name="Word_Document">Documento Word</string>
+
 
 </resources>

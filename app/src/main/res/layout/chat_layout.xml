@@ -58,18 +58,18 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_margin="5dp"
+            android:src="@drawable/file"
             android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_alignParentLeft="true"/>
 
         <ImageView
             android:id="@+id/imageRight"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_margin="5dp"
+            android:src="@drawable/file"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            />
+            android:layout_alignParentRight="true"/>
 
 
     </RelativeLayout>
