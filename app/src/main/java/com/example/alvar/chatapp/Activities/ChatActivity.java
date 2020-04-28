@@ -160,8 +160,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-
-
     /**
      * Here in this method we read the current state of the other user in real time to show it
      * in the toolbar.
@@ -255,70 +253,13 @@ public class ChatActivity extends AppCompatActivity {
                             getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
                 } else {
                     //otherwise we send the message
-                    sendMessage();
+                    //sendMessage();
+                    uploadMessageToDb(messageText, "text");
 
                 }
 
             }
         });
-    }
-
-    /**
-     * this method contains the logic of saving the messages in the database
-     */
-    private void sendMessage() {
-
-        //first we create a ref for sender and receiver to be later saved in the db
-        String messageSenderRef =  currentUserID + "/" + contactID;
-        String messageReceiverRef = contactID + "/" + currentUserID;
-
-        String lastMessageTime, lastMessageDate;
-
-        Calendar calendar =  Calendar.getInstance();
-
-        SimpleDateFormat date = new SimpleDateFormat("dd/MM/yy");
-        lastMessageDate = date.format(calendar.getTime());
-
-        SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
-        lastMessageTime = time.format(calendar.getTime());
-
-
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
-
-        String messagePushKey = messagePushID.getKey();
-
-        //this map is for saving the details of the messages
-        Map<String, Object> messageDetails = new HashMap<>();
-        messageDetails.put("message", messageText);
-        messageDetails.put("type", "text");
-        messageDetails.put("senderID", currentUserID);
-        messageDetails.put("receiverID", contactID);
-        messageDetails.put("messageDate", lastMessageDate);
-        messageDetails.put("messageTime", lastMessageTime);
-        messageDetails.put("messageID", messagePushKey);
-        messageDetails.put("seen", false);
-
-        //this map is for the info shown in the "Messages" node
-        Map<String, Object> chatUsersInfo = new HashMap<>();
-        chatUsersInfo.put(messageSenderRef + "/" + messagePushKey , messageDetails);
-        chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey , messageDetails);
-
-        dbChatsRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete: successfully");
-                } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "error: " + error, Toast.LENGTH_SHORT).show();
-                    Log.i(TAG, "onComplete: error: " + error);
-                }
-
-            }
-        });
-        //we remove any text enter by the user once it's been sent
-        chatEditText.setText("");
-
     }
 
     /**
@@ -468,7 +409,9 @@ public class ChatActivity extends AppCompatActivity {
         super.onBackPressed();
 
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+
 
     }
 
@@ -535,7 +478,6 @@ public class ChatActivity extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "SELECT IMAGE"), GALLERY_REQUEST_NUMBER);
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -591,8 +533,8 @@ public class ChatActivity extends AppCompatActivity {
                     //we parse it to String type.
                     String imageURLInFirebase =  imageUri.toString();
                     Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
-
-                    sendImage(imageURLInFirebase);
+                    //send message here
+                    uploadMessageToDb(imageURLInFirebase, "image");
 
                 } else {
                     String error =  task.getException().toString();
@@ -605,14 +547,18 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void sendImage(String imageURL) {
+    /**
+     * method in charge of uploading message (either "text" or "image" type) in database
+     * @param messageInfo
+     * @param messageType
+     */
+    private void uploadMessageToDb(String messageInfo, String messageType){
 
         //first we create a ref for sender and receiver to be later saved in the db
         String messageSenderRef =  currentUserID + "/" + contactID;
         String messageReceiverRef = contactID + "/" + currentUserID;
 
         String lastMessageTime, lastMessageDate;
-
         Calendar calendar =  Calendar.getInstance();
 
         SimpleDateFormat date = new SimpleDateFormat("dd/MM/yy");
@@ -621,15 +567,15 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         lastMessageTime = time.format(calendar.getTime());
 
-
         messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
 
+        //save unique message id
         String messagePushKey = messagePushID.getKey();
 
         //this map is for saving the details of the messages
         Map<String, Object> messageDetails = new HashMap<>();
-        messageDetails.put("message", imageURL);
-        messageDetails.put("type", "image");
+        messageDetails.put("message", messageInfo);
+        messageDetails.put("type", messageType);
         messageDetails.put("senderID", currentUserID);
         messageDetails.put("receiverID", contactID);
         messageDetails.put("messageDate", lastMessageDate);
@@ -656,7 +602,8 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-
+        //we remove any text enter by the user once it's been sent
+        chatEditText.setText("");
     }
 
 }

@@ -42,14 +42,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         this.mContext = mContext;
     }
 
-    private void initFirebase(){
-       auth =  FirebaseAuth.getInstance();
-       database = FirebaseDatabase.getInstance();
-       dbUsersNodeRef = database.getReference().child("Users");
-    }
-
-
-
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
@@ -59,8 +51,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         //init firebase services as soon as we inflate the view
         initFirebase();
-
-
         return new MessageViewHolder(viewChat);
     }
 
@@ -79,6 +69,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         String messageSenderID = messages.getSenderID();
         String messageType = messages.getType();
+        String messageInfo = messages.getMessage();
+        String messageTime = messages.getMessageTime();
+
+        infoFetchedFromDb(messageSenderID, messageViewHolder);
+        layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder);
+    }
+
+
+    private void initFirebase(){
+        auth =  FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        dbUsersNodeRef = database.getReference().child("Users");
+    }
+
+    /**
+     * here we fetch info from db and fill the fields with it
+     * @param messageSenderID
+     * @param messageViewHolder
+     */
+    private void infoFetchedFromDb(String messageSenderID, final MessageViewHolder messageViewHolder ) {
 
         //here we fetch image from db
         dbUsersNodeRef.child(messageSenderID).addValueEventListener(new ValueEventListener() {
@@ -86,12 +96,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 if (dataSnapshot.exists()){
-
+                    //fetch image info from db
                     String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
-
+                    //if user has not uploaded a pic from  device it means within the db it's values is "imgThumbnail" as default
                     if (imageThumbnail.equals("imgThumbnail")){
                         messageViewHolder.imageContact.setImageResource(R.drawable.profile_image);
                     }else{
+                        //if user has uploaded a pic from device into ChatUp profile settings we retrieve it and show it here
                         Glide.with(mContext.getApplicationContext()).load(imageThumbnail).into(messageViewHolder.imageContact);
                     }
                 }
@@ -102,8 +113,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
         });
 
-        // Here we set the conditions in order to show the correct layout depending on the situation
+    }
 
+    /**
+     * this method is in charge of showing the correct layout in chat room according to the situation
+     * @param messageType
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageTime
+     * @param messageViewHolder
+     */
+    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder) {
+
+        // Here we set the conditions in order to show the correct layout depending on the situation
         if (messageType.equals("text")){
 
             messageViewHolder.imageContact.setVisibility(View.GONE);
@@ -118,7 +140,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
                 messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
-                messageViewHolder.textRightSide.setText(messages.getMessage() + "  " + messages.getMessageTime() );
+                messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime );
                 messageViewHolder.textRightSide.setTextSize(15);
             }
             //if the other user is the one sending the message
@@ -127,35 +149,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
                 messageViewHolder.imageContact.setVisibility(View.VISIBLE);
                 messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
-                messageViewHolder.textLeftSide.setText(messages.getMessage() + "  " + messages.getMessageTime());
+                messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
                 messageViewHolder.textLeftSide.setTextSize(15);
 
             }
 
         }
-
+            //same here as above but when message type is an image
         else if (messageType.equals("image") ){
 
+            // they're all gone by default
             messageViewHolder.imageContact.setVisibility(View.GONE);
             messageViewHolder.textRightSide.setVisibility(View.GONE);
             messageViewHolder.textLeftSide.setVisibility(View.GONE);
             messageViewHolder.sendImageLeft.setVisibility(View.GONE);
             messageViewHolder.sendImageRight.setVisibility(View.GONE);
 
-                if (currentUserID.equals(messageSenderID) ){
-                    messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
-                    Glide.with(mContext.getApplicationContext()).load(messages.getMessage()).into(messageViewHolder.sendImageRight);
-                }
+            if (currentUserID.equals(messageSenderID) ){
+                messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
+            } else {
 
-        } else {
+                messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+                messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
 
-            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
-            Glide.with(mContext.getApplicationContext()).load(messages.getMessage()).into(messageViewHolder.sendImageLeft);
+            }
 
         }
-
-
     }
 
     /**
