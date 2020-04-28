@@ -564,6 +564,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         intentChatRoom.putExtra("contactID", otherUserId);
         intentChatRoom.putExtra("contactName", username);
         intentChatRoom.putExtra("contactImage", imageThumbnail);
+        intentChatRoom.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intentChatRoom);
         finish();
     }
