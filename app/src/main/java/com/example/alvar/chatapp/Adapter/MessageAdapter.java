@@ -4,6 +4,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,9 +74,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String messageType = messages.getType();
         String messageInfo = messages.getMessage();
         String messageTime = messages.getMessageTime();
-
+        //we fetch info from db Users node
         infoFetchedFromDb(messageSenderID, messageViewHolder);
-        layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder);
+        //here's where fun with the layouts starts
+        layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
     }
 
 
@@ -124,7 +127,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageTime
      * @param messageViewHolder
      */
-    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder) {
+    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder, int position) {
 
         // they're all gone by default
         layoutVisibilityGone(messageViewHolder);
@@ -137,13 +140,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 break;
             case "image":
                 //we show layout accordingly
-                showImageLayout(messageSenderID, messageInfo, messageViewHolder );
+                showImageLayout(messageSenderID, messageInfo, messageViewHolder);
                 break;
             case "pdf":
-                //pending to show pdf file in chat room
+                //show pdf file in chat layout
+                showDocument(messageSenderID, messageViewHolder, position);
                 break;
             case "docx":
-                //pending to show word document in chat room
+                //show word file in chat layout
+                showDocument(messageSenderID, messageViewHolder, position);
                 break;
             default:
                 Log.i(TAG, "layoutToShow: nothing else here");
@@ -153,6 +158,51 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
+    /**
+     * method in charge of showing file when user clicks on it
+     * @param messageSenderID
+     * @param messageViewHolder
+     * @param position
+     */
+    private void showDocument(String messageSenderID, MessageViewHolder messageViewHolder, int position) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
+        if (currentUserID.equals(messageSenderID) ) {
+            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageRight.setBackgroundResource(R.drawable.file);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, position);
+        }
+        //if the other user is the one sending the file
+        else {
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageLeft.setBackgroundResource(R.drawable.file);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, position);
+        }
+    }
+
+    /**
+     * method in charge of launching file when clicked by user
+     * @param messageViewHolder
+     * @param position
+     */
+    private void openFile(final MessageViewHolder messageViewHolder, final int position){
+
+        messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( messagesList.get(position).getMessage()) );
+                messageViewHolder.itemView.getContext().startActivity(i);
+            }
+        });
+
+    }
+
+    /**
+     * method in charge of setting every view in chat layout as GONE and we make them visible accordingly
+     * @param messageViewHolder
+     */
     private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
         messageViewHolder.imageContact.setVisibility(View.GONE);
         messageViewHolder.textRightSide.setVisibility(View.GONE);
@@ -161,6 +211,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         messageViewHolder.sendImageRight.setVisibility(View.GONE);
     }
 
+    /**
+     * method in charge of showing layout only when it comes to a message "text" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageTime
+     * @param messageViewHolder
+     */
     private void showTextLayout( String messageSenderID, String messageInfo,  String messageTime, MessageViewHolder messageViewHolder) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
@@ -181,6 +238,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
+    /**
+     * method in charge of showing layout only when it comes to a message "image" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageViewHolder
+     */
     private void showImageLayout(String messageSenderID, String messageInfo,  MessageViewHolder messageViewHolder ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)

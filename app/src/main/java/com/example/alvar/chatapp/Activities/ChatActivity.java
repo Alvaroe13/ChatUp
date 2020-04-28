@@ -573,7 +573,7 @@ public class ChatActivity extends AppCompatActivity {
     private void saveWordInStorage(Uri file){
 
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
+        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
 
         messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
 
@@ -672,7 +672,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of uploading message (either "text" or "image" type) in database
+     * method in charge of uploading message (either text, image, or file type) in database
      * @param messageInfo
      * @param messageType
      */
