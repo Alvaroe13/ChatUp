@@ -59,22 +59,31 @@
             android:layout_height="150dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
-            android:layout_marginLeft="30dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginLeft="55dp"
+            android:layout_marginStart="55dp"
+            android:layout_marginTop="1dp"
             android:layout_marginBottom="5dp"
             android:layout_toEndOf="@+id/imageChat"
             android:layout_toRightOf="@+id/imageChat"
-            android:src="@drawable/file"/>
+            android:src="@drawable/file"
+            android:padding="5dp"
+            android:background="@drawable/left_message_layout"
+            android:scaleType="centerCrop"/>
 
         <ImageView
             android:id="@+id/imageRight"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="1dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             android:src="@drawable/file"
+            android:padding="5dp"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"/>
+            android:layout_alignParentRight="true"
+            android:background="@drawable/right_message_layout"
+            android:scaleType="centerCrop"/>
 
 
     </RelativeLayout>
