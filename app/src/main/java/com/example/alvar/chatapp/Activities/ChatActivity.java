@@ -74,8 +74,15 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
-    //gallery const
-    private static final int GALLERY_REQUEST_NUMBER = 1;
+    // File request const
+    private static final int FILE_REQUEST_NUMBER = 1;
+    //Const for options intent in Alert Dialog (image, pdf, word)
+    public static final String IMAGE_OPTION = "image/*";
+    public static final String SELECT_IMAGE = "SELECT IMAGE" ;
+    public static final String PDF_OPTION = "application/pdf" ;
+    public static final String SELECT_PDF = "SELECT PDF FILE" ;
+    public static final String WORD_DOCUMENT_OPTION = "application/msword" ;
+    public static final String SELECT_WORD_DOCUMENT = "SELECT WORD DOCUMENT" ;
 
 
 
@@ -94,7 +101,6 @@ public class ChatActivity extends AppCompatActivity {
         otherUserState();
         toolbarPressed();
         attachFileButtonPressed();
-
 
     }
 
@@ -445,17 +451,17 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int option) {
 
                 switch (option){
-                    case 0:
+                    case 0: //if user selected photo option in pop up window
                         optionSelected = "photo";
-                        openGallery();
+                        openOptions( IMAGE_OPTION , SELECT_IMAGE );
                         break;
-                    case 1:
+                    case 1: //if user selected pdf option in pop up window
                         optionSelected = "pdf file";
-                        Toast.makeText(ChatActivity.this, "pdf file option selected", Toast.LENGTH_SHORT).show();
+                        openOptions( PDF_OPTION , SELECT_PDF );
                         break;
-                    case 2:
+                    case 2: //if user selected word option in pop up window
                         optionSelected = "word document";
-                        Toast.makeText(ChatActivity.this, "word document option selected", Toast.LENGTH_SHORT).show();
+                        openOptions(WORD_DOCUMENT_OPTION , SELECT_WORD_DOCUMENT);
                         break;
                     default:
                         Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
@@ -469,30 +475,148 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * this method opens gallery to select the image
+     * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
+     * @param fileType
+     * @param title
      */
-    private void openGallery() {
+    private void openOptions(String fileType, String title) {
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType(fileType);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "SELECT IMAGE"), GALLERY_REQUEST_NUMBER);
+        startActivityForResult(Intent.createChooser(intent, title), FILE_REQUEST_NUMBER);
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if ( requestCode == GALLERY_REQUEST_NUMBER && resultCode == RESULT_OK && data != null ){
-            //we store the image in this var of URI type.
+        if ( requestCode == FILE_REQUEST_NUMBER && resultCode == RESULT_OK && data != null ){
+            //we store the file (image, pdf, word) selected in this var of URI type.
             file = data.getData();
 
-            if ( optionSelected.equals("photo") ){
-                savePhotoInStorage(file);
+                switch (optionSelected){
+                    case "photo":
+                        savePhotoInStorage(file);
+                        break;
+                    case "pdf file":
+                        Toast.makeText(this, "pdf pressed", Toast.LENGTH_SHORT).show();
+                        savePDFInStorage(file);
+                        break;
+                    case "word document":
+                        Toast.makeText(this, "word pressed", Toast.LENGTH_SHORT).show();
+                        saveWordInStorage(file);
+                        break;
+                    default:
+                        Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
+                }
+
             }
-        }
 
     }
 
+    /**
+     * method in charge of uploading pdf file selected by user into firebase storage
+     * @param file
+     */
+    private void savePDFInStorage(Uri file) {
+
+        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
+        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
+
+        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+
+        String messagePushKey = messagePushID.getKey();
+
+        //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
+        final StorageReference fileLocation = storageFolderRef.child( messagePushKey + ".pdf");
+        // we upload file to the firebase storage using UploadTask
+        uploadTask = fileLocation.putFile(file);
+
+        //lets check if image was uploaded correctly in the firebase storage service
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+
+                if (!task.isSuccessful()){
+
+                    throw task.getException();
+                }
+                return fileLocation.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+
+                if (task.isSuccessful()){
+                    // here we get the final image URI from storage
+                    Uri fileUri = task.getResult();
+                    //we parse it to String type.
+                    String fileURLInFirebase =  fileUri.toString();
+                    Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    //send message here
+                    uploadMessageToDb(fileURLInFirebase, "pdf");
+
+                } else {
+                    String error =  task.getException().toString();
+                    Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }
+
+    /**
+     * method in charge of uploading word file selected by user into firebase storage
+     * @param file
+     */
+    private void saveWordInStorage(Uri file){
+
+        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
+        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
+
+        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+
+        String messagePushKey = messagePushID.getKey();
+
+        //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
+        final StorageReference fileLocation = storageFolderRef.child( messagePushKey + ".docx");
+        // we upload file to the firebase storage using UploadTask
+        uploadTask = fileLocation.putFile(file);
+
+        //lets check if image was uploaded correctly in the firebase storage service
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+
+                if (!task.isSuccessful()){
+
+                    throw task.getException();
+                }
+                return fileLocation.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+
+                if (task.isSuccessful()){
+                    // here we get the final image URI from storage
+                    Uri fileUri = task.getResult();
+                    //we parse it to String type.
+                    String fileURLInFirebase =  fileUri.toString();
+                    Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    //send message here
+                    uploadMessageToDb(fileURLInFirebase, "docx");
+
+                } else {
+                    String error =  task.getException().toString();
+                    Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+    }
 
     /**
      * file in charge of uploading photo from device to firebase

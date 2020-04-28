@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,57 +126,73 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder) {
 
-        // Here we set the conditions in order to show the correct layout depending on the situation
-        if (messageType.equals("text")){
+        // they're all gone by default
+        layoutVisibilityGone(messageViewHolder);
 
-            messageViewHolder.imageContact.setVisibility(View.GONE);
-            messageViewHolder.textRightSide.setVisibility(View.GONE);
-            messageViewHolder.textLeftSide.setVisibility(View.GONE);
-            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
-            messageViewHolder.sendImageRight.setVisibility(View.GONE);
+       //lets show the message depending on the type of message
+        switch (messageType){
+            case "text":
+                //we show layout accordingly
+                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder);
+                break;
+            case "image":
+                //we show layout accordingly
+                showImageLayout(messageSenderID, messageInfo, messageViewHolder );
+                break;
+            case "pdf":
+                //pending to show pdf file in chat room
+                break;
+            case "docx":
+                //pending to show word document in chat room
+                break;
+            default:
+                Log.i(TAG, "layoutToShow: nothing else here");
 
-
-            //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
-            if (currentUserID.equals(messageSenderID)){
-
-                messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
-                messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
-                messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime );
-                messageViewHolder.textRightSide.setTextSize(15);
-            }
-            //if the other user is the one sending the message
-            else{
-
-                messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
-                messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-                messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
-                messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
-                messageViewHolder.textLeftSide.setTextSize(15);
-
-            }
 
         }
-            //same here as above but when message type is an image
-        else if (messageType.equals("image") ){
 
-            // they're all gone by default
-            messageViewHolder.imageContact.setVisibility(View.GONE);
-            messageViewHolder.textRightSide.setVisibility(View.GONE);
-            messageViewHolder.textLeftSide.setVisibility(View.GONE);
-            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
-            messageViewHolder.sendImageRight.setVisibility(View.GONE);
+    }
 
-            if (currentUserID.equals(messageSenderID) ){
-                messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
-                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
-            } else {
+    private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
+        messageViewHolder.imageContact.setVisibility(View.GONE);
+        messageViewHolder.textRightSide.setVisibility(View.GONE);
+        messageViewHolder.textLeftSide.setVisibility(View.GONE);
+        messageViewHolder.sendImageLeft.setVisibility(View.GONE);
+        messageViewHolder.sendImageRight.setVisibility(View.GONE);
+    }
 
-                messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-                messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
-                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
+    private void showTextLayout( String messageSenderID, String messageInfo,  String messageTime, MessageViewHolder messageViewHolder) {
 
-            }
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
+        if (currentUserID.equals(messageSenderID)){
+            messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
+            messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
+            messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime );
+            messageViewHolder.textRightSide.setTextSize(15);
+        }
+        //if the other user is the one sending the message
+        else{
+            messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
+            messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
+            messageViewHolder.textLeftSide.setTextSize(15);
+        }
 
+    }
+
+    private void showImageLayout(String messageSenderID, String messageInfo,  MessageViewHolder messageViewHolder ) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
+        if (currentUserID.equals(messageSenderID) ){
+            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
+        }
+        //if the other user is the one sending the image
+        else {
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
         }
     }
 
