@@ -8,10 +8,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -166,11 +170,13 @@ public class ChatsFragment extends Fragment {
 
 
                                     if (typingState.equals("yes")){
+                                        holder.smallIcon.setVisibility(View.GONE);
                                         holder.lastMessage.setText(R.string.typing);
                                         holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
                                     } else{
                                         //this method show last message in the fragment list with conversations started
-                                        showLastMessage(currentUserID, otherUserID, holder.lastMessage, holder.lastMessageDateField);
+                                        showLastMessage(currentUserID, otherUserID, holder.lastMessage,
+                                                                    holder.lastMessageDateField, holder.smallIcon );
                                         holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
                                     }
 
@@ -245,7 +251,8 @@ public class ChatsFragment extends Fragment {
      * @param otherUserID
      * @param lastMessageField
      */
-    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField, final TextView lastMessageDateField) {
+    private void showLastMessage(final String currentUserID, final String otherUserID,
+                                 final TextView lastMessageField, final TextView lastMessageDateField, final ImageButton smallIcon) {
 
         //retrieve info from the db node "Chats" / "Messages"
         dbChatsNodeRef.child(currentUserID).child(otherUserID).addValueEventListener(new ValueEventListener() {
@@ -265,16 +272,32 @@ public class ChatsFragment extends Fragment {
                         if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
                                 message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
 
-                            lastMessage = message.getMessage();
-                            lastMessageField.setText(lastMessage);
+                            smallIcon.setVisibility(View.GONE);
 
-                            lastMessageDate = message.getMessageDate();
-                            lastMessageDateField.setText(lastMessageDate);
+                            switch (message.getType()){
+                                case "image":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    lastMessageField.setText(R.string.photo);
+                                    break;
+                                case "pdf":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                    lastMessageField.setText(R.string.PDF);
+                                    break;
+                                case "docx":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                    lastMessageField.setText(R.string.Word_Document);
+                                    break;
+                                default: //"text" is the one by default
+                                    lastMessage = message.getMessage();
+                                    lastMessageField.setText(lastMessage);
 
-                        } else {
-                            Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
-                            Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
-                            Log.i(TAG, "onDataChange: last message date: " + message.getMessageDate());
+                                    lastMessageDate = message.getMessageDate();
+                                    lastMessageDateField.setText(lastMessageDate);
+                            }
+
+
                         }
 
                     }
@@ -293,7 +316,6 @@ public class ChatsFragment extends Fragment {
 
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
@@ -310,6 +332,7 @@ public class ChatsFragment extends Fragment {
         RelativeLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
         TextView username, lastMessage, lastMessageDateField;
+        ImageButton smallIcon;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -321,6 +344,7 @@ public class ChatsFragment extends Fragment {
             lastMessage = itemView.findViewById(R.id.lastMessage);
             lastMessageDateField = itemView.findViewById(R.id.lastMessageDate);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
+            smallIcon = itemView.findViewById(R.id.smallIcon);
         }
 
 
