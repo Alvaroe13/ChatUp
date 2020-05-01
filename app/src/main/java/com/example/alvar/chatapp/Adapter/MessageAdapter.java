@@ -198,9 +198,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             public void onClick(View v) {
 
                 if ( messageType.equals("image") ){
-                    Intent intentImage = new Intent(mContext , ImageActivity.class);
-                    intentImage.putExtra("messageContent", message );
-                    messageViewHolder.itemView.getContext().startActivity(intentImage);
                     showImageRoom(message, messageViewHolder);
                 }
                 //if it's a "pdf" or "docx" we show option to download file.

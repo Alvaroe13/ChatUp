@@ -44,7 +44,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     //vars
     private String otherUserId, currentUserID;
     private String current_database_state = "not_friend_yet";
-    private String username, status, imageThumbnail;
+    private String username, status, imageThumbnail, imageProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +56,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         retrieveInfo();
         bindUI();
         manageChatRequest();
+        imageProfilePressed();
 
     }
 
@@ -125,6 +126,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
          username = dataSnapshot.child("name").getValue().toString();
          status = dataSnapshot.child("status").getValue().toString();
          imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+         imageProfile = dataSnapshot.child("image").getValue().toString();
+
 
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
@@ -661,6 +664,26 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
     }
+
+
+    private void imageProfilePressed() {
+
+        otherUserImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToImageBigRoom();
+            }
+        });
+
+    }
+
+    private void goToImageBigRoom() {
+
+        Intent intent = new Intent(this, ImageActivity.class);
+        intent.putExtra("messageContent", imageProfile );
+        startActivity(intent);
+    }
+
 
 }
 
