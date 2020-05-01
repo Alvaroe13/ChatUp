@@ -483,14 +483,15 @@ public class ChatActivity extends AppCompatActivity {
                 switch (optionSelected){
                     case "photo":
                         savePhotoInStorage(file);
+                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                         break;
                     case "pdf file":
-                        Toast.makeText(this, "pdf pressed", Toast.LENGTH_SHORT).show();
                         savePDFInStorage(file);
+                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                         break;
                     case "word document":
-                        Toast.makeText(this, "word pressed", Toast.LENGTH_SHORT).show();
                         saveWordInStorage(file);
+                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                         break;
                     default:
                         Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
@@ -648,6 +649,7 @@ public class ChatActivity extends AppCompatActivity {
                 } else {
                     String error =  task.getException().toString();
                     Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "onComplete: error");
                 }
 
             }

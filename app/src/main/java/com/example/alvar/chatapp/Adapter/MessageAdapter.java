@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Model.Messages;
@@ -140,20 +141,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 break;
             case "image":
                 //we show layout accordingly
-                showImageLayout(messageSenderID, messageInfo, messageViewHolder);
+                showImageLayout(messageSenderID, messageInfo, messageViewHolder, messageType, position);
                 break;
-            case "pdf":
-                //show pdf file in chat layout
-                showDocument(messageSenderID, messageViewHolder, position);
-                break;
-            case "docx":
-                //show word file in chat layout
-                showDocument(messageSenderID, messageViewHolder, position);
-                break;
-            default:
-                Log.i(TAG, "layoutToShow: nothing else here");
-
-
+            default: //if message type is either pdf or docx.
+                showDocument(messageSenderID, messageViewHolder, messageType , position);
         }
 
     }
@@ -164,10 +155,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageViewHolder
      * @param position
      */
-    private void showDocument(String messageSenderID, MessageViewHolder messageViewHolder, int position) {
+    private void showDocument(String messageSenderID, MessageViewHolder messageViewHolder, String messageType, int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
-        if (currentUserID.equals(messageSenderID) ) {
+        if (currentUserID.equals(messageSenderID)) {
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             //let's make sure every time we sent a file Glide retrieves the Doc image template
             // to avoid being one file replaced when other is send after
@@ -175,7 +166,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
                     .into(messageViewHolder.sendImageRight);
             //if user clicks on the file it opens
-            openFile(messageViewHolder, position);
+            openFile(messageViewHolder, messageType, position);
         }
         //if the other user is the one sending the file
         else {
@@ -186,7 +177,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
                     .into( messageViewHolder.sendImageLeft);
             //if user clicks on the file it opens
-            openFile(messageViewHolder, position);
+            openFile(messageViewHolder, messageType , position);
         }
     }
 
@@ -195,13 +186,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageViewHolder
      * @param position
      */
-    private void openFile(final MessageViewHolder messageViewHolder, final int position){
+    private void openFile(final MessageViewHolder messageViewHolder, final String messageType,  final int position ){
 
+        //when message box is pressed
         messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( messagesList.get(position).getMessage()) );
-                messageViewHolder.itemView.getContext().startActivity(i);
+
+                if ( messageType.equals("image") ){
+                    Toast.makeText(mContext, "image pressed ", Toast.LENGTH_SHORT).show();
+                }
+                //if it's a "pdf" or "docx" we show option to download file.
+                else {
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( messagesList.get(position).getMessage()) );
+                    messageViewHolder.itemView.getContext().startActivity(i);
+                }
+
             }
         });
 
@@ -252,18 +252,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageInfo
      * @param messageViewHolder
      */
-    private void showImageLayout(String messageSenderID, String messageInfo,  MessageViewHolder messageViewHolder ) {
+    private void showImageLayout(String messageSenderID, String messageInfo,  MessageViewHolder messageViewHolder, String messageType, int position ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
         if (currentUserID.equals(messageSenderID) ){
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType , position);
         }
         //if the other user is the one sending the image
         else {
             messageViewHolder.imageContact.setVisibility(View.VISIBLE);
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType , position);
         }
     }
 
