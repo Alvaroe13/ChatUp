@@ -93,7 +93,7 @@ public class ChatActivity extends AppCompatActivity {
 
         fetchInfoIntent();
         initFirebase();
-        setToolbar("",false);
+        setToolbar("",true);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -403,21 +403,6 @@ public class ChatActivity extends AppCompatActivity {
         typingStateMap.put("typing" , typingState);
 
         dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
-
-    }
-
-    /**
-     * this method ensures when back button is pressed when in the chat room it takes the user to the
-     * main activity
-     */
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-
 
     }
 

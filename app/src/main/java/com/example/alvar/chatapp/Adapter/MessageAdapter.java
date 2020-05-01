@@ -169,14 +169,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
         if (currentUserID.equals(messageSenderID) ) {
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
-            messageViewHolder.sendImageRight.setBackgroundResource(R.drawable.file);
+            //let's make sure every time we sent a file Glide retrieves the Doc image template
+            // to avoid being one file replaced when other is send after
+            Glide.with(mContext.getApplicationContext())
+                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .into(messageViewHolder.sendImageRight);
             //if user clicks on the file it opens
             openFile(messageViewHolder, position);
         }
         //if the other user is the one sending the file
         else {
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
-            messageViewHolder.sendImageLeft.setBackgroundResource(R.drawable.file);
+            //let's make sure every time we sent a file Glide retrieves the Doc image template
+            // to avoid being one file replaced when other is send after
+            Glide.with(mContext.getApplicationContext())
+                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .into( messageViewHolder.sendImageLeft);
             //if user clicks on the file it opens
             openFile(messageViewHolder, position);
         }

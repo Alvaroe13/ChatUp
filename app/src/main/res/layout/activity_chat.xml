@@ -35,19 +35,10 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="2dp"
             android:layout_marginLeft="2dp"
-            android:layout_toLeftOf="@+id/buttonChat"
-            android:layout_toStartOf="@+id/buttonChat"
+            android:layout_toLeftOf="@+id/buttonAttachFile"
+            android:layout_toStartOf="@+id/buttonAttachFile"
             android:background="@android:color/transparent"
             android:hint="@string/textChatHint" />
-
-        <ImageButton
-            android:id="@+id/buttonChat"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:background="@color/color_white"
-            android:src="@drawable/icons8_email_send_16" />
 
         <ImageButton
             android:id="@+id/buttonAttachFile"
@@ -56,7 +47,16 @@
             android:layout_toLeftOf="@+id/buttonChat"
             android:layout_toStartOf="@+id/buttonChat"
             android:background="@color/color_white"
-            android:src="@drawable/send_files" />
+            android:src="@drawable/send_files"/>
+
+        <ImageButton
+            android:id="@+id/buttonChat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:background="@color/color_white"
+            android:src="@drawable/icons8_email_send_16"/>
 
     </RelativeLayout>
 
