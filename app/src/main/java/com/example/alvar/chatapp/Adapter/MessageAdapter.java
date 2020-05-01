@@ -4,11 +4,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Model.Messages;
@@ -71,9 +75,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String messageType = messages.getType();
         String messageInfo = messages.getMessage();
         String messageTime = messages.getMessageTime();
-
+        //we fetch info from db Users node
         infoFetchedFromDb(messageSenderID, messageViewHolder);
-        layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder);
+        //here's where fun with the layouts starts
+        layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
     }
 
 
@@ -123,59 +128,146 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageTime
      * @param messageViewHolder
      */
-    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder) {
+    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder, int position) {
 
-        // Here we set the conditions in order to show the correct layout depending on the situation
-        if (messageType.equals("text")){
+        // they're all gone by default
+        layoutVisibilityGone(messageViewHolder);
 
-            messageViewHolder.imageContact.setVisibility(View.GONE);
-            messageViewHolder.textRightSide.setVisibility(View.GONE);
-            messageViewHolder.textLeftSide.setVisibility(View.GONE);
-            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
-            messageViewHolder.sendImageRight.setVisibility(View.GONE);
-
-
-            //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
-            if (currentUserID.equals(messageSenderID)){
-
-                messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
-                messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
-                messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime );
-                messageViewHolder.textRightSide.setTextSize(15);
-            }
-            //if the other user is the one sending the message
-            else{
-
-                messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
-                messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-                messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
-                messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
-                messageViewHolder.textLeftSide.setTextSize(15);
-
-            }
-
+       //lets show the message depending on the type of message
+        switch (messageType){
+            case "text":
+                //we show layout accordingly
+                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder);
+                break;
+            case "image":
+                //we show layout accordingly
+                showImageLayout(messageSenderID, messageInfo, messageViewHolder, messageType, position);
+                break;
+            default: //if message type is either pdf or docx.
+                showDocument(messageSenderID, messageViewHolder, messageType , position);
         }
-            //same here as above but when message type is an image
-        else if (messageType.equals("image") ){
 
-            // they're all gone by default
-            messageViewHolder.imageContact.setVisibility(View.GONE);
-            messageViewHolder.textRightSide.setVisibility(View.GONE);
-            messageViewHolder.textLeftSide.setVisibility(View.GONE);
-            messageViewHolder.sendImageLeft.setVisibility(View.GONE);
-            messageViewHolder.sendImageRight.setVisibility(View.GONE);
+    }
 
-            if (currentUserID.equals(messageSenderID) ){
-                messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
-                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
-            } else {
+    /**
+     * method in charge of showing file when user clicks on it
+     * @param messageSenderID
+     * @param messageViewHolder
+     * @param position
+     */
+    private void showDocument(String messageSenderID, MessageViewHolder messageViewHolder, String messageType, int position) {
 
-                messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-                messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
-                Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
+        if (currentUserID.equals(messageSenderID)) {
+            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+            //let's make sure every time we sent a file Glide retrieves the Doc image template
+            // to avoid being one file replaced when other is send after
+            Glide.with(mContext.getApplicationContext())
+                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .into(messageViewHolder.sendImageRight);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType, position);
+        }
+        //if the other user is the one sending the file
+        else {
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            //let's make sure every time we sent a file Glide retrieves the Doc image template
+            // to avoid being one file replaced when other is send after
+            Glide.with(mContext.getApplicationContext())
+                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .into( messageViewHolder.sendImageLeft);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType , position);
+        }
+    }
+
+    /**
+     * method in charge of launching file when clicked by user
+     * @param messageViewHolder
+     * @param position
+     */
+    private void openFile(final MessageViewHolder messageViewHolder, final String messageType,  final int position ){
+
+        //when message box is pressed
+        messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if ( messageType.equals("image") ){
+                    Toast.makeText(mContext, "image pressed ", Toast.LENGTH_SHORT).show();
+                }
+                //if it's a "pdf" or "docx" we show option to download file.
+                else {
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( messagesList.get(position).getMessage()) );
+                    messageViewHolder.itemView.getContext().startActivity(i);
+                }
 
             }
+        });
 
+    }
+
+    /**
+     * method in charge of setting every view in chat layout as GONE and we make them visible accordingly
+     * @param messageViewHolder
+     */
+    private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
+        messageViewHolder.imageContact.setVisibility(View.GONE);
+        messageViewHolder.textRightSide.setVisibility(View.GONE);
+        messageViewHolder.textLeftSide.setVisibility(View.GONE);
+        messageViewHolder.sendImageLeft.setVisibility(View.GONE);
+        messageViewHolder.sendImageRight.setVisibility(View.GONE);
+    }
+
+    /**
+     * method in charge of showing layout only when it comes to a message "text" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageTime
+     * @param messageViewHolder
+     */
+    private void showTextLayout( String messageSenderID, String messageInfo,  String messageTime, MessageViewHolder messageViewHolder) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
+        if (currentUserID.equals(messageSenderID)){
+            messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
+            messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
+            messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime );
+            messageViewHolder.textRightSide.setTextSize(15);
+        }
+        //if the other user is the one sending the message
+        else{
+            messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
+            messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
+            messageViewHolder.textLeftSide.setTextSize(15);
+        }
+
+    }
+
+    /**
+     * method in charge of showing layout only when it comes to a message "image" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageViewHolder
+     */
+    private void showImageLayout(String messageSenderID, String messageInfo,  MessageViewHolder messageViewHolder, String messageType, int position ) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
+        if (currentUserID.equals(messageSenderID) ){
+            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType , position);
+        }
+        //if the other user is the one sending the image
+        else {
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
+            //if user clicks on the file it opens
+            openFile(messageViewHolder, messageType , position);
         }
     }
 
