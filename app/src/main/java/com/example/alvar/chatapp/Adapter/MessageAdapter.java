@@ -155,6 +155,128 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     /**
+     * method in charge of setting every view in chat layout as GONE and we make them visible accordingly
+     * @param messageViewHolder
+     */
+    private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
+        messageViewHolder.imageContact.setVisibility(View.GONE);
+        messageViewHolder.textRightSide.setVisibility(View.GONE);
+        messageViewHolder.textLeftSide.setVisibility(View.GONE);
+        messageViewHolder.sendImageLeft.setVisibility(View.GONE);
+        messageViewHolder.sendImageRight.setVisibility(View.GONE);
+    }
+
+    /**
+     * method in charge of showing layout only when it comes to a message "text" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageTime
+     * @param messageViewHolder
+     */
+    private void showTextLayout(String messageSenderID, String messageInfo, String messageTime,
+                                MessageViewHolder messageViewHolder) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
+        if (currentUserID.equals(messageSenderID)) {
+            messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
+            messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
+            messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime);
+            messageViewHolder.textRightSide.setTextSize(15);
+            //if long pressed over layout
+            messageViewHolder.textRightSide.setLongClickable(true);
+            messageViewHolder.textRightSide.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsRightSide();
+                    Log.i(TAG, "onLongClick: long pressed layout");
+                    return true;
+                }
+            });
+
+        }
+        //if the other user is the one sending the message
+        else {
+            messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
+            messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
+            messageViewHolder.textLeftSide.setTextSize(15);
+            //if long pressed over layout
+            messageViewHolder.textLeftSide.setLongClickable(true);
+            messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsLeftSide();
+                    Log.i(TAG, "onLongClick: long pressed left side");
+                    return true;
+                }
+            });
+        }
+
+    }
+
+    /**
+     * method in charge of showing layout only when it comes to a message "image" type.
+     * @param messageSenderID
+     * @param messageInfo
+     * @param messageViewHolder
+     */
+    private void showImageLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder,
+                                 final String messageType, final int position) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
+        if (currentUserID.equals(messageSenderID)) {
+            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
+
+            //if user clicks on the file it opens
+            messageViewHolder.sendImageRight.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openFile(messageViewHolder, messageType, position);
+                    Log.i(TAG, "onClick: short pressed right side");
+                }
+            });
+            //if long pressed over layout
+            messageViewHolder.sendImageRight.setLongClickable(true);
+            messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsRightSide();
+                    Log.i(TAG, "onLongClick: long pressed right side");
+                    return true;
+                }
+            });
+
+        }
+        //if the other user is the one sending the image
+        else {
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
+            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
+
+            //if user clicks on the file it opens
+            messageViewHolder.sendImageLeft.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openFile(messageViewHolder, messageType, position);
+                    Log.i(TAG, "onClick: short pressed left side");
+                }
+            });
+            //if long pressed over layout
+            messageViewHolder.sendImageLeft.setLongClickable(true);
+            messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsLeftSide();
+                    Log.i(TAG, "onLongClick: long pressed left side");
+                    return true;
+                }
+            });
+        }
+    }
+
+    /**
      * method in charge of showing file (pdf/docx) when sent by any user
      * @param messageSenderID
      * @param messageViewHolder
@@ -311,128 +433,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         intentImage.putExtra("messageContent", messageContent);
         messageViewHolder.itemView.getContext().startActivity(intentImage);
 
-    }
-
-    /**
-     * method in charge of setting every view in chat layout as GONE and we make them visible accordingly
-     * @param messageViewHolder
-     */
-    private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
-        messageViewHolder.imageContact.setVisibility(View.GONE);
-        messageViewHolder.textRightSide.setVisibility(View.GONE);
-        messageViewHolder.textLeftSide.setVisibility(View.GONE);
-        messageViewHolder.sendImageLeft.setVisibility(View.GONE);
-        messageViewHolder.sendImageRight.setVisibility(View.GONE);
-    }
-
-    /**
-     * method in charge of showing layout only when it comes to a message "text" type.
-     * @param messageSenderID
-     * @param messageInfo
-     * @param messageTime
-     * @param messageViewHolder
-     */
-    private void showTextLayout(String messageSenderID, String messageInfo, String messageTime,
-                                                                MessageViewHolder messageViewHolder) {
-
-        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
-        if (currentUserID.equals(messageSenderID)) {
-            messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
-            messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
-            messageViewHolder.textRightSide.setText(messageInfo + "  " + messageTime);
-            messageViewHolder.textRightSide.setTextSize(15);
-            //if long pressed over layout
-            messageViewHolder.textRightSide.setLongClickable(true);
-            messageViewHolder.textRightSide.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide();
-                    Log.i(TAG, "onLongClick: long pressed layout");
-                    return true;
-                }
-            });
-
-        }
-        //if the other user is the one sending the message
-        else {
-            messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
-            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
-            messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
-            messageViewHolder.textLeftSide.setTextSize(15);
-            //if long pressed over layout
-            messageViewHolder.textLeftSide.setLongClickable(true);
-            messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide();
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });
-        }
-
-    }
-
-    /**
-     * method in charge of showing layout only when it comes to a message "image" type.
-     * @param messageSenderID
-     * @param messageInfo
-     * @param messageViewHolder
-     */
-    private void showImageLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder,
-                                                                            final String messageType, final int position) {
-
-        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
-        if (currentUserID.equals(messageSenderID)) {
-            messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
-            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
-
-            //if user clicks on the file it opens
-            messageViewHolder.sendImageRight.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openFile(messageViewHolder, messageType, position);
-                    Log.i(TAG, "onClick: short pressed right side");
-                }
-            });
-            //if long pressed over layout
-            messageViewHolder.sendImageRight.setLongClickable(true);
-            messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide();
-                    Log.i(TAG, "onLongClick: long pressed right side");
-                    return true;
-                }
-            });
-
-        }
-        //if the other user is the one sending the image
-        else {
-            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
-            Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
-
-            //if user clicks on the file it opens
-            messageViewHolder.sendImageLeft.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openFile(messageViewHolder, messageType, position);
-                    Log.i(TAG, "onClick: short pressed left side");
-                }
-            });
-            //if long pressed over layout
-            messageViewHolder.sendImageLeft.setLongClickable(true);
-            messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide();
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });
-        }
     }
 
     /**
