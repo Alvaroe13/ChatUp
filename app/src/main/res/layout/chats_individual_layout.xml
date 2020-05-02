@@ -41,8 +41,8 @@
             android:id="@+id/usernameChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="3dp"
             android:layout_toEndOf="@+id/imageChat"
             android:layout_toRightOf="@+id/imageChat"
@@ -62,23 +62,40 @@
             android:text="date"
             android:textSize="10sp" />
 
-        <TextView
-            android:id="@+id/lastMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+
+            <TextView
+                android:id="@+id/lastMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/usernameChat"
+                android:layout_marginStart="18dp"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="21dp"
+                android:layout_marginEnd="21dp"
+                android:layout_marginTop="9dp"
+                android:layout_toRightOf="@+id/imageChat"
+                android:layout_toEndOf="@+id/imageChat"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:text="last message"
+                android:textSize="15sp"
+                android:textStyle="italic" />
+
+
+        <ImageButton
+            android:id="@+id/smallIcon"
+            android:layout_width="18sp"
+            android:layout_height="18sp"
             android:layout_below="@+id/usernameChat"
-            android:layout_marginStart="15dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="9dp"
-            android:layout_marginEnd="25dp"
-            android:layout_marginRight="25dp"
-            android:layout_toRightOf="@+id/onlineIcon"
-            android:layout_toEndOf="@+id/onlineIcon"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="last message"
-            android:textSize="15sp"
-            android:textStyle="italic" />
+            android:layout_marginStart="-12dp"
+            android:layout_marginLeft="-12dp"
+            android:layout_marginTop="12dp"
+            android:layout_toEndOf="@+id/lastMessage"
+            android:layout_toRightOf="@+id/lastMessage"
+            android:background="@color/color_white"
+            android:src="@drawable/image_icon"
+            android:visibility="visible" />
 
 
     </RelativeLayout>

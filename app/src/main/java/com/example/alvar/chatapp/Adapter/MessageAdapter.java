@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -188,22 +189,32 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void openFile(final MessageViewHolder messageViewHolder, final String messageType,  final int position ){
 
+        //here we store the "file" or "image" info to be fetched later on
+       final String message = messagesList.get(position).getMessage();
+
         //when message box is pressed
         messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if ( messageType.equals("image") ){
-                    Toast.makeText(mContext, "image pressed ", Toast.LENGTH_SHORT).show();
+                    showImageRoom(message, messageViewHolder);
                 }
                 //if it's a "pdf" or "docx" we show option to download file.
                 else {
-                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( messagesList.get(position).getMessage()) );
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse( message ) );
                     messageViewHolder.itemView.getContext().startActivity(i);
                 }
 
             }
         });
+
+    }
+
+    private void showImageRoom( String messageContent, MessageViewHolder messageViewHolder) {
+        Intent intentImage = new Intent(mContext , ImageActivity.class);
+        intentImage.putExtra("messageContent", messageContent );
+        messageViewHolder.itemView.getContext().startActivity(intentImage);
 
     }
 

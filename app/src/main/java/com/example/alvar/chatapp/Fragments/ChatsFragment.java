@@ -3,15 +3,11 @@ package com.example.alvar.chatapp.Fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -23,6 +19,7 @@ import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,6 +27,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
@@ -54,7 +55,6 @@ public class ChatsFragment extends Fragment {
     public ChatsFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -132,90 +132,55 @@ public class ChatsFragment extends Fragment {
             protected void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position, @NonNull Contacts model) {
 
                 final String otherUserID = getRef(position).getKey();
-
                 Log.i(TAG, "onBindViewHolder: other user id : " + otherUserID);
 
                 //here we fetch information from other user
-                dbUsersNodeRef.child(otherUserID)
-                        .addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dbUsersNodeRef.child(otherUserID).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
-                                if (dataSnapshot.exists()) {
+                        if (dataSnapshot.exists()) {
 
-                                    //here we fetch info from db
-                                    final String name = dataSnapshot.child("name").getValue().toString();
-                                    final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-                                    final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
+                            //here we fetch info from db
+                            final String name = dataSnapshot.child("name").getValue().toString();
+                            final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+                            final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
 
-                                    //here we set info from db to the UI
-                                    holder.username.setText(name);
-                                    if (image.equals("imgThumbnail")) {
-                                        holder.chatImageContact.setImageResource(R.drawable.profile_image);
-                                    } else {
-                                        try {
-                                            Glide.with(getActivity())
-                                                    .load(image).into(holder.chatImageContact);
-                                        } catch (NullPointerException e) {
-                                            String exception = e.getMessage();
-                                            Log.i(TAG, "onDataChange: exception: " + exception);
-                                        }
+                            Log.i(TAG, "onDataChange: name: " + name);
+                            Log.i(TAG, "onDataChange: image: " + image);
+                            Log.i(TAG, "onDataChange: typingState: " + typingState);
 
-                                    }
+                            setInfoIntoLayout(name, image, holder);
 
+                            if (typingState.equals("yes")) {
+                                holder.smallIcon.setVisibility(View.GONE);
+                                holder.lastMessage.setText(R.string.typing);
+                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
+                            } else {
+                                //this method show last message in the fragment list with conversations started
+                                showLastMessage(currentUserID, otherUserID, holder.lastMessage,
+                                        holder.lastMessageDateField, holder.smallIcon);
+                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
+                            }
 
-                                    if (typingState.equals("yes")){
-                                        holder.lastMessage.setText(R.string.typing);
-                                        holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
-                                    } else{
-                                        //this method show last message in the fragment list with conversations started
-                                        showLastMessage(currentUserID, otherUserID, holder.lastMessage, holder.lastMessageDateField);
-                                        holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
-                                    }
+                            otherUserState(dataSnapshot, holder);
 
-
-
-                                    //here we show the last Seen of the other user
-                                    if (dataSnapshot.child("userState").hasChild("state")) {
-
-                                        //here we get the other user's current state and we store it in each var
-                                        String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
-
-                                        //if other user's state is "offline"
-                                        if (saveSate.equals("Offline")) {
-
-                                            //we show last message
-                                            holder.onlineIcon.setVisibility(View.INVISIBLE);
-
-                                        } else if (saveSate.equals("Online")) {
-
-                                            holder.onlineIcon.setVisibility(View.VISIBLE);
-
-                                        }
-
-                                    }
-
-                                    holder.chatLayout.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
-                                            intentChatRoom.putExtra("contactID", otherUserID);
-                                            intentChatRoom.putExtra("contactName", name);
-                                            intentChatRoom.putExtra("contactImage", image);
-                                            startActivity(intentChatRoom);
-                                        }
-                                    });
-
+                            holder.chatLayout.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    goToChatRoom(otherUserID, name, image);
                                 }
+                            });
+                        }
 
-                            }
+                    }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
+                    }
+                });
 
 
             }
@@ -239,13 +204,81 @@ public class ChatsFragment extends Fragment {
     }
 
     /**
+     * fetch info from db and display it into the fragment chat
+     *
+     * @param name
+     * @param image
+     * @param holder
+     */
+    private void setInfoIntoLayout(String name, String image, ChatsViewHolder holder) {
+
+        //here we set info from db to the UI
+        holder.username.setText(name);
+        if (image.equals("imgThumbnail")) {
+            holder.chatImageContact.setImageResource(R.drawable.profile_image);
+        } else {
+            try {
+                Glide.with(getActivity())
+                        .load(image).into(holder.chatImageContact);
+            } catch (NullPointerException e) {
+                String exception = e.getMessage();
+                Log.i(TAG, "onDataChange: exception: " + exception);
+            }
+
+        }
+    }
+
+    /**
+     * this method is the one in charge of making visible the green dot when other user in online or not
+     *
+     * @param dataSnapshot
+     * @param holder
+     */
+    private void otherUserState(DataSnapshot dataSnapshot, ChatsViewHolder holder) {
+
+        //here we show the current state of the other user
+        if (dataSnapshot.child("userState").hasChild("state")) {
+
+            //here we get the other user's current state and we store it in each var
+            String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+            //if other user's state is "offline"
+            if (saveSate.equals("Offline")) {
+                //we show last message
+                holder.onlineIcon.setVisibility(View.GONE);
+            } else if (saveSate.equals("Online")) {
+                holder.onlineIcon.setVisibility(View.VISIBLE);
+
+            }
+
+        }
+
+    }
+
+    /**
+     * method in charge of taking the user to the chat room sending the info specified
+     *
+     * @param otherUserID
+     * @param name
+     * @param image
+     */
+    private void goToChatRoom(String otherUserID, String name, String image) {
+        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
+        intentChatRoom.putExtra("contactID", otherUserID);
+        intentChatRoom.putExtra("contactName", name);
+        intentChatRoom.putExtra("contactImage", image);
+        startActivity(intentChatRoom);
+    }
+
+    /**
      * This method is the one in charge of showing the last message in a conversation
      *
      * @param currentUserID
      * @param otherUserID
      * @param lastMessageField
      */
-    private void showLastMessage(final String currentUserID, final String otherUserID, final TextView lastMessageField, final TextView lastMessageDateField) {
+    private void showLastMessage(final String currentUserID, final String otherUserID,
+                                 final TextView lastMessageField, final TextView lastMessageDateField, final ImageButton smallIcon) {
 
         //retrieve info from the db node "Chats" / "Messages"
         dbChatsNodeRef.child(currentUserID).child(otherUserID).addValueEventListener(new ValueEventListener() {
@@ -265,20 +298,35 @@ public class ChatsFragment extends Fragment {
                         if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
                                 message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
 
-                            lastMessage = message.getMessage();
-                            lastMessageField.setText(lastMessage);
+                            smallIcon.setVisibility(View.GONE);
 
-                            lastMessageDate = message.getMessageDate();
-                            lastMessageDateField.setText(lastMessageDate);
+                            switch (message.getType()) {
+                                case "image":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    lastMessageField.setText(R.string.photo);
+                                    break;
+                                case "pdf":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                    lastMessageField.setText(R.string.PDF);
+                                    break;
+                                case "docx":
+                                    smallIcon.setVisibility(View.VISIBLE);
+                                    smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                    lastMessageField.setText(R.string.Word_Document);
+                                    break;
+                                default: //"text" is the one by default
+                                    lastMessage = message.getMessage();
+                                    lastMessageField.setText(lastMessage);
 
-                        } else {
-                            Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
-                            Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
-                            Log.i(TAG, "onDataChange: last message date: " + message.getMessageDate());
+                                    lastMessageDate = message.getMessageDate();
+                                    lastMessageDateField.setText(lastMessageDate);
+                            }
+
+
                         }
 
                     }
-
 
 
                 }
@@ -292,7 +340,6 @@ public class ChatsFragment extends Fragment {
 
 
     }
-
 
     @Override
     public void onStart() {
@@ -310,6 +357,7 @@ public class ChatsFragment extends Fragment {
         RelativeLayout chatLayout;
         CircleImageView chatImageContact, onlineIcon;
         TextView username, lastMessage, lastMessageDateField;
+        ImageButton smallIcon;
 
 
         public ChatsViewHolder(@NonNull View itemView) {
@@ -321,6 +369,7 @@ public class ChatsFragment extends Fragment {
             lastMessage = itemView.findViewById(R.id.lastMessage);
             lastMessageDateField = itemView.findViewById(R.id.lastMessageDate);
             onlineIcon = itemView.findViewById(R.id.onlineIcon);
+            smallIcon = itemView.findViewById(R.id.smallIcon);
         }
 
 
