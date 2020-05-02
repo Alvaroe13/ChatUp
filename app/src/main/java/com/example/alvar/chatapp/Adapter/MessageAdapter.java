@@ -65,7 +65,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * here in this method lies the logic to fill the recyclerView
-     *
      * @param messageViewHolder
      * @param position
      */
@@ -87,7 +86,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
     }
 
-
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -96,7 +94,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * here we fetch info from db and fill the fields with it
-     *
      * @param messageSenderID
      * @param messageViewHolder
      */
@@ -129,14 +126,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * this method is in charge of showing the correct layout in chat room according to the situation
-     *
      * @param messageType
      * @param messageSenderID
      * @param messageInfo
      * @param messageTime
      * @param messageViewHolder
      */
-    private void layoutToShow(String messageType, String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder, int position) {
+    private void layoutToShow(String messageType, String messageSenderID, String messageInfo,
+                                String messageTime, MessageViewHolder messageViewHolder, int position) {
 
         // they're all gone by default
         layoutVisibilityGone(messageViewHolder);
@@ -159,12 +156,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * method in charge of showing file (pdf/docx) when sent by any user
-     *
      * @param messageSenderID
      * @param messageViewHolder
      * @param position
      */
-    private void showDocumentLayout(String messageSenderID, final MessageViewHolder messageViewHolder, final String messageType, final int position) {
+    private void showDocumentLayout(String messageSenderID, final MessageViewHolder messageViewHolder,
+                                                            final String messageType, final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
         if (currentUserID.equals(messageSenderID)) {
@@ -180,7 +177,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 @Override
                 public void onClick(View v) {
                     openFile(messageViewHolder, messageType, position);
-                    Toast.makeText(mContext, "short pressed right side", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "onClick: short pressed right side");
                 }
             });
             //if long pressed over layout
@@ -188,8 +185,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
-                    Toast.makeText(mContext, "long pressed right side", Toast.LENGTH_SHORT).show();
+                    longPressedOptionsRightSide();
+                    Log.i(TAG, "onLongClick: long pressed right side");
                     return true;
                 }
             });
@@ -208,7 +205,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 @Override
                 public void onClick(View v) {
                     openFile(messageViewHolder, messageType, position);
-                    Toast.makeText(mContext, "short pressed left side", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "onClick: short pressed left side");
                 }
             });
             //if long pressed over layout
@@ -216,8 +213,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
-                    Toast.makeText(mContext, "long pressed left side", Toast.LENGTH_SHORT).show();
+                    longPressedOptionsLeftSide();
+                    Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
             });
@@ -227,9 +224,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     /**
-     *  method shows pop up window with options to delete message
+     *  method shows pop up window with options to delete messages sent by current user
      */
-    private void longPressedOptions() {
+    private void longPressedOptionsRightSide() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.Delete);
@@ -257,8 +254,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     /**
+     *  method shows pop up window with options to delete message sent by the other user
+     */
+    private void longPressedOptionsLeftSide() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.Delete);
+
+        CharSequence deleteOptions[] = new CharSequence[]{ mContext.getString(R.string.Delete_for_me) , mContext.getString(R.string.cancel)};
+
+        builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int options) {
+
+                switch (options) {
+                    case 0:
+                        Log.i(TAG, "onClick: delete for me option pressed");
+                        break;
+                    default:
+                        Log.i(TAG, "onClick: cancel option pressed");
+                }
+            }
+        });
+
+        builder.show();
+    }
+
+    /**
      * method in charge of launching file when clicked by user
-     *
      * @param messageViewHolder
      * @param position
      */
@@ -278,6 +301,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
+    /**
+     * methos in charge of taking the user to the Big image room when image message is pressed
+     * @param messageContent
+     * @param messageViewHolder
+     */
     private void showImageRoom(String messageContent, MessageViewHolder messageViewHolder) {
         Intent intentImage = new Intent(mContext, ImageActivity.class);
         intentImage.putExtra("messageContent", messageContent);
@@ -287,7 +315,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * method in charge of setting every view in chat layout as GONE and we make them visible accordingly
-     *
      * @param messageViewHolder
      */
     private void layoutVisibilityGone(MessageViewHolder messageViewHolder) {
@@ -300,13 +327,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * method in charge of showing layout only when it comes to a message "text" type.
-     *
      * @param messageSenderID
      * @param messageInfo
      * @param messageTime
      * @param messageViewHolder
      */
-    private void showTextLayout(String messageSenderID, String messageInfo, String messageTime, MessageViewHolder messageViewHolder) {
+    private void showTextLayout(String messageSenderID, String messageInfo, String messageTime,
+                                                                MessageViewHolder messageViewHolder) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
@@ -319,7 +346,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textRightSide.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
+                    longPressedOptionsRightSide();
                     Log.i(TAG, "onLongClick: long pressed layout");
                     return true;
                 }
@@ -338,7 +365,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
+                    longPressedOptionsLeftSide();
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
@@ -349,13 +376,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * method in charge of showing layout only when it comes to a message "image" type.
-     *
      * @param messageSenderID
      * @param messageInfo
      * @param messageViewHolder
      */
-    private void showImageLayout(String messageSenderID, String messageInfo,
-                                 final MessageViewHolder messageViewHolder, final String messageType, final int position) {
+    private void showImageLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder,
+                                                                            final String messageType, final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
         if (currentUserID.equals(messageSenderID)) {
@@ -375,7 +401,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
+                    longPressedOptionsRightSide();
                     Log.i(TAG, "onLongClick: long pressed right side");
                     return true;
                 }
@@ -401,7 +427,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptions();
+                    longPressedOptionsLeftSide();
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
@@ -411,7 +437,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * this method is the one in charge of establishing the number of items to be shown in the recyclerView
-     *
      * @return
      */
     @Override
