@@ -70,29 +70,32 @@
                 android:layout_below="@+id/usernameChat"
                 android:layout_marginStart="18dp"
                 android:layout_marginLeft="18dp"
+                android:layout_marginRight="21dp"
+                android:layout_marginEnd="21dp"
                 android:layout_marginTop="9dp"
                 android:layout_toRightOf="@+id/imageChat"
                 android:layout_toEndOf="@+id/imageChat"
                 android:ellipsize="end"
+                android:singleLine="true"
                 android:maxLines="1"
                 android:text="last message"
                 android:textSize="15sp"
                 android:textStyle="italic" />
 
 
-            <ImageButton
-                android:id="@+id/smallIcon"
-                android:layout_width="18sp"
-                android:layout_height="18sp"
-                android:src="@drawable/image_icon"
-                android:background="@color/color_white"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_toRightOf="@+id/lastMessage"
-                android:layout_toEndOf="@+id/lastMessage"
-                android:layout_below="@+id/usernameChat"
-                android:layout_marginTop="12dp"
-                android:visibility="visible"/>
+        <ImageButton
+            android:id="@+id/smallIcon"
+            android:layout_width="18sp"
+            android:layout_height="18sp"
+            android:layout_below="@+id/usernameChat"
+            android:layout_marginStart="-12dp"
+            android:layout_marginLeft="-12dp"
+            android:layout_marginTop="12dp"
+            android:layout_toEndOf="@+id/lastMessage"
+            android:layout_toRightOf="@+id/lastMessage"
+            android:background="@color/color_white"
+            android:src="@drawable/image_icon"
+            android:visibility="visible" />
 
 
     </RelativeLayout>
