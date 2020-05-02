@@ -91,6 +91,9 @@
     <string name="photo">Photo</string>
     <string name="PDF">PDF file</string>
     <string name="Word_Document">Word document</string>
+    <string name="Delete">Delete</string>
+    <string name="Delete_for_me">Delete for me</string>
+    <string name="Delete_for_everyone">Delete for everyone</string>
 
 
 </resources>

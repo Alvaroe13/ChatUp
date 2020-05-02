@@ -92,6 +92,9 @@
     <string name="photo">Foto</string>
     <string name="PDF">Archivo PDF </string>
     <string name="Word_Document">Documento Word</string>
+    <string name="Delete">Borrar</string>
+    <string name="Delete_for_me">Borrar solo para mi</string>
+    <string name="Delete_for_everyone">Borrar para todos</string>
 
 
 </resources>
