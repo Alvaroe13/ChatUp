@@ -156,7 +156,7 @@ public class ChatsFragment extends Fragment {
                             if (typingState.equals("yes")) {
                                 holder.smallIcon.setVisibility(View.GONE);
                                 holder.lastMessage.setText(R.string.typing);
-                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
+                                holder.lastMessage.setTextColor(getActivity().getApplicationContext().getResources().getColor(R.color.color_green));
                             } else {
                                 //this method show last message in the fragment list with conversations started
                                 showLastMessage(currentUserID, otherUserID, holder.lastMessage,

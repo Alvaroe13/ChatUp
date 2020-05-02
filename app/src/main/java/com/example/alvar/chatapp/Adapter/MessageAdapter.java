@@ -2,10 +2,6 @@ package com.example.alvar.chatapp.Adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,11 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ImageActivity;
-import com.example.alvar.chatapp.Activities.LoginActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,6 +27,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
@@ -480,11 +476,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                             if (task.isSuccessful()){
                                 Log.i(TAG, "onComplete: message deleted for everyone ");
-                                Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
                             }
                             else{
                                 Log.i(TAG, "onComplete: Error, something failed ");
-                                Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
