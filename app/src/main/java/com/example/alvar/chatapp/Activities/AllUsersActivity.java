@@ -30,11 +30,9 @@ public class AllUsersActivity extends AppCompatActivity {
     //firebase
     private FirebaseDatabase database;
     private DatabaseReference dbUsersRef;
-
     //ui elements
     private Toolbar toolbarAllUsers;
     private RecyclerView recyclerView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +79,6 @@ public class AllUsersActivity extends AppCompatActivity {
     /**
      * this method contains the logic to fill the recyclerView with the info from the database node "Users".
      */
-
     private void callFirebaseAdapter(){
 
         //we create firebaseOptions to pass it to firebaseAdapter
@@ -95,32 +92,17 @@ public class AllUsersActivity extends AppCompatActivity {
                     @Override
                     protected void onBindViewHolder(@NonNull AllUsersViewHolder holder, final int position, @NonNull Contacts model) {
 
-                      //  here we fetch info from database and set it to the UI
-                        holder.username.setText(model.getName());
-                        holder.currentStatus.setText(model.getStatus());
-                        //here we set the default image is user has not upload any pic
-                        if (model.getImageThumbnail().equals("imgThumbnail")){
-                            holder.imgProfile.setImageResource(R.drawable.profile_image);
-                        }else{
-                            //lets upload images from db to ui using glide instead of picasso
-                            Glide.with(getApplicationContext()).load(model.getImageThumbnail()).into(holder.imgProfile);
-                        }
-
+                        //set info from db into the Cardviews
+                        setInfoIntoUI( holder, model);
                         //onClick when any of the users displayed has been pressed
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-
                                 //here we get user id given by Firebase
-                               String otherUserId = getRef(position).getKey();
-                               Intent intentOtherUserProf = new Intent(AllUsersActivity.this, OtherUserProfileActivity.class);
-                               //we send user id through an intent
-                               intentOtherUserProf.putExtra("otherUserId" , otherUserId);
-                               startActivity(intentOtherUserProf);
+                                String otherUserId = getRef(position).getKey();
+                                goToOtherUserLayout(otherUserId);
                             }
                         });
-
-
                     }
 
                     @NonNull
@@ -140,16 +122,36 @@ public class AllUsersActivity extends AppCompatActivity {
         recyclerView.setAdapter(firebaseAdapter);
         firebaseAdapter.startListening();
 
-
     }
 
+    private void goToOtherUserLayout(String otherUserId) {
+        Intent intentOtherUserProf = new Intent(AllUsersActivity.this, OtherUserProfileActivity.class);
+        //we send user id through an intent
+        intentOtherUserProf.putExtra("otherUserId" , otherUserId);
+        startActivity(intentOtherUserProf);
+    }
+
+    private void setInfoIntoUI(AllUsersViewHolder holder, Contacts model ) {
+
+        //  here we fetch info from database and set it to the UI
+        holder.username.setText(model.getName());
+        holder.currentStatus.setText(model.getStatus());
+        //here we set the default image is user has not upload any pic
+        if (model.getImageThumbnail().equals("imgThumbnail")){
+            holder.imgProfile.setImageResource(R.drawable.profile_image);
+        }else{
+            //lets upload images from db to ui using glide instead of picasso
+            Glide.with(getApplicationContext()).load(model.getImageThumbnail()).into(holder.imgProfile);
+        }
+
+
+    }
 
     public static class AllUsersViewHolder extends RecyclerView.ViewHolder{
 
         //we get ui elements from all users layout
         TextView username, currentStatus;
         CircleImageView imgProfile;
-
 
         public AllUsersViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -159,14 +161,6 @@ public class AllUsersActivity extends AppCompatActivity {
             currentStatus = itemView.findViewById(R.id.statusAllUsers);
             imgProfile = itemView.findViewById(R.id.imageAllUsers);
         }
-
-
     }
-
-
-
-
-
-
 
 }
