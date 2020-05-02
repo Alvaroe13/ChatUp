@@ -22,6 +22,8 @@ import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.Activities.LoginActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -40,7 +42,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     // firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef;
+    private DatabaseReference dbUsersNodeRef , dbChatsNodeRef;
     // List to contain the messages
     private List<Messages> messagesList;
     private String currentUserID;
@@ -73,7 +75,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         //first of all we get current user id
         currentUserID = auth.getCurrentUser().getUid();
-
+        // here we retrieve all messages in chat room and stored into a messageList type of var.
         Messages messages = messagesList.get(position);
 
         String messageSenderID = messages.getSenderID();
@@ -90,6 +92,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
+        dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
     }
 
     /**
@@ -142,7 +145,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         switch (messageType) {
             case "text":
                 //we show layout accordingly
-                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder);
+                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder, position);
                 break;
             case "image":
                 //we show layout accordingly
@@ -174,7 +177,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageViewHolder
      */
     private void showTextLayout(String messageSenderID, String messageInfo, String messageTime,
-                                MessageViewHolder messageViewHolder) {
+                                MessageViewHolder messageViewHolder, final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
@@ -187,7 +190,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textRightSide.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide();
+                    longPressedOptionsRightSide(position);
                     Log.i(TAG, "onLongClick: long pressed layout");
                     return true;
                 }
@@ -206,7 +209,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide();
+                    longPressedOptionsLeftSide(position);
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
@@ -221,8 +224,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageInfo
      * @param messageViewHolder
      */
-    private void showImageLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder,
-                                 final String messageType, final int position) {
+    private void showImageLayout(String messageSenderID, String messageInfo,
+                                       final MessageViewHolder messageViewHolder,  final String messageType, final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
         if (currentUserID.equals(messageSenderID)) {
@@ -242,7 +245,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide();
+                    longPressedOptionsRightSide(position);
                     Log.i(TAG, "onLongClick: long pressed right side");
                     return true;
                 }
@@ -268,7 +271,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide();
+                    longPressedOptionsLeftSide(position);
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
@@ -307,7 +310,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide();
+                    longPressedOptionsRightSide(position);
                     Log.i(TAG, "onLongClick: long pressed right side");
                     return true;
                 }
@@ -335,7 +338,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide();
+                    longPressedOptionsLeftSide(position);
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
@@ -348,7 +351,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     /**
      *  method shows pop up window with options to delete messages sent by current user
      */
-    private void longPressedOptionsRightSide() {
+    private void longPressedOptionsRightSide(final int position) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.Delete);
@@ -361,9 +364,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 switch (options) {
                     case 0:
+                        deleteRightSideMessage(position);
                         Log.i(TAG, "onClick: delete for me option pressed");
                         break;
                     case 1:
+                        deleteMessageForEveryone(position);
                         Log.i(TAG, "onClick: delete for everyone option pressed");
                         break;
                     default:
@@ -378,7 +383,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     /**
      *  method shows pop up window with options to delete message sent by the other user
      */
-    private void longPressedOptionsLeftSide() {
+    private void longPressedOptionsLeftSide(final int position) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.Delete);
@@ -391,6 +396,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 switch (options) {
                     case 0:
+                        deleteLeftSideMessage(position);
                         Log.i(TAG, "onClick: delete for me option pressed");
                         break;
                     default:
@@ -400,6 +406,95 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         });
 
         builder.show();
+    }
+
+    /**
+     * This method deletes message sent by current user
+     * @param position
+     */
+    private void deleteRightSideMessage(int position) {
+
+        String senderID = messagesList.get(position).getSenderID();
+        String receiverID = messagesList.get(position).getReceiverID();
+        String messageID = messagesList.get(position).getMessageID();
+
+        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+                    Log.i(TAG, "onComplete:message deleted right side");
+                }
+                 else{
+                    Log.i(TAG, "onComplete:something failed");
+                }
+            }
+        });
+    }
+
+
+    /**
+     * method deletes messages sent by other user
+     * @param position
+     */
+    private void deleteLeftSideMessage(int position) {
+
+        String senderID = messagesList.get(position).getSenderID();
+        String receiverID = messagesList.get(position).getReceiverID();
+        String messageID = messagesList.get(position).getMessageID();
+
+        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+                    Log.i(TAG, "onComplete: message deleted left side ");
+                }
+                else{
+                    Log.i(TAG, "onComplete: Error, something failed");
+                }
+            }
+        });
+    }
+
+    /**
+     * method in charge of deleting message for both sender and receiver.
+     * @param position
+     */
+    private void deleteMessageForEveryone(int position){
+
+        final String senderID = messagesList.get(position).getSenderID();
+        final String receiverID = messagesList.get(position).getReceiverID();
+        final String messageID = messagesList.get(position).getMessageID();
+
+        //lets first of all erase from the current user side
+        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+                    //lets first of all erase from the other user side
+                    dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            if (task.isSuccessful()){
+                                Log.i(TAG, "onComplete: message deleted for everyone ");
+                                Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                Log.i(TAG, "onComplete: Error, something failed ");
+                                Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                } else{
+                    Log.i(TAG, "onComplete: Error, something failed ");
+                }
+            }
+        });
+
     }
 
     /**
