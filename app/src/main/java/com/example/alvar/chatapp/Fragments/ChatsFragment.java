@@ -229,27 +229,6 @@ public class ChatsFragment extends Fragment {
     }
 
     /**
-     * method shows is the other user is typing or not
-     *
-     * @param typingState
-     * @param otherUserID
-     * @param holder
-     */
-    private void otherUserTypingState(String typingState, String otherUserID, ChatsViewHolder holder) {
-
-        if (typingState.equals("yes")) {
-            holder.smallIcon.setVisibility(View.GONE);
-            holder.lastMessage.setText(R.string.typing);
-            holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
-        } else {
-            //this method show last message in the fragment list with conversations started
-            showLastMessage(currentUserID, otherUserID, holder.lastMessage,
-                    holder.lastMessageDateField, holder.smallIcon);
-            holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
-        }
-    }
-
-    /**
      * this method is the one in charge of making visible the green dot when other user in online or not
      *
      * @param dataSnapshot
