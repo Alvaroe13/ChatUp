@@ -3,24 +3,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#d6dadd"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewAllUsers"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:cardElevation="6dp"
-        android:layout_margin="5dp"
         app:cardCornerRadius="5dp"
+        android:layout_margin="5dp"
         android:layout_marginTop="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="85dp"
             android:orientation="horizontal"
-            android:layout_margin="10dp">
-
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imageAllUsers"
@@ -33,14 +32,14 @@
                 android:layout_marginLeft="5dp"
                 android:layout_marginTop="5dp"/>
 
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="6dp"
                 android:layout_marginTop="5dp"
-                android:layout_marginLeft="10dp">
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp">
 
                 <TextView
                     android:id="@+id/usernameAllUsers"
@@ -61,13 +60,10 @@
                     android:maxLength="65"
                     android:textStyle="italic"/>
 
-
             </LinearLayout>
 
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
-
-
 
 </LinearLayout>

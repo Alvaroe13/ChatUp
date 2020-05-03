@@ -75,6 +75,7 @@
     <string name="noEmptyFieldAllowed">Field must not be empty</string>
     <string name="statusCannotBeEmpty">Status cannot be empty</string>
     <string name="wantsToConnect">Wants to be your friend</string>
+    <string name="sent_chat_request">Sent you a chat request</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
     <string name="textChatHint">Type your message here</string>
