@@ -76,6 +76,7 @@
     <string name="noEmptyFieldAllowed">Campo no puede estar vacio</string>
     <string name="statusCannotBeEmpty">Estado no puede estar vacio</string>
     <string name="wantsToConnect">Quiere ser tu amigo</string>
+    <string name="sent_chat_request">Quiere estar entre tus contactos</string>
     <string name="accept">Aceptar</string>
     <string name="decline">Rechazar</string>
     <string name="textChatHint">Escribe tu mensaje aquí</string>
