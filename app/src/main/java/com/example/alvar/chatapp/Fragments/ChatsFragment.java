@@ -151,21 +151,13 @@ public class ChatsFragment extends Fragment {
                             Log.i(TAG, "onDataChange: image: " + image);
                             Log.i(TAG, "onDataChange: typingState: " + typingState);
 
+                            //fetch info from db and set it into the UI
                             setInfoIntoLayout(name, image, holder);
-
-                            if (typingState.equals("yes")) {
-                                holder.smallIcon.setVisibility(View.GONE);
-                                holder.lastMessage.setText(R.string.typing);
-                                holder.lastMessage.setTextColor(getActivity().getResources().getColor(R.color.color_green));
-                            } else {
-                                //this method show last message in the fragment list with conversations started
-                                showLastMessage(currentUserID, otherUserID, holder.lastMessage,
-                                        holder.lastMessageDateField, holder.smallIcon);
-                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
-                            }
-
+                            // update user's typing state in real time
+                            typingStatus(typingState, otherUserID, holder );
+                            // shows if other user is online/offline
                             otherUserState(dataSnapshot, holder);
-
+                            //if user clicks on the CardView
                             holder.chatLayout.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -173,7 +165,6 @@ public class ChatsFragment extends Fragment {
                                 }
                             });
                         }
-
                     }
 
                     @Override
@@ -181,7 +172,6 @@ public class ChatsFragment extends Fragment {
 
                     }
                 });
-
 
             }
 
@@ -195,12 +185,39 @@ public class ChatsFragment extends Fragment {
                 return new ChatsViewHolder(chatView);
             }
         };
-
-
         adapter.startListening();
         chatRecyclerView.setAdapter(adapter);
+    }
 
+    /**
+     * updates in real time if user is typing
+     * @param typingState
+     * @param otherUserID
+     * @param holder
+     */
+    private void typingStatus(String typingState, String otherUserID, ChatsViewHolder holder) {
 
+        if (typingState.equals("yes")) {
+            try {
+                holder.smallIcon.setVisibility(View.GONE);
+                holder.lastMessage.setText(R.string.typing);
+                holder.lastMessage.setTextColor(getActivity().getResources().getColor(R.color.color_green));
+            }
+            catch (Exception e){
+                Log.i(TAG, "onDataChange: error: " + e.getMessage() );
+            }
+        }
+        else {
+            //this method show last message in the fragment list with conversations started
+            try {
+                showLastMessage(currentUserID, otherUserID, holder.lastMessage,
+                        holder.lastMessageDateField, holder.smallIcon);
+                holder.lastMessage.setTextColor(getActivity().getResources().getColor(R.color.color_grey));
+            }
+            catch (Exception ex){
+                Log.i(TAG, "onDataChange: error: " + ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -216,15 +233,14 @@ public class ChatsFragment extends Fragment {
         holder.username.setText(name);
         if (image.equals("imgThumbnail")) {
             holder.chatImageContact.setImageResource(R.drawable.profile_image);
-        } else {
+        }
+        else {
             try {
-                Glide.with(getActivity())
-                        .load(image).into(holder.chatImageContact);
-            } catch (NullPointerException e) {
-                String exception = e.getMessage();
-                Log.i(TAG, "onDataChange: exception: " + exception);
+                Glide.with(getActivity()).load(image).into(holder.chatImageContact);
             }
-
+            catch (NullPointerException e) {
+                Log.i(TAG, "onDataChange: exception: " + e.getMessage());
+            }
         }
     }
 
@@ -350,7 +366,6 @@ public class ChatsFragment extends Fragment {
         }
 
     }
-
 
     public class ChatsViewHolder extends RecyclerView.ViewHolder {
 
