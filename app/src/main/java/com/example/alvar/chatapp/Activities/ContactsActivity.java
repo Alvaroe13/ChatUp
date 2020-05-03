@@ -76,12 +76,10 @@ public class ContactsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
-
     private void initRecyclerView(){
         recyclerViewContacts = findViewById(R.id.recycleContacts);
         recyclerViewContacts.setLayoutManager(new LinearLayoutManager(ContactsActivity.this));
     }
-
 
     @Override
     protected void onStart() {
@@ -108,9 +106,9 @@ public class ContactsActivity extends AppCompatActivity {
                             protected void onBindViewHolder(@NonNull final ContactsViewHolder holder, final int position, @NonNull final Contacts model) {
 
                                 //here we get the user id of every contact saved in "Contacts" node
-                                final String list_user_contacts_id = getRef(position).getKey();
+                                final String listContactsID = getRef(position).getKey();
 
-                                Log.i(TAG, "onBindViewHolder: contacts : " + list_user_contacts_id);
+                                Log.i(TAG, "onBindViewHolder: contacts : " + listContactsID);
 
                                 DatabaseReference contactStatus = getRef(position).child("contact_status").getRef();
 
@@ -124,7 +122,7 @@ public class ContactsActivity extends AppCompatActivity {
 
                                              if (contactStatus.equals("saved")){
 
-                                                 dbUsersNodeRef.child(list_user_contacts_id)
+                                                 dbUsersNodeRef.child(listContactsID)
                                                                             .addValueEventListener(new ValueEventListener() {
                                                      @Override
                                                      public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -133,31 +131,17 @@ public class ContactsActivity extends AppCompatActivity {
 
                                                              //here we fetch info from db
                                                              final String name = dataSnapshot.child("name").getValue().toString();
-                                                             String status = dataSnapshot.child("status").getValue().toString();
+                                                             final String status = dataSnapshot.child("status").getValue().toString();
                                                              final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-
-                                                             //here we set info from db to the UI
-                                                             holder.contactName.setText(name);
-                                                             holder.contactStatus.setText(status);
-                                                             if ( image.equals("imgThumbnail")){
-                                                                 holder.contactImage.setImageResource(R.drawable.profile_image);
-                                                             } else{
-                                                                 Glide.with(getApplicationContext())
-                                                                                                .load(image).into(holder.contactImage);
-                                                             }
-
+                                                             //set info into the cardViews
+                                                             setInfoIntoUI(name, status, image, holder);
+                                                             //if cardView is pressed
                                                              holder.cardViewContact.setOnClickListener(new View.OnClickListener() {
                                                                  @Override
                                                                  public void onClick(View v) {
-                                                                     Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
-                                                                     intentChatRoom.putExtra("contactID", list_user_contacts_id);
-                                                                     intentChatRoom.putExtra("contactName", name);
-                                                                     intentChatRoom.putExtra("contactImage", image);
-                                                                     startActivity(intentChatRoom);
+                                                                     goToChatRoom(listContactsID, name, image);
                                                                  }
                                                              });
-
-
                                                          }
 
                                                      }
@@ -170,8 +154,6 @@ public class ContactsActivity extends AppCompatActivity {
 
                                              }
 
-
-
                                          }
 
                                      }
@@ -181,8 +163,6 @@ public class ContactsActivity extends AppCompatActivity {
 
                                      }
                                  });
-
-
 
                             }
 
@@ -201,8 +181,39 @@ public class ContactsActivity extends AppCompatActivity {
         recyclerViewContacts.setAdapter(adapterFirebase);
         adapterFirebase.startListening();
 
+    }
 
+    /**
+     * fetch info from the db contacts node and set it into the card views
+     * @param name
+     * @param status
+     * @param image
+     * @param holder
+     */
+    private void setInfoIntoUI(String name, String status, String image, ContactsViewHolder holder) {
+            //here we set info from db to the UI
+            holder.contactName.setText(name);
+            holder.contactStatus.setText(status);
+            if ( image.equals("imgThumbnail")){
+                holder.contactImage.setImageResource(R.drawable.profile_image);
+            } else{
+                Glide.with(getApplicationContext())
+                        .load(image).into(holder.contactImage);
+            }
+    }
 
+    /**
+     * lets take the user to the chat room
+     * @param listContactsID
+     * @param name
+     * @param image
+     */
+    private void goToChatRoom(String listContactsID, String name, String image) {
+        Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
+        intentChatRoom.putExtra("contactID", listContactsID);
+        intentChatRoom.putExtra("contactName", name);
+        intentChatRoom.putExtra("contactImage", image);
+        startActivity(intentChatRoom);
     }
 
     /**
@@ -214,7 +225,6 @@ public class ContactsActivity extends AppCompatActivity {
         TextView contactName, contactStatus;
         CardView cardViewContact;
 
-
         public ContactsViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -222,13 +232,7 @@ public class ContactsActivity extends AppCompatActivity {
             contactName = itemView.findViewById(R.id.usernameContactUsers);
             contactStatus = itemView.findViewById(R.id.statusContactUsers);
             cardViewContact = itemView.findViewById(R.id.cardViewContact);
-
-
-
         }
-
-
-
 
     }
 }

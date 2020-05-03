@@ -19,7 +19,6 @@ import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,7 +40,6 @@ public class ChatsFragment extends Fragment {
     private static final String TAG = "ChatsFragmentPage";
 
     //ui elements
-    private FloatingActionButton fabContacts;
     private View viewContacts;
     private RecyclerView chatRecyclerView;
     //firebase
@@ -63,9 +61,7 @@ public class ChatsFragment extends Fragment {
         viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
         initFirebase();
-        bind();
         initRecyclerView();
-        fabButtonPressed();
         initFirebaseAdapter();
 
         return viewContacts;
@@ -83,37 +79,12 @@ public class ChatsFragment extends Fragment {
         dbUsersNodeRef = database.getReference().child("Users");
     }
 
-    private void bind() {
-        fabContacts = viewContacts.findViewById(R.id.fabContacts);
-
-    }
-
     private void initRecyclerView() {
         chatRecyclerView = viewContacts.findViewById(R.id.chatRecyclerView);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         chatRecyclerView.setLayoutManager(linearLayoutManager);
         chatRecyclerView.setHasFixedSize(true);
 
-    }
-
-    /**
-     * this method handles event when fab button is pressed
-     */
-    private void fabButtonPressed() {
-        fabContacts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToContacts();
-            }
-        });
-    }
-
-    /**
-     * we take the user to the contacts activity.
-     */
-    private void goToContacts() {
-        Intent intentContacts = new Intent(getContext(), ContactsActivity.class);
-        startActivity(intentContacts);
     }
 
     /**
@@ -151,21 +122,13 @@ public class ChatsFragment extends Fragment {
                             Log.i(TAG, "onDataChange: image: " + image);
                             Log.i(TAG, "onDataChange: typingState: " + typingState);
 
+                            //fetch info from db and set it into the UI
                             setInfoIntoLayout(name, image, holder);
-
-                            if (typingState.equals("yes")) {
-                                holder.smallIcon.setVisibility(View.GONE);
-                                holder.lastMessage.setText(R.string.typing);
-                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_green));
-                            } else {
-                                //this method show last message in the fragment list with conversations started
-                                showLastMessage(currentUserID, otherUserID, holder.lastMessage,
-                                        holder.lastMessageDateField, holder.smallIcon);
-                                holder.lastMessage.setTextColor(getResources().getColor(R.color.color_grey));
-                            }
-
+                            // update user's typing state in real time
+                            typingStatus(typingState, otherUserID, holder );
+                            // shows if other user is online/offline
                             otherUserState(dataSnapshot, holder);
-
+                            //if user clicks on the CardView
                             holder.chatLayout.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -173,7 +136,6 @@ public class ChatsFragment extends Fragment {
                                 }
                             });
                         }
-
                     }
 
                     @Override
@@ -181,7 +143,6 @@ public class ChatsFragment extends Fragment {
 
                     }
                 });
-
 
             }
 
@@ -195,12 +156,39 @@ public class ChatsFragment extends Fragment {
                 return new ChatsViewHolder(chatView);
             }
         };
-
-
         adapter.startListening();
         chatRecyclerView.setAdapter(adapter);
+    }
 
+    /**
+     * updates in real time if user is typing
+     * @param typingState
+     * @param otherUserID
+     * @param holder
+     */
+    private void typingStatus(String typingState, String otherUserID, ChatsViewHolder holder) {
 
+        if (typingState.equals("yes")) {
+            try {
+                holder.smallIcon.setVisibility(View.GONE);
+                holder.lastMessage.setText(R.string.typing);
+                holder.lastMessage.setTextColor(getActivity().getResources().getColor(R.color.color_green));
+            }
+            catch (Exception e){
+                Log.i(TAG, "onDataChange: error: " + e.getMessage() );
+            }
+        }
+        else {
+            //this method show last message in the fragment list with conversations started
+            try {
+                showLastMessage(currentUserID, otherUserID, holder.lastMessage,
+                        holder.lastMessageDateField, holder.smallIcon);
+                holder.lastMessage.setTextColor(getActivity().getResources().getColor(R.color.color_grey));
+            }
+            catch (Exception ex){
+                Log.i(TAG, "onDataChange: error: " + ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -216,15 +204,14 @@ public class ChatsFragment extends Fragment {
         holder.username.setText(name);
         if (image.equals("imgThumbnail")) {
             holder.chatImageContact.setImageResource(R.drawable.profile_image);
-        } else {
+        }
+        else {
             try {
-                Glide.with(getActivity())
-                        .load(image).into(holder.chatImageContact);
-            } catch (NullPointerException e) {
-                String exception = e.getMessage();
-                Log.i(TAG, "onDataChange: exception: " + exception);
+                Glide.with(getActivity()).load(image).into(holder.chatImageContact);
             }
-
+            catch (NullPointerException e) {
+                Log.i(TAG, "onDataChange: exception: " + e.getMessage());
+            }
         }
     }
 
@@ -350,7 +337,6 @@ public class ChatsFragment extends Fragment {
         }
 
     }
-
 
     public class ChatsViewHolder extends RecyclerView.ViewHolder {
 

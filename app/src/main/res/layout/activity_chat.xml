@@ -35,6 +35,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="2dp"
             android:layout_marginLeft="2dp"
+            android:maxLines="1"
             android:layout_toLeftOf="@+id/buttonAttachFile"
             android:layout_toStartOf="@+id/buttonAttachFile"
             android:background="@android:color/transparent"

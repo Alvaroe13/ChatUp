@@ -41,7 +41,7 @@
     <string name="sendPassword">Enviar Contraseña</string>
     <string name="error">Error</string>
     <string name="check_your_email">Por favor revisa tu email</string>
-    <string name="profile">Profile</string>
+    <string name="profile">Perfil</string>
     <string name="createGroup">Create group</string>
     <string name="exampleHint">ej : Mejores Amigos</string>
     <string name="create">Crear</string>
@@ -53,7 +53,7 @@
     <string name="textHint">Este es tu mensaje</string>
     <string name="writeMessageHint">Escribe tu mensaje aquí</string>
     <string name="status">Status</string>
-    <string name="settingsName">Nombre:</string>
+    <string name="settingsName">Nombre:</string>f
     <string name="settingsStatus">Estado:</string>
     <string name="alertDialogTitle">Estas cerrando sesion</string>
     <string name="alertDialogMessage">Estas seguro que quieres cerrar sesion?</string>
@@ -78,7 +78,7 @@
     <string name="wantsToConnect">Quiere ser tu amigo</string>
     <string name="accept">Aceptar</string>
     <string name="decline">Rechazar</string>
-    <string name="textChatHint">Escrie tu mensaje aquí</string>
+    <string name="textChatHint">Escribe tu mensaje aquí</string>
     <string name="deleteContact">Borrar contact</string>
     <string name="deleteContactMessage">Estas seguro que quieres borrar este contacto?</string>
     <string name="drawerOpen">Drawer Abierto</string>
@@ -92,6 +92,10 @@
     <string name="photo">Foto</string>
     <string name="PDF">Archivo PDF </string>
     <string name="Word_Document">Documento Word</string>
-
+    <string name="Delete">Borrar</string>
+    <string name="Delete_for_me">Borrar solo para mi</string>
+    <string name="Delete_for_everyone">Borrar para todos</string>
+    <string name="account">Cuenta</string>
+    <string name="maps">Mapa</string>
 
 </resources>

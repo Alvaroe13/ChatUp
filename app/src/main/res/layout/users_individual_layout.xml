@@ -9,7 +9,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewAllUsers"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:cardElevation="6dp"
         android:layout_margin="5dp"
         app:cardCornerRadius="5dp"
@@ -63,14 +63,6 @@
 
 
             </LinearLayout>
-
-            <!--online green dot-->
-            <!--<ImageView-->
-                <!--android:id="@+id/onlineIcon"-->
-                <!--android:layout_width="16dp"-->
-                <!--android:layout_height="16dp"-->
-                <!--android:src="@drawable/online"-->
-                <!--android:layout_marginTop="15dp"/>-->
 
         </LinearLayout>
 

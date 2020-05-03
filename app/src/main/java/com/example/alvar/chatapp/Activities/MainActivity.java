@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
     //vars
     private String currentUserID;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +106,6 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
              updateDateTime("Offline");
     }
-
-
 
     /**
      * init UI elements
@@ -160,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intentContacts);
                 break;
             case R.id.maps:
-                Toast.makeText(this, "maps pressed", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "drawerOptionsMenu: maps pressed");
                 break;
             case R.id.settingsAccount:
                 goToSettingAccount();
@@ -204,7 +201,6 @@ public class MainActivity extends AppCompatActivity {
         dbUsersRef = database.getReference().child("Users");
     }
 
-
     /**
      * this method is in charge of creating the tabs and setting it's title
      * @param viewPager
@@ -238,7 +234,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(intent);
     }
-
 
     /**
      * this method is in charge of taking the user to all users page
@@ -324,7 +319,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void drawerImagePressed(){
 
-
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -359,11 +353,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
-
     private void updateDateTime(String state){
 
         String currentTime, currentDate;

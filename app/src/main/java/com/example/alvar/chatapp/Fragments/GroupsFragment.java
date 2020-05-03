@@ -52,13 +52,9 @@ public class GroupsFragment extends Fragment {
     private ArrayList<String> groupList;
     private View groupView;
 
-
-
     public GroupsFragment(){
 
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,7 +67,7 @@ public class GroupsFragment extends Fragment {
         UI();
         initAdapter();
         retrieveGroupsInfo();
-        addNewGroup();
+       // addNewGroup();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,11 +88,11 @@ public class GroupsFragment extends Fragment {
     }
 
     /**
-     * init ui elements
+     * init ui elements (creating groups it's on hold for the moment)
      */
     private void UI() {
         listView = groupView.findViewById(R.id.listView);
-        fabGroups = groupView.findViewById(R.id.fabGroup);
+       // fabGroups = groupView.findViewById(R.id.fabGroup);
     }
 
     /**
@@ -150,9 +146,10 @@ public class GroupsFragment extends Fragment {
         });
     }
 
-    /**
+   /**
      * method called when fab button's pressed
      */
+   /*
     private void addNewGroup() {
         fabGroups.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,12 +157,12 @@ public class GroupsFragment extends Fragment {
                 createGroupRequest();
             }
         });
-
-    }
+    }*/
 
     /**
      * Pop up message in charge of setting group name
      */
+    /*
     private void createGroupRequest() {
         AlertDialog.Builder requestPopUp = new AlertDialog.Builder(getActivity());
         requestPopUp.setTitle(getString(R.string.createGroup));
@@ -205,12 +202,13 @@ public class GroupsFragment extends Fragment {
 
         requestPopUp.show();
     }
-
+*/
 
     /**
      * this method create new database node in Firebase
      * @param groupName
      */
+    /*
     private void createGroupChat(String groupName) {
 
         //we create group inside "Groups" node
@@ -228,7 +226,6 @@ public class GroupsFragment extends Fragment {
 
             }
         });
-    }
-
+    }*/
 
 }
