@@ -19,7 +19,6 @@ import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,7 +40,6 @@ public class ChatsFragment extends Fragment {
     private static final String TAG = "ChatsFragmentPage";
 
     //ui elements
-    private FloatingActionButton fabContacts;
     private View viewContacts;
     private RecyclerView chatRecyclerView;
     //firebase
@@ -63,9 +61,7 @@ public class ChatsFragment extends Fragment {
         viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
         initFirebase();
-        bind();
         initRecyclerView();
-        fabButtonPressed();
         initFirebaseAdapter();
 
         return viewContacts;
@@ -83,37 +79,12 @@ public class ChatsFragment extends Fragment {
         dbUsersNodeRef = database.getReference().child("Users");
     }
 
-    private void bind() {
-        fabContacts = viewContacts.findViewById(R.id.fabContacts);
-
-    }
-
     private void initRecyclerView() {
         chatRecyclerView = viewContacts.findViewById(R.id.chatRecyclerView);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         chatRecyclerView.setLayoutManager(linearLayoutManager);
         chatRecyclerView.setHasFixedSize(true);
 
-    }
-
-    /**
-     * this method handles event when fab button is pressed
-     */
-    private void fabButtonPressed() {
-        fabContacts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToContacts();
-            }
-        });
-    }
-
-    /**
-     * we take the user to the contacts activity.
-     */
-    private void goToContacts() {
-        Intent intentContacts = new Intent(getContext(), ContactsActivity.class);
-        startActivity(intentContacts);
     }
 
     /**

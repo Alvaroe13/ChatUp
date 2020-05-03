@@ -6,37 +6,28 @@
     <group>
         <item
             android:id="@+id/contacts"
-            android:title="Contacts"
-            android:icon="@drawable/ic_contact">
-        </item>
+            android:title="@string/contacts"
+            android:icon="@drawable/ic_contact"/>
         <item
             android:id="@+id/maps"
-            android:title="Maps"
-            android:icon="@drawable/ic_maps">
-        </item>
+            android:title="@string/maps"
+            android:icon="@drawable/ic_maps"/>
     </group>
-
-
-    <item android:title="Account">
+    <item android:title="@string/account">
         <menu>
-
             <item
                 android:id="@+id/settingsAccount"
-                android:title="Profile"
+                android:title="@string/profile"
                 android:icon="@drawable/ic_settings"/>
-
             <item
                 android:id="@+id/menuAllUsers"
                 android:title="@string/allUsers"
                 android:icon="@drawable/ic_person_add"/>
-
             <item
                 android:id="@+id/signOut"
                 android:title="@string/signOut"
                 android:icon="@drawable/ic_power"/>
-
         </menu>
     </item>
-
 </menu>
 

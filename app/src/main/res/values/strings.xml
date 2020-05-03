@@ -94,6 +94,7 @@
     <string name="Delete">Delete</string>
     <string name="Delete_for_me">Delete for me</string>
     <string name="Delete_for_everyone">Delete for everyone</string>
-
+    <string name="account">Account</string>
+    <string name="maps">Maps</string>
 
 </resources>

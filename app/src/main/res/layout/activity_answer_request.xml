@@ -61,7 +61,7 @@
             android:id="@+id/requestButtonAccept"
             android:layout_width="125dp"
             android:layout_height="wrap_content"
-            android:text="accept"
+            android:text="@string/accept"
             android:background="#00e600"
             android:textColor="@color/color_white"
             android:layout_margin="15dp"/>
@@ -71,7 +71,7 @@
             android:id="@+id/requestButtonDecline"
             android:layout_width="125dp"
             android:layout_height="wrap_content"
-            android:text="Decline"
+            android:text="@string/decline"
             android:background="@color/color_red"
             android:textColor="@color/color_white"
             android:layout_margin="15dp"/>
