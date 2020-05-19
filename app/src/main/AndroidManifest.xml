@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.alvar.chatapp">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name=".Firebase.FirebaseOfflineCapabilities"
         android:allowBackup="true"
@@ -15,15 +19,15 @@
         <activity android:name=".Activities.ImageActivity"></activity>
         <activity android:name=".Activities.PhoneLoginActivity" />
         <activity android:name=".Activities.AnswerRequestActivity" />
-        <activity android:name=".Activities.MainActivity" /> <!-- Let's make the login activity the default one to be open first when app launched -->
-        <activity android:name=".Activities.LoginActivity">
+        <activity android:name=".Activities.MainActivity" />
+        <activity android:name=".Activities.LoginActivity"> <!-- Let's make the login activity the default one to be open first when app launched -->
 
             <!-- using this -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".Activities.RegisterActivity"
@@ -34,9 +38,6 @@
             android:name=".Activities.RecoverPasswordActivity"
             android:parentActivityName=".Activities.LoginActivity"
             tools:targetApi="jelly_bean" />
-        <activity
-            android:name=".Activities.StatusChangeActivity"
-            android:parentActivityName=".Activities.SettingsActivity" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
@@ -54,9 +55,6 @@
             android:name=".Activities.ChatActivity"
             android:parentActivityName=".Activities.ContactsActivity" />
     </application>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>

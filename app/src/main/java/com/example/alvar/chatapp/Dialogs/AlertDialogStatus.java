@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.StatusChangeActivity;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -92,10 +91,11 @@ public class AlertDialogStatus extends DialogFragment {
                 String newStatus = changeStatusField.getText().toString();
 
                 if (TextUtils.isEmpty(newStatus)){
-                    Toast.makeText(statusChangeView.getContext(), "Field can't be empty", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(statusChangeView.getContext(), getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
                 } else {
                    newStatus = changeStatusField.getText().toString();
                     statusChanged(newStatus);
+                    Toast.makeText(getActivity(), getString(R.string.status_updated), Toast.LENGTH_SHORT).show();
                 }
 
             }

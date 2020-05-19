@@ -102,11 +102,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         //first we set fab background color
 
-        fabImage.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
-                R.color.color_blue_light)));
-
-        fabStatus.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
-                R.color.colorPrimaryDark)));
 
         fabImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,10 +114,6 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 showChangeStatusDialog();
-                /*String currentStatus = textStatus.getText().toString();
-                Intent intent = new Intent(SettingsActivity.this, StatusChangeActivity.class);
-                intent.putExtra("currentStatus", currentStatus);
-                startActivity(intent);*/
             }
         });
     }
