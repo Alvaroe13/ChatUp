@@ -98,5 +98,6 @@
     <string name="Delete_for_everyone">Borrar para todos</string>
     <string name="account">Cuenta</string>
     <string name="maps">Mapa</string>
+    <string name="new_status">Nuevo estado</string>
 
 </resources>

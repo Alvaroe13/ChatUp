@@ -97,5 +97,6 @@
     <string name="Delete_for_everyone">Delete for everyone</string>
     <string name="account">Account</string>
     <string name="maps">Maps</string>
+    <string name="new_status">New status</string>
 
 </resources>
