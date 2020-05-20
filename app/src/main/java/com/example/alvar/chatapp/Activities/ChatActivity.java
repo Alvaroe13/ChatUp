@@ -17,6 +17,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -25,6 +28,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
+import com.example.alvar.chatapp.Dialogs.ChatOptionsDialog;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.Continuation;
@@ -414,10 +418,17 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                showAlertDialog();
+               showAlertDialog();
+               // showChatOptions();  work in rogress
+
                 
             }
         });
+    }
+
+    private void showChatOptions() {
+        ChatOptionsDialog dialog = new ChatOptionsDialog();
+        dialog.show(getSupportFragmentManager(), "showOptionsChat");
     }
 
     /**
@@ -427,9 +438,9 @@ public class ChatActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
         builder.setTitle(R.string.Choose_file);
-        builder.setIcon(R.drawable.send_files);
+        builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions [] = new CharSequence[] {getString(R.string.photo) , getString(R.string.PDF), getString(R.string.Word_Document)};
+        CharSequence menuOptions [] = new CharSequence[] {getString(R.string.photo) , getString(R.string.PDF), getString(R.string.Word_Document), "Share Location"};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -447,6 +458,10 @@ public class ChatActivity extends AppCompatActivity {
                     case 2: //if user selected word option in pop up window
                         optionSelected = "word document";
                         openOptions(WORD_DOCUMENT_OPTION , SELECT_WORD_DOCUMENT);
+                        break;
+                    case 3:
+                        optionSelected = "share location";
+                        Toast.makeText(ChatActivity.this, "Share location option pressed", Toast.LENGTH_SHORT).show();
                         break;
                     default:
                         Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
@@ -724,4 +739,5 @@ public class ChatActivity extends AppCompatActivity {
         startActivity(i);
         finish();
     }
+
 }
