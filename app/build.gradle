@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -20,6 +21,8 @@ android {
 }
 
 dependencies {
+    def multidex_version = "2.0.1"
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
@@ -47,5 +50,13 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
     //image compressor
     implementation 'id.zelory:compressor:2.1.0'
+    //firestore
+    implementation 'com.google.firebase:firebase-firestore:21.2.1'
+    //multidex
+    implementation "androidx.multidex:multidex:$multidex_version"
+    //Google Play Services for Maps
+    implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    // Google play services for location information
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
 }
 apply plugin: 'com.google.gms.google-services'

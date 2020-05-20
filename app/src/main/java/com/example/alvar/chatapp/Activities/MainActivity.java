@@ -1,11 +1,22 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import com.example.alvar.chatapp.Model.UserLocation;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -33,6 +44,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,6 +63,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private FirebaseUser currentUser;
     private DatabaseReference dbUsersRef;
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userLocationRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -61,19 +78,23 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
+    private FusedLocationProviderClient locationProvider;
+    private UserLocation userLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i(TAG, "onCreate: init");
 
+        Log.i(TAG, "onCreate: init");
         //init UI elements
         bindUI();
         //init toolbar and set title
         setToolbar("ChatUp", true);
         //init firebase
         initFirebase();
+        //init firestore
+        initFirestore();
         //set image and username from db to toolbar
         fetchInfoFromDb();
         //when image within drawer is clicked by the user
@@ -92,6 +113,9 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
+        //locator
+        locationProvider = LocationServices.getFusedLocationProviderClient(this);
+        populateFirestore();
     }
 
     @Override
@@ -99,13 +123,64 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
+            getUserLastKnowLocation();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-             updateDateTime("Offline");
+    private void getUserLastKnowLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "getUserLastKnowLocation: permissions are not granted");
+            return;
+        }
+
+        if (userLocation == null){
+            userLocation = new UserLocation();
+
+            Log.i(TAG, "getUserLastKnowLocation: called");
+
+            locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    if (task.isSuccessful()){
+                        Location location = task.getResult();
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude() );
+                        Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
+                        Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                        userLocation.setGeo_point(geoPoint);
+                        userLocation.setTimeStamp(null);
+                        saveUserLocation();
+
+
+                    }
+
+                }
+            });
+        }
+
+
+
     }
+
+    private void saveUserLocation() {
+
+        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
+
+        if (userLocation != null ){ 
+
+            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude() );
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude() );
+                    }
+
+                }
+            });
+        }
+
+    }
+
 
     /**
      * init UI elements
@@ -199,6 +274,15 @@ public class MainActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         //database ref init and get access ti "Users" branch in the db
         dbUsersRef = database.getReference().child("Users");
+    }
+
+
+    private void initFirestore() {
+        
+        String userIdFirestore =   FirebaseAuth.getInstance().getUid();
+        mDb = FirebaseFirestore.getInstance();
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
+        
     }
 
     /**
@@ -393,6 +477,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void populateFirestore(){
+
+        dbUsersRef = database.getReference().child("Users");
+
+    }
+
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        updateDateTime("Offline");
+    }
 
 
 }

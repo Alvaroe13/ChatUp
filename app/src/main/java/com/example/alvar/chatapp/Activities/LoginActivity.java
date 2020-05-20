@@ -128,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
         //if user is signed in we take the user to the main activity
         if (currentUser != null){
@@ -154,10 +154,8 @@ public class LoginActivity extends AppCompatActivity {
                             Log.i(TAG, "signInWithEmail:success" );
                             getDeviceToken();
 
-
                         } else {
                             // If sign in fails, display a message to the user.
-
                             String error = task.getException().getMessage();
                             Log.i(TAG, "signInWithEmail:failure : " + error);
                             Toast.makeText(LoginActivity.this, error , Toast.LENGTH_LONG).show();
@@ -166,7 +164,6 @@ public class LoginActivity extends AppCompatActivity {
 
                         }
 
-                        // ...
                     }
                 });
     }

@@ -99,5 +99,7 @@
     <string name="account">Cuenta</string>
     <string name="maps">Mapa</string>
     <string name="new_status">Nuevo estado</string>
+    <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
+    <string name="collection_user_location">User location</string>
 
 </resources>
