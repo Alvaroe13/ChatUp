@@ -97,5 +97,8 @@
     <string name="Delete_for_everyone">Delete for everyone</string>
     <string name="account">Account</string>
     <string name="maps">Maps</string>
+    <string name="new_status">New status</string>
+    <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
+    <string name="collection_user_location">User location</string>
 
 </resources>

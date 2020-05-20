@@ -5,14 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -25,6 +17,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
+import com.example.alvar.chatapp.Dialogs.ChatOptionsDialog;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.Continuation;
@@ -47,12 +40,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatActivityPage";
 
+    //Const for options intent in Alert Dialog (image, pdf, word)
+    public static final String IMAGE_OPTION = "image/*";
+    public static final String SELECT_IMAGE = "SELECT IMAGE";
+    public static final String PDF_OPTION = "application/pdf";
+    public static final String SELECT_PDF = "SELECT PDF FILE";
+    public static final String WORD_DOCUMENT_OPTION = "application/msword";
+    public static final String SELECT_WORD_DOCUMENT = "SELECT WORD DOCUMENT";
+    // File request const
+    private static final int FILE_REQUEST_NUMBER = 1;
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
@@ -74,16 +84,6 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
-    // File request const
-    private static final int FILE_REQUEST_NUMBER = 1;
-    //Const for options intent in Alert Dialog (image, pdf, word)
-    public static final String IMAGE_OPTION = "image/*";
-    public static final String SELECT_IMAGE = "SELECT IMAGE" ;
-    public static final String PDF_OPTION = "application/pdf" ;
-    public static final String SELECT_PDF = "SELECT PDF FILE" ;
-    public static final String WORD_DOCUMENT_OPTION = "application/msword" ;
-    public static final String SELECT_WORD_DOCUMENT = "SELECT WORD DOCUMENT" ;
-
 
 
     @Override
@@ -93,7 +93,7 @@ public class ChatActivity extends AppCompatActivity {
 
         fetchInfoIntent();
         initFirebase();
-        setToolbar("",true);
+        setToolbar("", true);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -104,7 +104,7 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void UIElements(){
+    private void UIElements() {
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
@@ -113,7 +113,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * this method receives de bundles from "ContactsActivity"
      */
-    private void fetchInfoIntent(){
+    private void fetchInfoIntent() {
         contactID = getIntent().getStringExtra("contactID");
         contactName = getIntent().getStringExtra("contactName");
         contactImage = getIntent().getStringExtra("contactImage");
@@ -122,7 +122,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * init firebase services
      */
-    private void initFirebase(){
+    private void initFirebase() {
 
         auth = FirebaseAuth.getInstance();
         //we get current user ID
@@ -133,9 +133,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     Create toolbar and inflate the custom bar chat bar layout
+     * Create toolbar and inflate the custom bar chat bar layout
      */
-    private void setToolbar(String title, Boolean backOption){
+    private void setToolbar(String title, Boolean backOption) {
 
         toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
@@ -170,13 +170,13 @@ public class ChatActivity extends AppCompatActivity {
      * Here in this method we read the current state of the other user in real time to show it
      * in the toolbar.
      */
-    private void otherUserState(){
+    private void otherUserState() {
 
         dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
 
                     //here we get the other user's current state and we store it in each var
                     String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
@@ -191,26 +191,26 @@ public class ChatActivity extends AppCompatActivity {
                         lastSeenToolbarChat.setText(R.string.typing);
 
                     } else {
-                            //if user is online but not typing we show online on the toolbar
-                        if (saveSate.equals("Online")){
+                        //if user is online but not typing we show online on the toolbar
+                        if (saveSate.equals("Online")) {
                             lastSeenToolbarChat.setText(R.string.activeNow);
                             onlineIcon.setVisibility(View.VISIBLE);
 
                             //if user is not typing nor "online" we show "offline" on the toolbar.
-                        } else if(saveSate.equals("Offline")){
-                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " +  saveLastSeenDate + " " + saveLastSeenTime);
+                        } else if (saveSate.equals("Offline")) {
+                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " + saveLastSeenDate + " " + saveLastSeenTime);
                             onlineIcon.setVisibility(View.INVISIBLE);
                         }
 
                     }
 
 
-                } else{
+                } else {
 
                     Toast.makeText(ChatActivity.this, "Error with the network", Toast.LENGTH_SHORT).show();
                 }
 
- 
+
             }
 
             @Override
@@ -225,7 +225,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * init recyclerView
      */
-    private void initRecycleView(){
+    private void initRecycleView() {
 
         //instance of arrayList of messages
         messagesList = new ArrayList<>();
@@ -275,9 +275,15 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-
         updateDateTime("Online");
+        retrieveMessages();
 
+    }
+
+    /**
+     * fetch messages in the chat room.
+     */
+    private void retrieveMessages() {
         dbChatsRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -285,15 +291,15 @@ public class ChatActivity extends AppCompatActivity {
 
                         messagesList.clear();
 
-                        for (DataSnapshot info : dataSnapshot.getChildren()){
+                        for (DataSnapshot info : dataSnapshot.getChildren()) {
 
-                                Messages messages = info.getValue(Messages.class);
+                            Messages messages = info.getValue(Messages.class);
 
-                                messagesList.add(messages);
+                            messagesList.add(messages);
 
-                                adapter.notifyDataSetChanged();
+                            adapter.notifyDataSetChanged();
 
-                                recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
+                            recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
 
                         }
 
@@ -304,7 +310,6 @@ public class ChatActivity extends AppCompatActivity {
 
                     }
                 });
-
     }
 
     @Override
@@ -312,18 +317,17 @@ public class ChatActivity extends AppCompatActivity {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
         updateDateTime("Offline");
-        //in the the other user close the chat activity the typing state changes to "no"
         typingState("no");
     }
 
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
-    private void updateDateTime(String state){
+    private void updateDateTime(String state) {
 
         String currentTime, currentDate;
 
-        Calendar calendar =  Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
@@ -334,7 +338,7 @@ public class ChatActivity extends AppCompatActivity {
         //lets save all this info in a map to uploaded to the Firebase database.
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
-        HashMap<String , Object> userState = new HashMap<>();
+        HashMap<String, Object> userState = new HashMap<>();
         userState.put("state", state);
         userState.put("date", currentDate);
         userState.put("time", currentTime);
@@ -360,11 +364,11 @@ public class ChatActivity extends AppCompatActivity {
                 String text = s.toString();
 
                 //in edit text is empty we set typing state as "no"
-                if (text.isEmpty()){
+                if (text.isEmpty()) {
                     typingState("no");
                 }
-                    //if edit text is not empty we set typing state as "yes"
-                    else {
+                //if edit text is not empty we set typing state as "yes"
+                else {
                     typingState("yes");
                 }
             }
@@ -387,7 +391,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intentOtherUserProf = new Intent(ChatActivity.this, OtherUserProfileActivity.class);
                 //we send user id through an intent
-                intentOtherUserProf.putExtra("otherUserId" , contactID);
+                intentOtherUserProf.putExtra("otherUserId", contactID);
                 startActivity(intentOtherUserProf);
             }
         });
@@ -395,12 +399,13 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * method in charge of updating the other user's typing state in the db in real time
+     *
      * @param typingState
      */
-    private void typingState(String typingState){
+    private void typingState(String typingState) {
 
         HashMap<String, Object> typingStateMap = new HashMap<>();
-        typingStateMap.put("typing" , typingState);
+        typingStateMap.put("typing", typingState);
 
         dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
 
@@ -415,9 +420,17 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 showAlertDialog();
-                
+                // showChatOptions();  work in rogress
+
+
             }
         });
+    }
+
+    //pending to be done, layout is not ready yet
+    private void showChatOptions() {
+        ChatOptionsDialog dialog = new ChatOptionsDialog();
+        dialog.show(getSupportFragmentManager(), "showOptionsChat");
     }
 
     /**
@@ -427,26 +440,30 @@ public class ChatActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
         builder.setTitle(R.string.Choose_file);
-        builder.setIcon(R.drawable.send_files);
+        builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions [] = new CharSequence[] {getString(R.string.photo) , getString(R.string.PDF), getString(R.string.Word_Document)};
+        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), "Share Location"};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int option) {
 
-                switch (option){
+                switch (option) {
                     case 0: //if user selected photo option in pop up window
                         optionSelected = "photo";
-                        openOptions( IMAGE_OPTION , SELECT_IMAGE );
+                        openOptions(IMAGE_OPTION, SELECT_IMAGE);
                         break;
                     case 1: //if user selected pdf option in pop up window
                         optionSelected = "pdf file";
-                        openOptions( PDF_OPTION , SELECT_PDF );
+                        openOptions(PDF_OPTION, SELECT_PDF);
                         break;
                     case 2: //if user selected word option in pop up window
                         optionSelected = "word document";
-                        openOptions(WORD_DOCUMENT_OPTION , SELECT_WORD_DOCUMENT);
+                        openOptions(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT);
+                        break;
+                    case 3:
+                        optionSelected = "share location";
+                        Toast.makeText(ChatActivity.this, "Share location option pressed", Toast.LENGTH_SHORT).show();
                         break;
                     default:
                         Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
@@ -461,6 +478,7 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
+     *
      * @param fileType
      * @param title
      */
@@ -476,33 +494,34 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if ( requestCode == FILE_REQUEST_NUMBER && resultCode == RESULT_OK && data != null ){
+        if (requestCode == FILE_REQUEST_NUMBER && resultCode == RESULT_OK && data != null) {
             //we store the file (image, pdf, word) selected in this var of URI type.
             file = data.getData();
 
-                switch (optionSelected){
-                    case "photo":
-                        savePhotoInStorage(file);
-                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
-                        break;
-                    case "pdf file":
-                        savePDFInStorage(file);
-                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
-                        break;
-                    case "word document":
-                        saveWordInStorage(file);
-                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
-                        break;
-                    default:
-                        Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
-                }
-
+            switch (optionSelected) {
+                case "photo":
+                    savePhotoInStorage(file);
+                    Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
+                    break;
+                case "pdf file":
+                    savePDFInStorage(file);
+                    Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
+                    break;
+                case "word document":
+                    saveWordInStorage(file);
+                    Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
+                    break;
+                default:
+                    Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
             }
+
+        }
 
     }
 
     /**
      * method in charge of uploading pdf file selected by user into firebase storage
+     *
      * @param file
      */
     private void savePDFInStorage(Uri file) {
@@ -515,7 +534,7 @@ public class ChatActivity extends AppCompatActivity {
         String messagePushKey = messagePushID.getKey();
 
         //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child( messagePushKey + ".pdf");
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".pdf");
         // we upload file to the firebase storage using UploadTask
         uploadTask = fileLocation.putFile(file);
 
@@ -524,7 +543,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
 
-                if (!task.isSuccessful()){
+                if (!task.isSuccessful()) {
 
                     throw task.getException();
                 }
@@ -534,18 +553,18 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
 
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     // here we get the final image URI from storage
                     Uri fileUri = task.getResult();
                     //we parse it to String type.
-                    String fileURLInFirebase =  fileUri.toString();
+                    String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
                     //send message here
                     uploadMessageToDb(fileURLInFirebase, "pdf");
 
                 } else {
-                    String error =  task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                    String error = task.getException().toString();
+                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -554,9 +573,10 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * method in charge of uploading word file selected by user into firebase storage
+     *
      * @param file
      */
-    private void saveWordInStorage(Uri file){
+    private void saveWordInStorage(Uri file) {
 
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
@@ -566,7 +586,7 @@ public class ChatActivity extends AppCompatActivity {
         String messagePushKey = messagePushID.getKey();
 
         //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child( messagePushKey + ".docx");
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".docx");
         // we upload file to the firebase storage using UploadTask
         uploadTask = fileLocation.putFile(file);
 
@@ -575,7 +595,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
 
-                if (!task.isSuccessful()){
+                if (!task.isSuccessful()) {
 
                     throw task.getException();
                 }
@@ -585,18 +605,18 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
 
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     // here we get the final image URI from storage
                     Uri fileUri = task.getResult();
                     //we parse it to String type.
-                    String fileURLInFirebase =  fileUri.toString();
+                    String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
                     //send message here
                     uploadMessageToDb(fileURLInFirebase, "docx");
 
                 } else {
-                    String error =  task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                    String error = task.getException().toString();
+                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -606,6 +626,7 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * file in charge of uploading photo from device to firebase
+     *
      * @param file
      */
     private void savePhotoInStorage(Uri file) {
@@ -618,7 +639,7 @@ public class ChatActivity extends AppCompatActivity {
         String messagePushKey = messagePushID.getKey();
 
         //we store picture inside "photo_for_chat" folder and add extension ".jpg" to convert it into an image file.
-        final StorageReference fileLocation = storageFolderRef.child( messagePushKey + ".jpg");
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".jpg");
         // we upload file to the firebase storage using UploadTask
         uploadTask = fileLocation.putFile(file);
 
@@ -627,7 +648,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
 
-                if (!task.isSuccessful()){
+                if (!task.isSuccessful()) {
 
                     throw task.getException();
                 }
@@ -637,18 +658,18 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
 
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     // here we get the final image URI from storage
                     Uri imageUri = task.getResult();
                     //we parse it to String type.
-                    String imageURLInFirebase =  imageUri.toString();
+                    String imageURLInFirebase = imageUri.toString();
                     Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
                     //send message here
                     uploadMessageToDb(imageURLInFirebase, "image");
 
                 } else {
-                    String error =  task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " +  error, Toast.LENGTH_SHORT).show();
+                    String error = task.getException().toString();
+                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                     Log.i(TAG, "onComplete: error");
                 }
 
@@ -660,17 +681,18 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * method in charge of uploading message (either text, image, or file type) in database
+     *
      * @param messageInfo
      * @param messageType
      */
-    private void uploadMessageToDb(String messageInfo, String messageType){
+    private void uploadMessageToDb(String messageInfo, String messageType) {
 
         //first we create a ref for sender and receiver to be later saved in the db
-        String messageSenderRef =  currentUserID + "/" + contactID;
+        String messageSenderRef = currentUserID + "/" + contactID;
         String messageReceiverRef = contactID + "/" + currentUserID;
 
         String lastMessageTime, lastMessageDate;
-        Calendar calendar =  Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         SimpleDateFormat date = new SimpleDateFormat("dd/MM/yy");
         lastMessageDate = date.format(calendar.getTime());
@@ -696,13 +718,13 @@ public class ChatActivity extends AppCompatActivity {
 
         //this map is for the info shown in the "Messages" node
         Map<String, Object> chatUsersInfo = new HashMap<>();
-        chatUsersInfo.put(messageSenderRef + "/" + messagePushKey , messageDetails);
-        chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey , messageDetails);
+        chatUsersInfo.put(messageSenderRef + "/" + messagePushKey, messageDetails);
+        chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey, messageDetails);
 
         dbChatsRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     Log.i(TAG, "onComplete: successfully");
                 } else {
                     String error = task.getException().toString();
@@ -715,6 +737,14 @@ public class ChatActivity extends AppCompatActivity {
 
         //we remove any text enter by the user once it's been sent
         chatEditText.setText("");
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
+        finish();
     }
 
 }

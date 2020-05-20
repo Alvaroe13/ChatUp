@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
@@ -100,11 +102,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         //first we set fab background color
 
-        fabImage.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
-                R.color.color_blue_light)));
-
-        fabStatus.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(SettingsActivity.this,
-                R.color.colorPrimaryDark)));
 
         fabImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,10 +113,7 @@ public class SettingsActivity extends AppCompatActivity {
         fabStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String currentStatus = textStatus.getText().toString();
-                Intent intent = new Intent(SettingsActivity.this, StatusChangeActivity.class);
-                intent.putExtra("currentStatus", currentStatus);
-                startActivity(intent);
+                showChangeStatusDialog();
             }
         });
     }
@@ -406,7 +400,7 @@ public class SettingsActivity extends AppCompatActivity {
         imageProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAlertDialog();
+                showAlertDialogImage();
             }
         });
 
@@ -415,12 +409,22 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
-    private void showAlertDialog() {
+    private void showAlertDialogImage() {
 
         ImageProfileShow imageDialog = new ImageProfileShow();
         imageDialog.show(getSupportFragmentManager(), "showImageProfile");
 
     }
 
+
+    /**
+     * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
+     */
+    private void showChangeStatusDialog() {
+
+        AlertDialogStatus dialog = new AlertDialogStatus();
+        dialog.show(getSupportFragmentManager(), "showChangeStatus");
+
+    }
 
 }

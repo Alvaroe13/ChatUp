@@ -1,11 +1,23 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import com.example.alvar.chatapp.Model.User;
+import com.example.alvar.chatapp.Model.UserLocation;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.viewpager.widget.ViewPager;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -33,6 +45,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private FirebaseUser currentUser;
     private DatabaseReference dbUsersRef;
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userLocationRef, userDocRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -61,19 +79,23 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
+    private FusedLocationProviderClient locationProvider;
+    private UserLocation userLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i(TAG, "onCreate: init");
 
+        Log.i(TAG, "onCreate: init");
         //init UI elements
         bindUI();
         //init toolbar and set title
         setToolbar("ChatUp", true);
         //init firebase
         initFirebase();
+        //init firestore
+        initFirestore();
         //set image and username from db to toolbar
         fetchInfoFromDb();
         //when image within drawer is clicked by the user
@@ -92,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
+        //locator
+        locationProvider = LocationServices.getFusedLocationProviderClient(this);
     }
 
     @Override
@@ -99,13 +123,64 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
+            getUserLastKnowLocation();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-             updateDateTime("Offline");
+    private void getUserLastKnowLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "getUserLastKnowLocation: permissions are not granted");
+            return;
+        }
+
+        if (userLocation == null){
+            userLocation = new UserLocation();
+
+            Log.i(TAG, "getUserLastKnowLocation: called");
+
+            locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    if (task.isSuccessful()){
+                        Location location = task.getResult();
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude() );
+                        Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
+                        Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                        userLocation.setGeo_point(geoPoint);
+                        userLocation.setTimeStamp(null);
+                        saveUserLocation();
+
+
+                    }
+
+                }
+            });
+        }
+
+
+
     }
+
+    private void saveUserLocation() {
+
+        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
+
+        if (userLocation != null ){ 
+
+            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude() );
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude() );
+                    }
+
+                }
+            });
+        }
+
+    }
+
 
     /**
      * init UI elements
@@ -201,6 +276,17 @@ public class MainActivity extends AppCompatActivity {
         dbUsersRef = database.getReference().child("Users");
     }
 
+
+    private void initFirestore() {
+        
+        String userIdFirestore =   FirebaseAuth.getInstance().getUid();
+
+        mDb = FirebaseFirestore.getInstance();
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
+        userDocRef = mDb.collection("user").document(userIdFirestore);
+        
+    }
+
     /**
      * this method is in charge of creating the tabs and setting it's title
      * @param viewPager
@@ -284,9 +370,19 @@ public class MainActivity extends AppCompatActivity {
 
                 if (dataSnapshot.exists()) {
 
-                    String imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
-                    String usernameToolbar = dataSnapshot.child("name").getValue().toString();
-                    String status = dataSnapshot.child("status").getValue().toString();
+                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token ;
+
+                     imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
+                     usernameToolbar = dataSnapshot.child("name").getValue().toString();
+                     status = dataSnapshot.child("status").getValue().toString();
+
+                             //these are to populate firestore only
+                     email = dataSnapshot.child("email").getValue().toString();
+                     imageProfile = dataSnapshot.child("image").getValue().toString();
+                     password = dataSnapshot.child("password").getValue().toString();
+                     token = dataSnapshot.child("token").getValue().toString();
+
+                    populateFirestore( usernameToolbar, email, password, status, imageProfile,imageThumbnailToolbar, token );
 
                     Log.i(TAG, "onDataChange: username set");
                     usernameNav.setText(usernameToolbar);
@@ -393,6 +489,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void populateFirestore(String username, String email, String password, String status, String profilePic, String imgThumbnail, String token){
+
+        HashMap<String, Object> userFirestore = new HashMap<>();
+        userFirestore.put("name", username );
+        userFirestore.put("email", email );
+        userFirestore.put("password", password );
+        userFirestore.put("status", status );
+        userFirestore.put("image", profilePic );
+        userFirestore.put("imgThumbnail", imgThumbnail );
+        userFirestore.put("token", token );
+
+
+        userDocRef.set(userFirestore).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Log.i(TAG, "onComplete: population to Firestore done");
+                } else {
+                    Log.i(TAG, "onComplete: error: " + task.getException().getMessage() );
+                }
+            }
+        });
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        updateDateTime("Offline");
+    }
 
 
 }
