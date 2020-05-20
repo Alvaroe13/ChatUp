@@ -8,6 +8,7 @@ import android.location.Location;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
+import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference dbUsersRef;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef;
+    private DocumentReference userLocationRef, userDocRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -115,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
         typingState("no");
         //locator
         locationProvider = LocationServices.getFusedLocationProviderClient(this);
-        populateFirestore();
     }
 
     @Override
@@ -280,8 +280,10 @@ public class MainActivity extends AppCompatActivity {
     private void initFirestore() {
         
         String userIdFirestore =   FirebaseAuth.getInstance().getUid();
+
         mDb = FirebaseFirestore.getInstance();
         userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
+        userDocRef = mDb.collection("user").document(userIdFirestore);
         
     }
 
@@ -368,9 +370,19 @@ public class MainActivity extends AppCompatActivity {
 
                 if (dataSnapshot.exists()) {
 
-                    String imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
-                    String usernameToolbar = dataSnapshot.child("name").getValue().toString();
-                    String status = dataSnapshot.child("status").getValue().toString();
+                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token ;
+
+                     imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
+                     usernameToolbar = dataSnapshot.child("name").getValue().toString();
+                     status = dataSnapshot.child("status").getValue().toString();
+
+                             //these are to populate firestore only
+                     email = dataSnapshot.child("email").getValue().toString();
+                     imageProfile = dataSnapshot.child("image").getValue().toString();
+                     password = dataSnapshot.child("password").getValue().toString();
+                     token = dataSnapshot.child("token").getValue().toString();
+
+                    populateFirestore( usernameToolbar, email, password, status, imageProfile,imageThumbnailToolbar, token );
 
                     Log.i(TAG, "onDataChange: username set");
                     usernameNav.setText(usernameToolbar);
@@ -477,13 +489,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void populateFirestore(){
+    private void populateFirestore(String username, String email, String password, String status, String profilePic, String imgThumbnail, String token){
 
-        dbUsersRef = database.getReference().child("Users");
+        HashMap<String, Object> userFirestore = new HashMap<>();
+        userFirestore.put("name", username );
+        userFirestore.put("email", email );
+        userFirestore.put("password", password );
+        userFirestore.put("status", status );
+        userFirestore.put("image", profilePic );
+        userFirestore.put("imgThumbnail", imgThumbnail );
+        userFirestore.put("token", token );
+
+
+        userDocRef.set(userFirestore).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Log.i(TAG, "onComplete: population to Firestore done");
+                } else {
+                    Log.i(TAG, "onComplete: error: " + task.getException().getMessage() );
+                }
+            }
+        });
 
     }
-
-
 
     @Override
     protected void onPause() {
