@@ -79,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
-    private FusedLocationProviderClient locationProvider;
-    private UserLocation userLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,13 +86,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Log.i(TAG, "onCreate: init");
-        //init UI elements
         bindUI();
-        //init toolbar and set title
         setToolbar("ChatUp", true);
-        //init firebase
         initFirebase();
-        //init firestore
         initFirestore();
         //set image and username from db to toolbar
         fetchInfoFromDb();
@@ -115,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
         //locator
-        locationProvider = LocationServices.getFusedLocationProviderClient(this);
+      //  locationProvider = LocationServices.getFusedLocationProviderClient(this);
     }
 
     @Override
@@ -123,10 +117,10 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
-            getUserLastKnowLocation();
+         //   getUserLastKnowLocation();
     }
 
-    private void getUserLastKnowLocation() {
+  /*  private void getUserLastKnowLocation() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "getUserLastKnowLocation: permissions are not granted");
@@ -180,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+*/
 
     /**
      * init UI elements

@@ -1,10 +1,16 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -19,7 +25,14 @@ import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
 import com.example.alvar.chatapp.Dialogs.ChatOptionsDialog;
 import com.example.alvar.chatapp.Model.Messages;
+import com.example.alvar.chatapp.Model.User;
+import com.example.alvar.chatapp.UserClient;
+import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,6 +42,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -39,6 +56,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingDeque;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,6 +64,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -61,13 +81,21 @@ public class ChatActivity extends AppCompatActivity {
     public static final String SELECT_PDF = "SELECT PDF FILE";
     public static final String WORD_DOCUMENT_OPTION = "application/msword";
     public static final String SELECT_WORD_DOCUMENT = "SELECT WORD DOCUMENT";
+    public static final int PERMISSIONS_REQUEST_ENABLE_GPS = 555;
+    public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 9004;
+    public static final int ERROR_DIALOG_REQUEST = 9001;
     // File request const
-    private static final int FILE_REQUEST_NUMBER = 1;
+    private static final int CHAT_IMAGE_MENU_REQUEST = 1;
+    private static final int CHAT_PDF_MENU_REQUEST = 2;
+    private static final int CHAT_DOCX_MENU_REQUEST = 3;
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
     private DatabaseReference dbChatsRef, messagePushID, dbUsersNodeRef;
     private UploadTask uploadTask;
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userLocationRef, userDocRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -84,6 +112,9 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
+    private boolean locationPermissionGranted = false;
+    private UserLocation userLocation;
+    private FusedLocationProviderClient locationProvider;
 
 
     @Override
@@ -93,6 +124,7 @@ public class ChatActivity extends AppCompatActivity {
 
         fetchInfoIntent();
         initFirebase();
+        initFirestore();
         setToolbar("", true);
         UIElements();
         initRecycleView();
@@ -101,7 +133,13 @@ public class ChatActivity extends AppCompatActivity {
         otherUserState();
         toolbarPressed();
         attachFileButtonPressed();
+        initLocationProvider();
 
+
+    }
+
+    private void initLocationProvider() {
+        locationProvider = LocationServices.getFusedLocationProviderClient(this);
     }
 
     private void UIElements() {
@@ -130,6 +168,17 @@ public class ChatActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
         dbChatsRef = database.getReference().child("Chats").child("Messages");
+    }
+
+
+    private void initFirestore() {
+
+        String userIdFirestore = FirebaseAuth.getInstance().getUid();
+
+        mDb = FirebaseFirestore.getInstance();
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
+        userDocRef = mDb.collection("user").document(userIdFirestore);
+
     }
 
     /**
@@ -451,19 +500,20 @@ public class ChatActivity extends AppCompatActivity {
                 switch (option) {
                     case 0: //if user selected photo option in pop up window
                         optionSelected = "photo";
-                        openOptions(IMAGE_OPTION, SELECT_IMAGE);
+                        openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
                         break;
                     case 1: //if user selected pdf option in pop up window
                         optionSelected = "pdf file";
-                        openOptions(PDF_OPTION, SELECT_PDF);
+                        openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
                         break;
                     case 2: //if user selected word option in pop up window
                         optionSelected = "word document";
-                        openOptions(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT);
+                        openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
                         break;
                     case 3:
                         optionSelected = "share location";
-                        Toast.makeText(ChatActivity.this, "Share location option pressed", Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, "onClick: Share location option pressed ");
+                        openMaps();
                         break;
                     default:
                         Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
@@ -476,17 +526,15 @@ public class ChatActivity extends AppCompatActivity {
         builder.show();
     }
 
+
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
-     *
-     * @param fileType
-     * @param title
      */
-    private void openOptions(String fileType, String title) {
+    private void openOption(String fileType, String title, int codeRequest) {
         Intent intent = new Intent();
         intent.setType(fileType);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, title), FILE_REQUEST_NUMBER);
+        startActivityForResult(Intent.createChooser(intent, title), codeRequest);
     }
 
 
@@ -494,25 +542,43 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FILE_REQUEST_NUMBER && resultCode == RESULT_OK && data != null) {
-            //we store the file (image, pdf, word) selected in this var of URI type.
-            file = data.getData();
+        if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
+                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == PERMISSIONS_REQUEST_ENABLE_GPS) {
 
-            switch (optionSelected) {
-                case "photo":
-                    savePhotoInStorage(file);
-                    Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
-                    break;
-                case "pdf file":
-                    savePDFInStorage(file);
-                    Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
-                    break;
-                case "word document":
-                    saveWordInStorage(file);
-                    Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
-                    break;
-                default:
-                    Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
+            if (resultCode == RESULT_OK) {
+
+                try {
+                    //we store the file (image, pdf, word) selected in this var of URI type.
+                    file = data.getData();
+                } catch (NullPointerException e) {
+                    Log.i(TAG, "onActivityResult: data is empty: " + e.getMessage());
+                }
+
+                switch (requestCode) {
+                    case CHAT_IMAGE_MENU_REQUEST:
+                        savePhotoInStorage(file);
+                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
+                        break;
+                    case CHAT_PDF_MENU_REQUEST:
+                        savePDFInStorage(file);
+                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
+                        break;
+                    case CHAT_DOCX_MENU_REQUEST:
+                        saveWordInStorage(file);
+                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
+                        break;
+                    case PERMISSIONS_REQUEST_ENABLE_GPS:
+                        if (locationPermissionGranted) {
+                            //getUserDetails();  commented out for the time being while we solve the activity result issue (not retrieving the result)
+                            Log.i(TAG, "onActivityResult: share location");
+                            Intent i = new Intent(this, MainActivity.class);
+                            startActivity(i);
+                        }
+                        Log.d(TAG, "onActivityResult: location not granted");
+                        break;
+                    default:
+                        Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
+                }
             }
 
         }
@@ -746,5 +812,251 @@ public class ChatActivity extends AppCompatActivity {
         startActivity(i);
         finish();
     }
+
+
+    // ---------------------------------------------- Maps permissions ------------------------------
+
+    private void openMaps() {
+        if (!isGPSEnabled()) {
+            buildAlertMessageNoGps();
+        } else {
+            getLocationPermission();
+        }
+    }
+
+    /**
+     * method checks if gps is enabled on the device only
+     *
+     * @return
+     */
+    private boolean isGPSEnabled() {
+
+        try {
+            int gpsSignal = Settings.Secure.getInt(this.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            if (gpsSignal == 0) {
+                Log.i(TAG, "openMapsOption: gps is OFF1");
+                return false;
+            } else {
+                Log.i(TAG, "openMapsOption: gps is ON");
+                return true;
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+            Log.i(TAG, "openMapsOption: gps is OFF2");
+            return false;
+        }
+
+    }
+
+    /**
+     * method pops up option to take the user to settings to turn gps on and off
+     */
+    private void buildAlertMessageNoGps() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        Intent enableGpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivityForResult(enableGpsIntent, PERMISSIONS_REQUEST_ENABLE_GPS);
+                    }
+                });
+        final android.app.AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * location permission for the app
+     */
+    private void getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true;
+            Log.i(TAG, "getLocationPermission: apps location permission granted");
+            getUserDetails();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            Log.i(TAG, "getLocationPermission: apps location permission granted");
+        }
+    }
+
+
+    /**
+     * here we pass information from the user's document to the user's location document (firestore)
+     */
+    private void getUserDetails() {
+
+        if (userLocation == null) {
+            userLocation = new UserLocation();
+
+            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+
+                        User user = task.getResult().toObject(User.class);
+                        Log.d(TAG, "onComplete: user: " + user.getName());
+                        userLocation.setUser(user);
+                        //  ((UserClient)(getApplicationContext())).setUser(user);
+                        getUserLastKnowLocation();
+
+                    }
+                }
+            });
+        } else {
+            getUserLastKnowLocation();
+        }
+    }
+
+    /**
+     * method in charge of fetching user location (lat/long coordinates)
+     */
+    private void getUserLastKnowLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "permissions not granted", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
+            buildAlertMessageNoGps();
+            return;
+        }
+        Log.i(TAG, "getUserLastKnowLocation: called");
+        locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    Location location = task.getResult();
+                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
+                    Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                    userLocation.setGeo_point(geoPoint);
+                    userLocation.setTimeStamp(null);
+                    saveUserLocation();
+
+                }
+
+            }
+        });
+    }
+
+    /**
+     * here we save users coordinates in firestore db.
+     */
+    private void saveUserLocation() {
+
+        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
+        if (userLocation != null) {
+
+            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude());
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude());
+                        Log.d(TAG, "onComplete name: " + userLocation.getUser().getName());
+                        Log.d(TAG, "onComplete: email: " + userLocation.getUser().getEmail());
+                        Log.d(TAG, "onComplete: password: " + userLocation.getUser().getPassword());
+                    }
+
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        locationPermissionGranted = false;
+
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationPermissionGranted = true;
+                }
+            }
+
+        }
+
+    }
+
+
+
+    /*
+
+     */
+/**
+ * here we put in motion maps permissions check
+ *
+ * @return
+ *//*
+
+    private boolean checkMapServices() {
+        if (isServicesOK()) {
+            if (isMapsEnabled()) {
+                getUserDetails();
+                return true;
+            }
+        }
+        Log.i(TAG, "checkMapServices: maps is enabled");
+        return false;
+    }
+
+    */
+/**
+ * method checks if google services is available in the phone to be able to use maps
+ *
+ * @return
+ *//*
+
+    public boolean isServicesOK() {
+        Log.d(TAG, "isServicesOK: checking google services version");
+
+        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(ChatActivity.this);
+
+        if (available == ConnectionResult.SUCCESS) {
+            //everything is fine and the user can make map requests
+            Log.d(TAG, "isServicesOK: Google Play Services is working");
+            return true;
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
+            //an error occured but we can resolve it
+            Log.d(TAG, "isServicesOK: an error occured but we can fix it");
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(ChatActivity.this, available, ERROR_DIALOG_REQUEST);
+            dialog.show();
+        } else {
+            Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
+
+    */
+/**
+ * method in charge of checking if gps is enabled on the device
+ *
+ * @return
+ *//*
+
+    public boolean isMapsEnabled() {
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        Log.i(TAG, "isMapsEnabled: gps it is enabled");
+
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.i(TAG, "isMapsEnabled: gps not enabled");
+            buildAlertMessageNoGps();
+            return false;
+        }
+        return true;
+    }
+*/
 
 }
