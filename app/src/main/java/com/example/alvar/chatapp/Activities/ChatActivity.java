@@ -35,6 +35,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -122,6 +124,9 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+
+        initLocationProvider();
+
         fetchInfoIntent();
         initFirebase();
         initFirestore();
@@ -133,8 +138,6 @@ public class ChatActivity extends AppCompatActivity {
         otherUserState();
         toolbarPressed();
         attachFileButtonPressed();
-        initLocationProvider();
-
 
     }
 
@@ -816,6 +819,9 @@ public class ChatActivity extends AppCompatActivity {
 
     // ---------------------------------------------- Maps permissions ------------------------------
 
+    /**
+     * first we check if GPS is enabled on device and if app has location permission granted.
+     */
     private void openMaps() {
         if (!isGPSEnabled()) {
             buildAlertMessageNoGps();
@@ -878,13 +884,13 @@ public class ChatActivity extends AppCompatActivity {
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
-            Log.i(TAG, "getLocationPermission: apps location permission granted");
+            Log.d(TAG, "getLocationPermission: apps location permission granted");
             getUserDetails();
         } else {
+            Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            Log.i(TAG, "getLocationPermission: apps location permission granted");
         }
     }
 
@@ -921,17 +927,20 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void getUserLastKnowLocation() {
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "permissions not granted", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
-            buildAlertMessageNoGps();
             return;
         }
+
         Log.i(TAG, "getUserLastKnowLocation: called");
+
         locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
                 if (task.isSuccessful()) {
+
+                    //location is returning null
                     Location location = task.getResult();
                     GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
                     Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
@@ -944,12 +953,37 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
+
+
+/*
+        locationProvider.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null ){
+                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
+                    Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                    userLocation.setGeo_point(geoPoint);
+                    userLocation.setTimeStamp(null);
+                    saveUserLocation();
+                } else{
+                    Log.d(TAG, "onSuccess: location came null");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: error: " + e.getMessage());
+            }
+        });*/
+
+
     }
 
     /**
      * here we save users coordinates in firestore db.
      */
-    private void saveUserLocation() {
+    private void saveUserLocation(){
 
         Log.i(TAG, "saveUserLocation: saveUserLocation called.");
         if (userLocation != null) {
@@ -971,22 +1005,24 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * this is for the local permission request (NOT our dialog alert, this one from android)
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
         locationPermissionGranted = false;
 
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationPermissionGranted = true;
-                }
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationPermissionGranted = true;
+                Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
+            } else {
+                Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
             }
-
         }
-
     }
 
 

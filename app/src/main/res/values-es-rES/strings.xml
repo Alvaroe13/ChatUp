@@ -101,5 +101,6 @@
     <string name="new_status">Nuevo estado</string>
     <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
     <string name="collection_user_location">User location</string>
+    <string name="location_permission_requiered">Permiso denegado. Es necesario para compartir ubicación</string>
 
 </resources>
