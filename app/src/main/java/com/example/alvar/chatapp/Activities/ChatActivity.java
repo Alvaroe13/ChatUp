@@ -69,6 +69,9 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_PDF_MENU_REQUEST;
+import static com.example.alvar.chatapp.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
@@ -85,11 +88,11 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsRef, messagePushID, dbUsersNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef;
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef, userDocRef, chatroomRef;
+    private DocumentReference userLocationRef, userDocRef, chatroomDocRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -102,8 +105,6 @@ public class ChatActivity extends AppCompatActivity {
     private String contactID, currentUserID;
     private String contactName, contactImage;
     private String messageText;
-    private String userID;
-    private String collectionID;
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
@@ -149,35 +150,36 @@ public class ChatActivity extends AppCompatActivity {
      * this method receives de bundles from "ContactsActivity"
      */
     private void fetchInfoIntent() {
-        contactID = getIntent().getStringExtra("contactID");
-        contactName = getIntent().getStringExtra("contactName");
-        contactImage = getIntent().getStringExtra("contactImage");
-        collectionID = getIntent().getStringExtra("chatroomID");
+
+        if (getIntent() != null){
+            contactID = getIntent().getStringExtra(CONTACT_ID);
+            contactName = getIntent().getStringExtra(CONTACT_NAME);
+            contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
+        }
+
     }
 
     /**
      * init firebase services
      */
     private void initFirebase() {
-
         auth = FirebaseAuth.getInstance();
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
-        dbUsersNodeRef = database.getReference().child("Users");
-        dbChatsRef = database.getReference().child("Chats").child("Messages");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
+        dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
     }
 
 
     private void initFirestore() {
-        //userid
-        userID = FirebaseAuth.getInstance().getUid();
+
         //db
         mDb = FirebaseFirestore.getInstance();
         //docs ref
-        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userID);
-        userDocRef = mDb.collection("user").document(userID);
-        chatroomRef = mDb.collection("Chatroom").document();
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(currentUserID);
+        userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
+        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref)).document();
     }
 
     /**
@@ -186,18 +188,18 @@ public class ChatActivity extends AppCompatActivity {
     private void createChatroomDoc() {
 
         Chatroom chatroom = new Chatroom();
-        chatroom.setMember1ID(userID); //current user
+        chatroom.setMember1ID(currentUserID); //current user
         chatroom.setMember2ID(contactID);   //other user in chatroom
 
-        String documentID = userID + "_" + contactID ;
-        String collectionID = chatroomRef.getId();
+        String documentID = currentUserID + "_" + contactID ;
+        String collectionID = chatroomDocRef.getId();
 
-        chatroomRef = mDb.collection("Chatroom")
+        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref))
                 .document(collectionID)
-                .collection("Users")
+                .collection(getString(R.string.users_ref))
                 .document(documentID);
 
-        chatroomRef.set(chatroom).addOnSuccessListener(new OnSuccessListener<Void>() {
+        chatroomDocRef.set(chatroom).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d(TAG, "onSuccess: successful");
@@ -268,38 +270,28 @@ public class ChatActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
 
                     //here we get the other user's current state and we store it in each var
-                    String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
-                    String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
-                    String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+                    String saveLastSeenDate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.date_db)).getValue().toString();
+                    String saveLastSeenTime = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.time_db)).getValue().toString();
+                    String saveSate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.state_db)).getValue().toString();
                     //retrieving other user's typing state
-                    String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
+                    String typingState = dataSnapshot.child(getString(R.string.user_state_db)).child((getString(R.string.typing_db))).getValue().toString();
 
                     //if typing state in db is yes we should in toolbar that other user is typing
-                    if (typingState.equals("yes")) {
-
+                    if (typingState.equals(getString(R.string.yes_db))) {
                         lastSeenToolbarChat.setText(R.string.typing);
-
                     } else {
                         //if user is online but not typing we show online on the toolbar
-                        if (saveSate.equals("Online")) {
+                        if (saveSate.equals(getString(R.string.online_db))) {
                             lastSeenToolbarChat.setText(R.string.activeNow);
                             onlineIcon.setVisibility(View.VISIBLE);
 
                             //if user is not typing nor "online" we show "offline" on the toolbar.
-                        } else if (saveSate.equals("Offline")) {
+                        } else if (saveSate.equals(getString(R.string.offline_db))) {
                             lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " + saveLastSeenDate + " " + saveLastSeenTime);
                             onlineIcon.setVisibility(View.INVISIBLE);
                         }
-
                     }
-
-
-                } else {
-
-                    Toast.makeText(ChatActivity.this, "Error with the network", Toast.LENGTH_SHORT).show();
                 }
-
-
             }
 
             @Override
@@ -364,7 +356,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        updateDateTime("Online");
+        updateDateTime(getString(R.string.online_db));
         retrieveMessages();
 
     }
@@ -373,7 +365,7 @@ public class ChatActivity extends AppCompatActivity {
      * fetch messages in the chat room.
      */
     private void retrieveMessages() {
-        dbChatsRef.child(currentUserID).child(contactID)
+        dbChatsNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -405,8 +397,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
-        updateDateTime("Offline");
-        typingState("no");
+        updateDateTime(getString(R.string.offline_db));
+        typingState((getString(R.string.no_db)));
     }
 
     /**
@@ -428,11 +420,11 @@ public class ChatActivity extends AppCompatActivity {
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
         HashMap<String, Object> userState = new HashMap<>();
-        userState.put("state", state);
-        userState.put("date", currentDate);
-        userState.put("time", currentTime);
+        userState.put((getString(R.string.state_db)), state);
+        userState.put((getString(R.string.date_db)), currentDate);
+        userState.put((getString(R.string.time_db)), currentTime);
 
-        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
+        dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
 
     }
 
@@ -454,11 +446,11 @@ public class ChatActivity extends AppCompatActivity {
 
                 //in edit text is empty we set typing state as "no"
                 if (text.isEmpty()) {
-                    typingState("no");
+                    typingState( (getString(R.string.no_db) ) ) ;
                 }
                 //if edit text is not empty we set typing state as "yes"
                 else {
-                    typingState("yes");
+                    typingState((getString(R.string.yes_db) ));
                 }
             }
 
@@ -494,9 +486,9 @@ public class ChatActivity extends AppCompatActivity {
     private void typingState(String typingState) {
 
         HashMap<String, Object> typingStateMap = new HashMap<>();
-        typingStateMap.put("typing", typingState);
+        typingStateMap.put(getString(R.string.typing_db), typingState);
 
-        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.users_ref)).updateChildren(typingStateMap);
 
     }
 
@@ -514,9 +506,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-
-
-
     /**
      * here we show the option for the user to choose.
      */
@@ -526,7 +515,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.setTitle(R.string.Choose_file);
         builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), "Share Location"};
+        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location)};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -551,7 +540,7 @@ public class ChatActivity extends AppCompatActivity {
                         openMaps();
                         break;
                     default:
-                        Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onClick: You didn't select any option");
                 }
 
 
@@ -560,7 +549,6 @@ public class ChatActivity extends AppCompatActivity {
 
         builder.show();
     }
-
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
@@ -571,7 +559,6 @@ public class ChatActivity extends AppCompatActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, title), codeRequest);
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -627,7 +614,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -679,7 +666,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -732,7 +719,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("photo_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -763,7 +750,7 @@ public class ChatActivity extends AppCompatActivity {
                     String imageURLInFirebase = imageUri.toString();
                     Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
                     //send message here
-                    uploadMessageToDb(imageURLInFirebase, "image");
+                    uploadMessageToDb(imageURLInFirebase, getString(R.string.image_db));
 
                 } else {
                     String error = task.getException().toString();
@@ -798,28 +785,28 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         lastMessageTime = time.format(calendar.getTime());
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         //save unique message id
         String messagePushKey = messagePushID.getKey();
 
         //this map is for saving the details of the messages
         Map<String, Object> messageDetails = new HashMap<>();
-        messageDetails.put("message", messageInfo);
-        messageDetails.put("type", messageType);
-        messageDetails.put("senderID", currentUserID);
-        messageDetails.put("receiverID", contactID);
-        messageDetails.put("messageDate", lastMessageDate);
-        messageDetails.put("messageTime", lastMessageTime);
-        messageDetails.put("messageID", messagePushKey);
-        messageDetails.put("seen", false);
+        messageDetails.put(getString(R.string.message_db), messageInfo);
+        messageDetails.put(getString(R.string.type_db), messageType);
+        messageDetails.put(getString(R.string.sende_id_db), currentUserID);
+        messageDetails.put(getString(R.string.receiver_id_db), contactID);
+        messageDetails.put(getString(R.string.message_date_db), lastMessageDate);
+        messageDetails.put(getString(R.string.message_time_db), lastMessageTime);
+        messageDetails.put(getString(R.string.message_id_db), messagePushKey);
+        messageDetails.put(getString(R.string.seen_db), false);
 
         //this map is for the info shown in the "Messages" node
         Map<String, Object> chatUsersInfo = new HashMap<>();
         chatUsersInfo.put(messageSenderRef + "/" + messagePushKey, messageDetails);
         chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey, messageDetails);
 
-        dbChatsRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbChatsNodeRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
@@ -846,7 +833,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-    // ---------------------------------------------- Maps permissions ------------------------------
+    // ---------------------------------------------- Maps permissions ------------------------------  //
 
     /**
      * first we check if GPS is enabled on device and if app has location permission granted.

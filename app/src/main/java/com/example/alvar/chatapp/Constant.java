@@ -17,5 +17,12 @@ public class Constant {
     public static final int CHAT_IMAGE_MENU_REQUEST = 1;
     public static final int CHAT_PDF_MENU_REQUEST = 2;
     public static final int CHAT_DOCX_MENU_REQUEST = 3;
+    //galley const
+    public static final int GALLERY_REQUEST_NUMBER = 1;
+    // intents
+    public static final String CONTACT_ID = "contactID";
+    public static final String CONTACT_NAME = "contactName";
+    public static final String CONTACT_IMAGE = "contactImage";
+    public static final String CHATROOM_ID = "chatroomID";
 
 }

@@ -2,17 +2,9 @@ package com.example.alvar.chatapp.Activities;
 
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -20,12 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -42,13 +36,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
 
+import static com.example.alvar.chatapp.Constant.GALLERY_REQUEST_NUMBER;
+import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+
 public class SettingsActivity extends AppCompatActivity {
 
-    //log
+
     private static final String TAG = "SettingsPage";
+
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
@@ -64,8 +65,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Vars
     private String currentUserID;
     private Bitmap thumbnailImage = null;
-    //galley const
-    private static final int GALLERY_REQUEST_NUMBER = 1;
+
 
 
     @Override
@@ -76,9 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
         bindUI();
         //fab buttons listeners
         fabButtonClicked();
-        //init firebase and get current user ID
         initFirebase();
-        //init retrieve data from firebase database method
         retrieveDataFromDb();
         imageClick();
     }
@@ -101,15 +99,12 @@ public class SettingsActivity extends AppCompatActivity {
     private void fabButtonClicked() {
 
         //first we set fab background color
-
-
         fabImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGallery();
             }
         });
-
         fabStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,7 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void openGallery() {
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType(IMAGE_OPTION);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "SELECT IMAGE"), GALLERY_REQUEST_NUMBER);
     }
@@ -140,9 +135,9 @@ public class SettingsActivity extends AppCompatActivity {
         currentUserID = currentUser.getUid();
         //init Firebase database
         database = FirebaseDatabase.getInstance();
-        //init database reference and we aim to the users data by passing "userID" as child.
-        dbUsersRef = database.getReference("Users");
+        dbUsersRef = database.getReference(getString(R.string.users_ref));
         dbUsersRef.keepSynced(true);
+
         //init firebase storage
         storageRef = FirebaseStorage.getInstance().getReference();
         //we create a "Thumbnail_Images" folder in firebase storage
@@ -159,20 +154,17 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i(TAG, "onDataChange: data retrieved :" + dataSnapshot);
-                
-                if ( dataSnapshot.exists()){
-                        infoFetched(dataSnapshot);    
-                } else {
-                    Toast.makeText(SettingsActivity.this, "Unable to retrieve info from database", Toast.LENGTH_SHORT).show();
-                }
-                
 
+                if (dataSnapshot.exists()) {
+                    infoFetched(dataSnapshot);
+                } else {
+                    Toast.makeText(SettingsActivity.this,
+                            "Unable to retrieve info from database", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.i(TAG, "Failed to read value." + error.toException());
             }
         });
     }
@@ -310,7 +302,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     /**
      * this method downloads the info from the image (without resized) to later be save from storage to database
-     *
      * @param task
      */
     private void downloadUrl(Task<Uri> task) {
@@ -410,10 +401,8 @@ public class SettingsActivity extends AppCompatActivity {
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showAlertDialogImage() {
-
         ImageProfileShow imageDialog = new ImageProfileShow();
         imageDialog.show(getSupportFragmentManager(), "showImageProfile");
-
     }
 
 
@@ -421,10 +410,8 @@ public class SettingsActivity extends AppCompatActivity {
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showChangeStatusDialog() {
-
         AlertDialogStatus dialog = new AlertDialogStatus();
         dialog.show(getSupportFragmentManager(), "showChangeStatus");
-
     }
 
 }

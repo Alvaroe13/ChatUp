@@ -1,30 +1,8 @@
 package com.example.alvar.chatapp.Activities;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-
-import com.example.alvar.chatapp.Model.User;
-import com.example.alvar.chatapp.Model.UserLocation;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.view.GravityCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,8 +16,11 @@ import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.Fragments.RequestsFragment;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -47,12 +28,19 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,8 +50,7 @@ public class MainActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private FirebaseUser currentUser;
-    private DatabaseReference dbUsersRef;
+    private DatabaseReference dbUsersNodeRef;
     //Firestore
     private FirebaseFirestore mDb;
     private DocumentReference userDocRef;
@@ -85,11 +72,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.i(TAG, "onCreate: init");
         bindUI();
         setToolbar("ChatUp", true);
         initFirebase();
-        initFirestore();
         //set image and username from db to toolbar
         fetchInfoFromDb();
         //when image within drawer is clicked by the user
@@ -113,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-            //this method will pass "Online" to the database as soon as the user is using the app
-            updateDateTime("Online");
+        //this method will pass "Online" to the database as soon as the user is using the app
+        updateDateTime("Online");
     }
 
     /**
@@ -128,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.navView);
         //drawer layout
         drawerLayout = findViewById(R.id.navigationDrawerLayout);
-        burgerIcon = new ActionBarDrawerToggle(MainActivity.this, drawerLayout , toolbarMain, R.string.drawerOpen, R.string.drawerClose );
+        burgerIcon = new ActionBarDrawerToggle(MainActivity.this, drawerLayout, toolbarMain, R.string.drawerOpen, R.string.drawerClose);
         drawerLayout.addDrawerListener(burgerIcon);
         burgerIcon.syncState();
         //elements within nav header
@@ -141,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * this method sets toolbar and it's details
+     *
      * @param title
      */
     private void setToolbar(String title, Boolean backOption) {
@@ -156,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * this methods handles the action taken in the drawer menu
+     *
      * @param menuItem
      */
     private void drawerOptionsMenu(MenuItem menuItem) {
@@ -190,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (burgerIcon.onOptionsItemSelected(item)){
+        if (burgerIcon.onOptionsItemSelected(item)) {
             return true;
         }
 
@@ -203,22 +190,17 @@ public class MainActivity extends AppCompatActivity {
     private void initFirebase() {
         //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
-
-        currentUser = mAuth.getCurrentUser();
         //database init
         database = FirebaseDatabase.getInstance();
-        //database ref init and get access ti "Users" branch in the db
-        dbUsersRef = database.getReference().child("Users");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
     }
 
-
+    /**
+     * init firestore services
+     */
     private void initFirestore() {
-        
-        String userIdFirestore =   FirebaseAuth.getInstance().getUid();
-
         mDb = FirebaseFirestore.getInstance();
-        userDocRef = mDb.collection("user").document(userIdFirestore);
-        
+        userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
     }
 
     /**
@@ -266,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * this method contains the pop-up message when user clicks log out from menu option
      * (standard alert dialog)
+     *
      * @param title
      * @param message
      * @return
@@ -298,25 +281,25 @@ public class MainActivity extends AppCompatActivity {
 
         currentUserID = mAuth.getCurrentUser().getUid();
 
-        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+        dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 if (dataSnapshot.exists()) {
 
-                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token ;
+                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token;
 
-                     imageThumbnailToolbar = dataSnapshot.child("imageThumbnail").getValue().toString();
-                     usernameToolbar = dataSnapshot.child("name").getValue().toString();
-                     status = dataSnapshot.child("status").getValue().toString();
+                    imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+                    usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+                    status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
 
-                             //these are to populate firestore only
-                     email = dataSnapshot.child("email").getValue().toString();
-                     imageProfile = dataSnapshot.child("image").getValue().toString();
-                     password = dataSnapshot.child("password").getValue().toString();
-                     token = dataSnapshot.child("token").getValue().toString();
+                    //these are to populate firestore only
+                    email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
+                    imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
+                    password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
+                    token = dataSnapshot.child(getString(R.string.token_db)).getValue().toString();
 
-                    populateFirestore( usernameToolbar, email, password, status, imageProfile,imageThumbnailToolbar, token );
+                    populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token);
 
                     Log.i(TAG, "onDataChange: username set");
                     usernameNav.setText(usernameToolbar);
@@ -347,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * method handle events when toolbar has been clicked
      */
-    private void drawerImagePressed(){
+    private void drawerImagePressed() {
 
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -376,9 +359,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
-        }else{
+        } else {
             super.onBackPressed();
         }
     }
@@ -386,11 +369,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
-    private void updateDateTime(String state){
+    private void updateDateTime(String state) {
 
         String currentTime, currentDate;
 
-        Calendar calendar =  Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         SimpleDateFormat date = new SimpleDateFormat("dd/MMM/yyyy");
         currentDate = date.format(calendar.getTime());
@@ -401,47 +384,50 @@ public class MainActivity extends AppCompatActivity {
         //lets save all this info in a map to uploaded to the Firebase database.
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
-        HashMap<String , Object> userState = new HashMap<>();
-        userState.put("state", state);
-        userState.put("date", currentDate);
-        userState.put("time", currentTime);
+        HashMap<String, Object> userState = new HashMap<>();
+        userState.put(getString(R.string.state_db), state);
+        userState.put(getString(R.string.date_db), currentDate);
+        userState.put(getString(R.string.time_db), currentTime);
 
-        dbUsersRef.child(currentUserID).child("userState").updateChildren(userState);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(userState);
 
     }
 
     /**
      * method in charge of updating the other user's typing state in the db in real time
+     *
      * @param typingState
      */
-    private void typingState(String typingState){
+    private void typingState(String typingState) {
 
         HashMap<String, Object> typingStateMap = new HashMap<>();
-        typingStateMap.put("typing" , typingState);
+        typingStateMap.put(getString(R.string.typing_db), typingState);
 
-        dbUsersRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(typingStateMap);
 
     }
 
-    private void populateFirestore(String username, String email, String password, String status, String profilePic, String imgThumbnail, String token){
+    private void populateFirestore(String username, String email, String password, String status, String profilePic, String imgThumbnail, String token) {
+
+        initFirestore();
 
         HashMap<String, Object> userFirestore = new HashMap<>();
-        userFirestore.put("name", username );
-        userFirestore.put("email", email );
-        userFirestore.put("password", password );
-        userFirestore.put("status", status );
-        userFirestore.put("image", profilePic );
-        userFirestore.put("imgThumbnail", imgThumbnail );
-        userFirestore.put("token", token );
+        userFirestore.put(getString(R.string.name_db), username);
+        userFirestore.put(getString(R.string.email_db), email);
+        userFirestore.put(getString(R.string.password_db), password);
+        userFirestore.put(getString(R.string.status_db), status);
+        userFirestore.put(getString(R.string.image_db), profilePic);
+        userFirestore.put(getString(R.string.imageThumbnail_db), imgThumbnail);
+        userFirestore.put(getString(R.string.token_db), token);
 
 
         userDocRef.set(userFirestore).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     Log.i(TAG, "onComplete: population to Firestore done");
                 } else {
-                    Log.i(TAG, "onComplete: error: " + task.getException().getMessage() );
+                    Log.i(TAG, "onComplete: error: " + task.getException().getMessage());
                 }
             }
         });

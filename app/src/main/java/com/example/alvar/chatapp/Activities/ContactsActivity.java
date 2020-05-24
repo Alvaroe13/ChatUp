@@ -30,9 +30,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.alvar.chatapp.Constant.CHATROOM_ID;
+import static com.example.alvar.chatapp.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+
 public class ContactsActivity extends AppCompatActivity {
 
     private static final String TAG = "ContactsPage";
+
     //firebase
     private FirebaseAuth auth;
     private FirebaseDatabase database;
@@ -43,7 +49,6 @@ public class ContactsActivity extends AppCompatActivity {
     private DocumentReference chatroomRef;
     //vars
     private String currentUserID;
-
     //UI elements
     private Toolbar toolbarContacts;
 
@@ -51,13 +56,10 @@ public class ContactsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
-        Log.i(TAG, "onCreate: init correctly the activity");
-
-        mDb = FirebaseFirestore.getInstance();
-        chatroomRef = mDb.collection("Chatroom").document();
 
         initFirebase();
-        setToolbar("Contacts", true);
+        initFirestore();
+        setToolbar(getString(R.string.contacts), true);
         initRecyclerView();
 
     }
@@ -70,11 +72,16 @@ public class ContactsActivity extends AppCompatActivity {
         //init database
         database = FirebaseDatabase.getInstance();
         //init db "Users" node
-        dbUsersNodeRef = database.getReference().child("Users");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbUsersNodeRef.keepSynced(true);
         //init db "Contacts" node
-        dbContactsNodeRef = database.getReference().child("Contacts");
+        dbContactsNodeRef = database.getReference().child(getString(R.string.contacts_ref));
         dbContactsNodeRef.keepSynced(true);
+    }
+
+    private void initFirestore(){
+        mDb = FirebaseFirestore.getInstance();
+        chatroomRef = mDb.collection(getString(R.string.chatroom_ref)).document();
     }
 
     private void setToolbar(String title, Boolean backOption){
@@ -115,10 +122,9 @@ public class ContactsActivity extends AppCompatActivity {
 
                                 //here we get the user id of every contact saved in "Contacts" node
                                 final String listContactsID = getRef(position).getKey();
-
                                 Log.i(TAG, "onBindViewHolder: contacts : " + listContactsID);
 
-                                DatabaseReference contactStatus = getRef(position).child("contact_status").getRef();
+                                DatabaseReference contactStatus = getRef(position).child(getString(R.string.contact_status_db)).getRef();
 
                                  contactStatus.addValueEventListener(new ValueEventListener() {
                                      @Override
@@ -138,9 +144,9 @@ public class ContactsActivity extends AppCompatActivity {
                                                          if (dataSnapshot.exists()) {
 
                                                              //here we fetch info from db
-                                                             final String name = dataSnapshot.child("name").getValue().toString();
-                                                             final String status = dataSnapshot.child("status").getValue().toString();
-                                                             final String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+                                                             final String name = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+                                                             final String status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
+                                                             final String image = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
                                                              //set info into the cardViews
                                                              setInfoIntoUI(name, status, image, holder);
                                                              //if cardView is pressed
@@ -221,14 +227,13 @@ public class ContactsActivity extends AppCompatActivity {
         String collectionID = chatroomRef.getId();  // random ID provided by Firestore db.
 
         //we create chatroom  document when a chatroom is created by the user in the UI;
-        chatroomRef = mDb.collection("Chatroom")
+        chatroomRef = mDb.collection(getString(R.string.chatroom_ref))
                           .document();
 
         Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
-        intentChatRoom.putExtra("contactID", listContactsID);
-        intentChatRoom.putExtra("contactName", name);
-        intentChatRoom.putExtra("contactImage", image);
-        intentChatRoom.putExtra("chatroomID", collectionID);
+        intentChatRoom.putExtra(CONTACT_ID, listContactsID);
+        intentChatRoom.putExtra(CONTACT_NAME, name);
+        intentChatRoom.putExtra(CONTACT_IMAGE, image);
         startActivity(intentChatRoom);
     }
 

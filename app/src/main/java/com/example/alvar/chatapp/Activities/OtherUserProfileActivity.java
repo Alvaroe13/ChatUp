@@ -29,6 +29,10 @@ import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.alvar.chatapp.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+
 public class OtherUserProfileActivity extends AppCompatActivity {
     //log
     private static final String TAG = "OtherUserProfilePage";
@@ -75,15 +79,15 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         //init firebase database service
         database = FirebaseDatabase.getInstance();
         //we aim to "Users" node
-        dbUsersNodeRef = database.getReference().child("Users");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         //we aim to "Chat Request" node
-        dbChatRequestNodeRef = database.getReference().child("Chat_Requests");
+        dbChatRequestNodeRef = database.getReference().child(getString(R.string.chats_requests_ref));
         //we create "Contacts" node
-        contactsNodeRef = database.getReference().child("Contacts");
+        contactsNodeRef = database.getReference().child(getString(R.string.contacts_ref));
         //we create "Notifications" node
-        dbNotificationsRef = database.getReference().child("Notifications");
+        dbNotificationsRef = database.getReference().child(getString(R.string.notifications_ref));
         //We create chat node ref.
-        dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
+        dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
     }
 
     /**
@@ -123,10 +127,10 @@ public class OtherUserProfileActivity extends AppCompatActivity {
      */
     private void setInfo(DataSnapshot dataSnapshot) {
 
-         username = dataSnapshot.child("name").getValue().toString();
-         status = dataSnapshot.child("status").getValue().toString();
-         imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
-         imageProfile = dataSnapshot.child("image").getValue().toString();
+         username = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+         status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
+         imageThumbnail = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+         imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
 
 
         usernameOtherUser.setText(username);
@@ -564,9 +568,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void goToChatRoom(){
 
         Intent intentChatRoom = new Intent(OtherUserProfileActivity.this, ChatActivity.class);
-        intentChatRoom.putExtra("contactID", otherUserId);
-        intentChatRoom.putExtra("contactName", username);
-        intentChatRoom.putExtra("contactImage", imageThumbnail);
+        intentChatRoom.putExtra(CONTACT_ID, otherUserId);
+        intentChatRoom.putExtra(CONTACT_NAME, username);
+        intentChatRoom.putExtra(CONTACT_IMAGE, imageThumbnail);
         intentChatRoom.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intentChatRoom);
         finish();
@@ -602,12 +606,11 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     /**
      * method in charge of saving information in the "Notifications" node
      */
-
     private void sendNotification() {
 
         HashMap<String, String> notificationsMap = new HashMap<>();
-        notificationsMap.put("sender" , otherUserId);
-        notificationsMap.put("type" , "request");
+        notificationsMap.put(getString(R.string.sende_db) , otherUserId);
+        notificationsMap.put(getString(R.string.type_db) , "request");
 
         dbNotificationsRef.child(currentUserID).push()
                 .setValue(notificationsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -646,17 +649,10 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Void> task) {
 
                                 if ( task.isSuccessful() ) {
-
                                 Log.i(TAG, "onComplete: chat deleted");
-
-                            } else {
-                                    Toast.makeText(OtherUserProfileActivity.this, "error with this", Toast.LENGTH_SHORT).show();
-                                }
+                            }
                         }
                     });
-
-                } else{
-                    Toast.makeText(OtherUserProfileActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
                 }
 
             }
