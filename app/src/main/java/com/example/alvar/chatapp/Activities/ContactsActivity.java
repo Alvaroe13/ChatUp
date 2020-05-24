@@ -25,6 +25,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -36,6 +38,9 @@ public class ContactsActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef, dbContactsNodeRef;
     private RecyclerView recyclerViewContacts;
+    //firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference chatroomRef;
     //vars
     private String currentUserID;
 
@@ -47,6 +52,9 @@ public class ContactsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
         Log.i(TAG, "onCreate: init correctly the activity");
+
+        mDb = FirebaseFirestore.getInstance();
+        chatroomRef = mDb.collection("Chatroom").document();
 
         initFirebase();
         setToolbar("Contacts", true);
@@ -209,10 +217,18 @@ public class ContactsActivity extends AppCompatActivity {
      * @param image
      */
     private void goToChatRoom(String listContactsID, String name, String image) {
+
+        String collectionID = chatroomRef.getId();  // random ID provided by Firestore db.
+
+        //we create chatroom  document when a chatroom is created by the user in the UI;
+        chatroomRef = mDb.collection("Chatroom")
+                          .document();
+
         Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
         intentChatRoom.putExtra("contactID", listContactsID);
         intentChatRoom.putExtra("contactName", name);
         intentChatRoom.putExtra("contactImage", image);
+        intentChatRoom.putExtra("chatroomID", collectionID);
         startActivity(intentChatRoom);
     }
 

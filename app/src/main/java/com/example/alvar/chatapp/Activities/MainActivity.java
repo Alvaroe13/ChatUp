@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference dbUsersRef;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef, userDocRef;
+    private DocumentReference userDocRef;
     //UI elements
     private Toolbar toolbarMain;
     private ViewPager viewPager;
@@ -108,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
-        //locator
-      //  locationProvider = LocationServices.getFusedLocationProviderClient(this);
     }
 
     @Override
@@ -117,64 +115,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
-         //   getUserLastKnowLocation();
     }
-
-  /*  private void getUserLastKnowLocation() {
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "getUserLastKnowLocation: permissions are not granted");
-            return;
-        }
-
-        if (userLocation == null){
-            userLocation = new UserLocation();
-
-            Log.i(TAG, "getUserLastKnowLocation: called");
-
-            locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                @Override
-                public void onComplete(@NonNull Task<Location> task) {
-                    if (task.isSuccessful()){
-                        Location location = task.getResult();
-                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude() );
-                        Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
-                        Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
-                        userLocation.setGeo_point(geoPoint);
-                        userLocation.setTimeStamp(null);
-                        saveUserLocation();
-
-
-                    }
-
-                }
-            });
-        }
-
-
-
-    }
-
-    private void saveUserLocation() {
-
-        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
-
-        if (userLocation != null ){ 
-
-            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()){
-                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude() );
-                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude() );
-                    }
-
-                }
-            });
-        }
-
-    }
-*/
 
     /**
      * init UI elements
@@ -276,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
         String userIdFirestore =   FirebaseAuth.getInstance().getUid();
 
         mDb = FirebaseFirestore.getInstance();
-        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
         userDocRef = mDb.collection("user").document(userIdFirestore);
         
     }

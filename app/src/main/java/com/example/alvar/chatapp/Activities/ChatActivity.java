@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
-import com.example.alvar.chatapp.Dialogs.ChatOptionsDialog;
+import com.example.alvar.chatapp.Model.Chatroom;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
@@ -30,6 +30,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -87,7 +89,7 @@ public class ChatActivity extends AppCompatActivity {
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef, userDocRef;
+    private DocumentReference userLocationRef, userDocRef, chatroomRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -100,6 +102,8 @@ public class ChatActivity extends AppCompatActivity {
     private String contactID, currentUserID;
     private String contactName, contactImage;
     private String messageText;
+    private String userID;
+    private String collectionID;
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
@@ -119,6 +123,7 @@ public class ChatActivity extends AppCompatActivity {
         fetchInfoIntent();
         initFirebase();
         initFirestore();
+        createChatroomDoc();
         setToolbar("", true);
         UIElements();
         initRecycleView();
@@ -147,6 +152,7 @@ public class ChatActivity extends AppCompatActivity {
         contactID = getIntent().getStringExtra("contactID");
         contactName = getIntent().getStringExtra("contactName");
         contactImage = getIntent().getStringExtra("contactImage");
+        collectionID = getIntent().getStringExtra("chatroomID");
     }
 
     /**
@@ -164,12 +170,54 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void initFirestore() {
-
-        String userIdFirestore = FirebaseAuth.getInstance().getUid();
-
+        //userid
+        userID = FirebaseAuth.getInstance().getUid();
+        //db
         mDb = FirebaseFirestore.getInstance();
-        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userIdFirestore);
-        userDocRef = mDb.collection("user").document(userIdFirestore);
+        //docs ref
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(userID);
+        userDocRef = mDb.collection("user").document(userID);
+        chatroomRef = mDb.collection("Chatroom").document();
+    }
+
+    /**
+     * create chat room Document in firestore
+     */
+    private void createChatroomDoc() {
+
+        Chatroom chatroom = new Chatroom();
+        chatroom.setMember1ID(userID); //current user
+        chatroom.setMember2ID(contactID);   //other user in chatroom
+
+        String documentID = userID + "_" + contactID ;
+        String collectionID = chatroomRef.getId();
+
+        chatroomRef = mDb.collection("Chatroom")
+                .document(collectionID)
+                .collection("Users")
+                .document(documentID);
+
+        chatroomRef.set(chatroom).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "onSuccess: successful");
+              //  getUsersLocation(userID, contactID);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: error");
+            }
+        });
+
+    }
+
+    /**
+     * method will be the one fetching users location fro the DB
+     * @param userID
+     * @param contactID
+     */
+    private void getUsersLocation(String userID, String contactID) {
 
     }
 
@@ -459,20 +507,15 @@ public class ChatActivity extends AppCompatActivity {
         buttonAttachFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                showAlertDialog();
-                // showChatOptions();  work in rogress
-
-
+               showAlertDialog();
             }
         });
+
+
     }
 
-    //pending to be done, layout is not ready yet
-    private void showChatOptions() {
-        ChatOptionsDialog dialog = new ChatOptionsDialog();
-        dialog.show(getSupportFragmentManager(), "showOptionsChat");
-    }
+
+
 
     /**
      * here we show the option for the user to choose.
@@ -538,7 +581,8 @@ public class ChatActivity extends AppCompatActivity {
                 requestCode == CHAT_DOCX_MENU_REQUEST && resultCode == RESULT_OK && data != null) {
 
             //we store the file (image, pdf, word) selected in this var of URI type.
-            file = data.getData();
+            try{
+                file = data.getData();
 
             switch (requestCode) {
                 case CHAT_IMAGE_MENU_REQUEST:
@@ -555,6 +599,11 @@ public class ChatActivity extends AppCompatActivity {
                     break;
                 default:
                     Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
+            }
+
+            }catch (NullPointerException e){
+                e.printStackTrace();
+                Log.d(TAG, "onActivityResult: error: " + e.getMessage());
             }
         }       //this switch is for image and doc options
 
@@ -904,7 +953,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of fetching user location (lat/long coordinates)
+     * method in charge of fetching user location (lat/long coordinates) using GPS on phone device
+     * to later be saved in Firestore db.
      */
     private void getUserLastKnowLocation() {
 
@@ -982,5 +1032,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }
+
 
 }
