@@ -17,6 +17,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,15 +32,18 @@ public class AlertDialogStatus extends DialogFragment {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference mRef;
+    private DatabaseReference dbUsersNodeRef;
     private FirebaseUser currentUser;
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userDocRef;
     //ui
     private View statusChangeView;
     private LayoutInflater viewInflater;
     private AlertDialog.Builder builder;
     private EditText changeStatusField;
     //Vars
-    private String userID;
+    private String currentUserID;
 
     @NonNull
     @Override
@@ -46,6 +51,7 @@ public class AlertDialogStatus extends DialogFragment {
 
         //init firebase method
         initFirebase();
+        initFirestore();
         return showAlertDialog();
     }
 
@@ -58,11 +64,16 @@ public class AlertDialogStatus extends DialogFragment {
         //we get current user logged in
         currentUser = mAuth.getCurrentUser();
         //save unique UID from user logged-in to a var type String named "userID"
-        userID = currentUser.getUid();
+        currentUserID = currentUser.getUid();
         //init Firebase database
         database = FirebaseDatabase.getInstance();
         //init database reference and we aim to the users data by passing "userID" as child.
-        mRef = database.getReference("Users").child(userID);
+        dbUsersNodeRef = database.getReference(getString(R.string.users_ref)).child(currentUserID);
+    }
+
+    private void initFirestore(){
+        mDb = FirebaseFirestore.getInstance();
+        userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
     }
 
     /**
@@ -78,13 +89,13 @@ public class AlertDialogStatus extends DialogFragment {
         changeStatusField = statusChangeView.findViewById(R.id.changeStatusField);
         builder.setView(statusChangeView);
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
             }
         });
-        builder.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
@@ -95,6 +106,7 @@ public class AlertDialogStatus extends DialogFragment {
                 } else {
                    newStatus = changeStatusField.getText().toString();
                     statusChanged(newStatus);
+                    updateFirestore(newStatus);
                     Toast.makeText(getActivity(), getString(R.string.status_updated), Toast.LENGTH_SHORT).show();
                 }
 
@@ -106,28 +118,42 @@ public class AlertDialogStatus extends DialogFragment {
 
 
     /**
-     * method in charge of setting new status text in the UI
+     * method in charge of updating user's status in firebase
      */
-    private void statusChanged(String status) {
+    private void statusChanged(final String status) {
 
         //we update the "status" section in the "Users" node from the db
-        mRef.child("status").setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbUsersNodeRef.child(getString(R.string.status_db)).setValue(status).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete: updated successfully ");
+                    Log.i(TAG, "onComplete: updated in firebase ");
+
                 } else{
                     //we save error thrown by firebase and save it into var "error"
                     String statusChangeError = task.getException().getMessage();
-                    //show error message to user
-                    Log.i(TAG, "onComplete: error" + statusChangeError);
+                    Log.d(TAG, "onComplete: error" + statusChangeError);
                 }
             }
         });
     }
 
+    /**
+     * method in charge of updating user's status in firestore
+     */
+    private void updateFirestore(String status) {
 
+        userDocRef.update(getString(R.string.status_db), status).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Log.d(TAG, "onComplete: status updated in firestore");
+                }
 
+            }
+        });
+
+    }
 
 
 }

@@ -1,10 +1,14 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -12,16 +16,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
-import com.example.alvar.chatapp.Dialogs.ChatOptionsDialog;
+import com.example.alvar.chatapp.Model.Chatroom;
 import com.example.alvar.chatapp.Model.Messages;
+import com.example.alvar.chatapp.Model.User;
+import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -29,6 +40,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -46,28 +61,39 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
+import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
+import static com.example.alvar.chatapp.Constant.CHAT_PDF_MENU_REQUEST;
+import static com.example.alvar.chatapp.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Constant.PDF_OPTION;
+import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
+import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.example.alvar.chatapp.Constant.SELECT_IMAGE;
+import static com.example.alvar.chatapp.Constant.SELECT_PDF;
+import static com.example.alvar.chatapp.Constant.SELECT_WORD_DOCUMENT;
+import static com.example.alvar.chatapp.Constant.WORD_DOCUMENT_OPTION;
 
 public class ChatActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatActivityPage";
 
-    //Const for options intent in Alert Dialog (image, pdf, word)
-    public static final String IMAGE_OPTION = "image/*";
-    public static final String SELECT_IMAGE = "SELECT IMAGE";
-    public static final String PDF_OPTION = "application/pdf";
-    public static final String SELECT_PDF = "SELECT PDF FILE";
-    public static final String WORD_DOCUMENT_OPTION = "application/msword";
-    public static final String SELECT_WORD_DOCUMENT = "SELECT WORD DOCUMENT";
-    // File request const
-    private static final int FILE_REQUEST_NUMBER = 1;
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsRef, messagePushID, dbUsersNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef;
     private UploadTask uploadTask;
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userLocationRef, userDocRef, chatroomDocRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -76,14 +102,17 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
+    private ProgressBar chatProgresBar;
     //vars
     private String contactID, currentUserID;
     private String contactName, contactImage;
     private String messageText;
-    private String optionSelected = "";
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
+    private boolean locationPermissionGranted = false;
+    private UserLocation userLocation;
+    private FusedLocationProviderClient locationProvider;
 
 
     @Override
@@ -91,8 +120,13 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+
+        initLocationProvider();
+
         fetchInfoIntent();
         initFirebase();
+        initFirestore();
+        createChatroomDoc();
         setToolbar("", true);
         UIElements();
         initRecycleView();
@@ -104,32 +138,92 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    private void initLocationProvider() {
+        locationProvider = LocationServices.getFusedLocationProviderClient(this);
+    }
+
     private void UIElements() {
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
+        chatProgresBar = findViewById(R.id.progressBarChat);
     }
 
     /**
      * this method receives de bundles from "ContactsActivity"
      */
     private void fetchInfoIntent() {
-        contactID = getIntent().getStringExtra("contactID");
-        contactName = getIntent().getStringExtra("contactName");
-        contactImage = getIntent().getStringExtra("contactImage");
+
+        if (getIntent() != null){
+            contactID = getIntent().getStringExtra(CONTACT_ID);
+            contactName = getIntent().getStringExtra(CONTACT_NAME);
+            contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
+        }
+
     }
 
     /**
      * init firebase services
      */
     private void initFirebase() {
-
         auth = FirebaseAuth.getInstance();
         //we get current user ID
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
-        dbUsersNodeRef = database.getReference().child("Users");
-        dbChatsRef = database.getReference().child("Chats").child("Messages");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
+        dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
+    }
+
+
+    private void initFirestore() {
+
+        //db
+        mDb = FirebaseFirestore.getInstance();
+        //docs ref
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(currentUserID);
+        userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
+        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref)).document();
+    }
+
+    /**
+     * create chat room Document in firestore
+     */
+    private void createChatroomDoc() {
+
+        Chatroom chatroom = new Chatroom();
+        chatroom.setMember1ID(currentUserID); //current user
+        chatroom.setMember2ID(contactID);   //other user in chatroom
+
+        String documentID = currentUserID + "_" + contactID ;
+        String collectionID = chatroomDocRef.getId();
+
+        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref))
+                .document(collectionID)
+                .collection(getString(R.string.users_ref))
+                .document(documentID);
+
+        chatroomDocRef.set(chatroom).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "onSuccess: successful");
+              //  getUsersLocation(userID, contactID);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: error");
+            }
+        });
+
+    }
+
+    /**
+     * method will be the one fetching users location fro the DB
+     * @param userID
+     * @param contactID
+     */
+    private void getUsersLocation(String userID, String contactID) {
+
     }
 
     /**
@@ -179,38 +273,28 @@ public class ChatActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
 
                     //here we get the other user's current state and we store it in each var
-                    String saveLastSeenDate = dataSnapshot.child("userState").child("date").getValue().toString();
-                    String saveLastSeenTime = dataSnapshot.child("userState").child("time").getValue().toString();
-                    String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+                    String saveLastSeenDate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.date_db)).getValue().toString();
+                    String saveLastSeenTime = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.time_db)).getValue().toString();
+                    String saveSate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.state_db)).getValue().toString();
                     //retrieving other user's typing state
-                    String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
+                    String typingState = dataSnapshot.child(getString(R.string.user_state_db)).child((getString(R.string.typing_db))).getValue().toString();
 
                     //if typing state in db is yes we should in toolbar that other user is typing
-                    if (typingState.equals("yes")) {
-
+                    if (typingState.equals(getString(R.string.yes_db))) {
                         lastSeenToolbarChat.setText(R.string.typing);
-
                     } else {
                         //if user is online but not typing we show online on the toolbar
-                        if (saveSate.equals("Online")) {
+                        if (saveSate.equals(getString(R.string.online_db))) {
                             lastSeenToolbarChat.setText(R.string.activeNow);
                             onlineIcon.setVisibility(View.VISIBLE);
 
                             //if user is not typing nor "online" we show "offline" on the toolbar.
-                        } else if (saveSate.equals("Offline")) {
+                        } else if (saveSate.equals(getString(R.string.offline_db))) {
                             lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " + saveLastSeenDate + " " + saveLastSeenTime);
                             onlineIcon.setVisibility(View.INVISIBLE);
                         }
-
                     }
-
-
-                } else {
-
-                    Toast.makeText(ChatActivity.this, "Error with the network", Toast.LENGTH_SHORT).show();
                 }
-
-
             }
 
             @Override
@@ -275,7 +359,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        updateDateTime("Online");
+        updateDateTime(getString(R.string.online_db));
         retrieveMessages();
 
     }
@@ -284,7 +368,7 @@ public class ChatActivity extends AppCompatActivity {
      * fetch messages in the chat room.
      */
     private void retrieveMessages() {
-        dbChatsRef.child(currentUserID).child(contactID)
+        dbChatsNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -316,8 +400,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
-        updateDateTime("Offline");
-        typingState("no");
+        updateDateTime(getString(R.string.offline_db));
+        typingState((getString(R.string.no_db)));
     }
 
     /**
@@ -339,11 +423,11 @@ public class ChatActivity extends AppCompatActivity {
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
         HashMap<String, Object> userState = new HashMap<>();
-        userState.put("state", state);
-        userState.put("date", currentDate);
-        userState.put("time", currentTime);
+        userState.put((getString(R.string.state_db)), state);
+        userState.put((getString(R.string.date_db)), currentDate);
+        userState.put((getString(R.string.time_db)), currentTime);
 
-        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
+        dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
 
     }
 
@@ -365,11 +449,11 @@ public class ChatActivity extends AppCompatActivity {
 
                 //in edit text is empty we set typing state as "no"
                 if (text.isEmpty()) {
-                    typingState("no");
+                    typingState( (getString(R.string.no_db) ) ) ;
                 }
                 //if edit text is not empty we set typing state as "yes"
                 else {
-                    typingState("yes");
+                    typingState((getString(R.string.yes_db) ));
                 }
             }
 
@@ -405,9 +489,9 @@ public class ChatActivity extends AppCompatActivity {
     private void typingState(String typingState) {
 
         HashMap<String, Object> typingStateMap = new HashMap<>();
-        typingStateMap.put("typing", typingState);
+        typingStateMap.put(getString(R.string.typing_db), typingState);
 
-        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(typingStateMap);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.users_ref)).updateChildren(typingStateMap);
 
     }
 
@@ -418,19 +502,11 @@ public class ChatActivity extends AppCompatActivity {
         buttonAttachFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                showAlertDialog();
-                // showChatOptions();  work in rogress
-
-
+               showAlertDialog();
             }
         });
-    }
 
-    //pending to be done, layout is not ready yet
-    private void showChatOptions() {
-        ChatOptionsDialog dialog = new ChatOptionsDialog();
-        dialog.show(getSupportFragmentManager(), "showOptionsChat");
+
     }
 
     /**
@@ -442,7 +518,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.setTitle(R.string.Choose_file);
         builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), "Share Location"};
+        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location)};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -450,23 +526,24 @@ public class ChatActivity extends AppCompatActivity {
 
                 switch (option) {
                     case 0: //if user selected photo option in pop up window
-                        optionSelected = "photo";
-                        openOptions(IMAGE_OPTION, SELECT_IMAGE);
+                        // optionSelected = "photo";
+                        openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
                         break;
                     case 1: //if user selected pdf option in pop up window
-                        optionSelected = "pdf file";
-                        openOptions(PDF_OPTION, SELECT_PDF);
+                        // optionSelected = "pdf file";
+                        openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
                         break;
                     case 2: //if user selected word option in pop up window
-                        optionSelected = "word document";
-                        openOptions(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT);
+                        // optionSelected = "word document";
+                        openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
                         break;
                     case 3:
-                        optionSelected = "share location";
-                        Toast.makeText(ChatActivity.this, "Share location option pressed", Toast.LENGTH_SHORT).show();
+                        //optionSelected = "share location";
+                        Log.i(TAG, "onClick: Share location option pressed ");
+                        openMaps();
                         break;
                     default:
-                        Toast.makeText(ChatActivity.this, "You didn't select any option", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onClick: You didn't select any option");
                 }
 
 
@@ -478,36 +555,38 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
-     *
-     * @param fileType
-     * @param title
      */
-    private void openOptions(String fileType, String title) {
+    private void openOption(String fileType, String title, int codeRequest) {
         Intent intent = new Intent();
         intent.setType(fileType);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, title), FILE_REQUEST_NUMBER);
+        startActivityForResult(Intent.createChooser(intent, title), codeRequest);
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FILE_REQUEST_NUMBER && resultCode == RESULT_OK && data != null) {
-            //we store the file (image, pdf, word) selected in this var of URI type.
-            file = data.getData();
+        if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
+                requestCode == CHAT_DOCX_MENU_REQUEST && resultCode == RESULT_OK && data != null) {
 
-            switch (optionSelected) {
-                case "photo":
+            //we store the file (image, pdf, word) selected in this var of URI type.
+            try{
+                file = data.getData();
+
+            switch (requestCode) {
+                case CHAT_IMAGE_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     savePhotoInStorage(file);
                     Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                     break;
-                case "pdf file":
+                case CHAT_PDF_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     savePDFInStorage(file);
                     Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                     break;
-                case "word document":
+                case CHAT_DOCX_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     saveWordInStorage(file);
                     Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                     break;
@@ -515,7 +594,19 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
             }
 
+            }catch (NullPointerException e){
+                e.printStackTrace();
+                Log.d(TAG, "onActivityResult: error: " + e.getMessage());
+            }
+        }       //this switch is for image and doc options
+
+        //this request code is for enabling the gps on the device
+        if (requestCode == PERMISSIONS_REQUEST_ENABLE_GPS) {
+                Log.i(TAG, "onActivityResult: share location");
+                Toast.makeText(this, "testing", Toast.LENGTH_SHORT).show();
+                getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
         }
+
 
     }
 
@@ -529,7 +620,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -581,7 +672,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -634,7 +725,7 @@ public class ChatActivity extends AppCompatActivity {
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
         StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("photo_for_chat");
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
@@ -665,7 +756,7 @@ public class ChatActivity extends AppCompatActivity {
                     String imageURLInFirebase = imageUri.toString();
                     Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
                     //send message here
-                    uploadMessageToDb(imageURLInFirebase, "image");
+                    uploadMessageToDb(imageURLInFirebase, getString(R.string.image_db));
 
                 } else {
                     String error = task.getException().toString();
@@ -700,28 +791,28 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat time = new SimpleDateFormat("hh:mm a");
         lastMessageTime = time.format(calendar.getTime());
 
-        messagePushID = dbChatsRef.child(currentUserID).child(contactID).push();
+        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         //save unique message id
         String messagePushKey = messagePushID.getKey();
 
         //this map is for saving the details of the messages
         Map<String, Object> messageDetails = new HashMap<>();
-        messageDetails.put("message", messageInfo);
-        messageDetails.put("type", messageType);
-        messageDetails.put("senderID", currentUserID);
-        messageDetails.put("receiverID", contactID);
-        messageDetails.put("messageDate", lastMessageDate);
-        messageDetails.put("messageTime", lastMessageTime);
-        messageDetails.put("messageID", messagePushKey);
-        messageDetails.put("seen", false);
+        messageDetails.put(getString(R.string.message_db), messageInfo);
+        messageDetails.put(getString(R.string.type_db), messageType);
+        messageDetails.put(getString(R.string.sende_id_db), currentUserID);
+        messageDetails.put(getString(R.string.receiver_id_db), contactID);
+        messageDetails.put(getString(R.string.message_date_db), lastMessageDate);
+        messageDetails.put(getString(R.string.message_time_db), lastMessageTime);
+        messageDetails.put(getString(R.string.message_id_db), messagePushKey);
+        messageDetails.put(getString(R.string.seen_db), false);
 
         //this map is for the info shown in the "Messages" node
         Map<String, Object> chatUsersInfo = new HashMap<>();
         chatUsersInfo.put(messageSenderRef + "/" + messagePushKey, messageDetails);
         chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey, messageDetails);
 
-        dbChatsRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+        dbChatsNodeRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
@@ -735,6 +826,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        chatProgresBar.setVisibility(View.INVISIBLE);
         //we remove any text enter by the user once it's been sent
         chatEditText.setText("");
     }
@@ -746,5 +838,194 @@ public class ChatActivity extends AppCompatActivity {
         startActivity(i);
         finish();
     }
+
+
+    // ---------------------------------------------- Maps permissions ------------------------------  //
+
+    /**
+     * first we check if GPS is enabled on device and if app has location permission granted.
+     */
+    private void openMaps() {
+        //if gps is off
+        if (!isGPSEnabled()) {
+            buildAlertMessageNoGps();   //take user to settings
+        } else {
+            getLocationPermission();    //ig gps is on ask location permission for the app
+        }
+    }
+
+    /**
+     * method checks if gps is enabled on the device only
+     *
+     * @return
+     */
+    private boolean isGPSEnabled() {
+
+        try {
+            int gpsSignal = Settings.Secure.getInt(this.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            if (gpsSignal == 0) {
+                Log.i(TAG, "openMapsOption: gps is OFF1");
+                return false;
+            } else {
+                Log.i(TAG, "openMapsOption: gps is ON");
+                return true;
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+            Log.i(TAG, "openMapsOption: gps is OFF2");
+            return false;
+        }
+
+    }
+
+    /**
+     * method pops up option to take the user to settings to turn gps on and off
+     */
+    private void buildAlertMessageNoGps() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        Intent enableGpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivityForResult(enableGpsIntent, PERMISSIONS_REQUEST_ENABLE_GPS);
+                    }
+                });
+        final android.app.AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * location permission for the app
+     */
+    private void getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true;
+            Log.d(TAG, "getLocationPermission: apps location permission granted");
+            getUserDetails();
+        } else {
+            Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+
+    /**
+     * here we pass information from the user's document to the user's location document (firestore)
+     */
+    private void getUserDetails() {
+
+        if (userLocation == null) {
+            userLocation = new UserLocation();
+
+            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+
+                        User user = task.getResult().toObject(User.class);
+                        Log.d(TAG, "onComplete: user: " + user.getName());
+                        userLocation.setUser(user);
+                        //  ((UserClient)(getApplicationContext())).setUser(user);
+                        getUserLastKnowLocation();
+
+                    }
+                }
+            });
+        } else {
+            getUserLastKnowLocation();
+        }
+    }
+
+    /**
+     * method in charge of fetching user location (lat/long coordinates) using GPS on phone device
+     * to later be saved in Firestore db.
+     */
+    private void getUserLastKnowLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
+            return;
+        }
+
+        Log.i(TAG, "getUserLastKnowLocation: called");
+
+        locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+
+                    Location location = task.getResult();
+                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
+                    Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                    userLocation.setGeo_point(geoPoint);
+                    userLocation.setTimeStamp(null);
+                    saveUserLocation();
+
+                } else {
+                    Toast.makeText(ChatActivity.this, "Something wrong, check internet connection", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+
+    }
+
+    /**
+     * here we save users coordinates in firestore db.
+     */
+    private void saveUserLocation() {
+
+        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
+        if (userLocation != null) {
+
+            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude());
+                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude());
+                        Log.d(TAG, "onComplete name: " + userLocation.getUser().getName());
+                        Log.d(TAG, "onComplete: email: " + userLocation.getUser().getEmail());
+                        Log.d(TAG, "onComplete: password: " + userLocation.getUser().getPassword());
+                    }
+
+                }
+            });
+        }
+
+    }
+
+    /**
+     * this is for the local permission request (NOT our dialog alert, this one from android)
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        locationPermissionGranted = false;
+
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationPermissionGranted = true;
+                Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
+            } else {
+                Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
 
 }

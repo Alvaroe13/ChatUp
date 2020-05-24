@@ -42,7 +42,7 @@ public class ImageActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
-        dbUsersNodeRef = database.getReference().child("Users");
+        dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
     }
 
     /**
@@ -76,9 +76,7 @@ public class ImageActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         updateDateTime("Online");
-
     }
 
     /**
@@ -110,11 +108,11 @@ public class ImageActivity extends AppCompatActivity {
         //NOTE: we use HashMap instead of an Object because the database doesn't accept a Java Object
         // when the database will be updated when using "updateChildren" whereas when using setValue you can use a Java Object.
         HashMap<String , Object> userState = new HashMap<>();
-        userState.put("state", state);
-        userState.put("date", currentDate);
-        userState.put("time", currentTime);
+        userState.put(getString(R.string.state_db), state);
+        userState.put(getString(R.string.date_db), currentDate);
+        userState.put(getString(R.string.time_db), currentTime);
 
-        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(userState);
     }
 
 }

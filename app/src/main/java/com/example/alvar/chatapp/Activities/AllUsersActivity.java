@@ -38,19 +38,17 @@ public class AllUsersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_users);
-        Log.i(TAG, "onCreate: init");
 
         initFirebase();
         initRecyclerView();
         setToolbar(getString(R.string.allUsers), true);
-
     }
 
     private void initFirebase() {
         //we init firebase database service
         database = FirebaseDatabase.getInstance();
         //here we init db reference and pointed to "Users" node
-        dbUsersRef = database.getReference().child("Users");
+        dbUsersRef = database.getReference().child(getString(R.string.users_ref));
     }
 
     private void initRecyclerView() {
