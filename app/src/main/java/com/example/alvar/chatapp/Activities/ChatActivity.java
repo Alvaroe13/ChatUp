@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -101,6 +102,7 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
+    private ProgressBar chatProgresBar;
     //vars
     private String contactID, currentUserID;
     private String contactName, contactImage;
@@ -144,6 +146,7 @@ public class ChatActivity extends AppCompatActivity {
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
+        chatProgresBar = findViewById(R.id.progressBarChat);
     }
 
     /**
@@ -573,14 +576,17 @@ public class ChatActivity extends AppCompatActivity {
 
             switch (requestCode) {
                 case CHAT_IMAGE_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     savePhotoInStorage(file);
                     Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                     break;
                 case CHAT_PDF_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     savePDFInStorage(file);
                     Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                     break;
                 case CHAT_DOCX_MENU_REQUEST:
+                    chatProgresBar.setVisibility(View.VISIBLE);
                     saveWordInStorage(file);
                     Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                     break;
@@ -820,6 +826,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        chatProgresBar.setVisibility(View.INVISIBLE);
         //we remove any text enter by the user once it's been sent
         chatEditText.setText("");
     }
