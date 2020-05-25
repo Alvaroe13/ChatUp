@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
+import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
@@ -61,6 +62,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -72,6 +74,8 @@ import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
@@ -186,7 +190,8 @@ public class ChatActivity extends AppCompatActivity {
      * method will be the one fetching users location fro the DB
      * @param contactID
      */
-    private void retrieveUsersLocationFromDB(String contactID) {
+    private void retrieveUsersLocationFromDB(final String contactID) {
+
 
         DocumentReference locationRefUser1 = mDb.collection(getString(R.string.collection_user_location))
                 .document(currentUserID);
@@ -195,13 +200,26 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
-                    String locationUser1 = documentSnapshot.get("geo_point").toString();
+
+                final  String locationUser1 = documentSnapshot.get("geo_point").toString();
+
                     Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + locationUser1 );
+                    retrieveOtherUserLocation( locationUser1 ,contactID);
+
                 }else {
                     Log.d(TAG, "onSuccess: doc doesn't exist");
                 }
             }
+
         });
+    }
+
+    /**
+     * this methos retrieves contact's location
+     * @param locationUser1
+     * @param contactID
+     */
+    private void retrieveOtherUserLocation(final String locationUser1, final String contactID) {
 
         DocumentReference locationRefUser2 = mDb.collection(getString(R.string.collection_user_location))
                 .document(contactID);
@@ -210,15 +228,17 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
-                    String locationUser2 = documentSnapshot.get("geo_point").toString();
+
+                    final  String locationUser2 = documentSnapshot.get("geo_point").toString();
                     Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + locationUser2 );
+
+                    inflateLocationFragment(locationUser1, locationUser2);
+
                 } else {
                     Log.d(TAG, "onSuccess: doc doesn't exist");
                 }
             }
         });
-
-
     }
 
     /**
@@ -992,11 +1012,29 @@ public class ChatActivity extends AppCompatActivity {
 
                         retrieveUsersLocationFromDB(contactID);
 
+
                     }
 
                 }
             });
         }
+
+    }
+
+    private void inflateLocationFragment(String location1, String location2) {
+
+        Log.d(TAG, "inflateLocationFragment: called");
+
+       LocationFragment fragment =  LocationFragment.newInstance(location1, location2);
+        Bundle data = new Bundle();
+        data.putString(LOCATION_USER, location1 );
+        data.putString(LOCATION_CONTACT, location2 );
+        fragment.setArguments(data);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.layoutFrameID, fragment);
+        transaction.commit();
+
 
     }
 

@@ -16,6 +16,7 @@
 
 
     <FrameLayout
+        android:id="@+id/layoutFrameID"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="10">
@@ -75,10 +76,6 @@
             android:src="@drawable/ic_send_"/>
 
     </RelativeLayout>
-
-
-
-
 
 
 </LinearLayout>

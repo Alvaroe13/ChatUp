@@ -25,5 +25,8 @@ public class Constant {
     public static final String CONTACT_IMAGE = "contactImage";
     public static final String CHATROOM_ID = "chatroomID";
     public static final String DOCUMENT_ID = "documentID";
+    //fragment location
+    public static final String LOCATION_USER = "locationUser1";
+    public static final String LOCATION_CONTACT = "locationUser2";
 
 }
