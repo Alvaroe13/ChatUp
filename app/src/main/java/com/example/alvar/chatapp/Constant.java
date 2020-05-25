@@ -24,5 +24,6 @@ public class Constant {
     public static final String CONTACT_NAME = "contactName";
     public static final String CONTACT_IMAGE = "contactImage";
     public static final String CHATROOM_ID = "chatroomID";
+    public static final String DOCUMENT_ID = "documentID";
 
 }

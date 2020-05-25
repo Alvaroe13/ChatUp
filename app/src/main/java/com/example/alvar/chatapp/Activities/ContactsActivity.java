@@ -15,10 +15,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.alvar.chatapp.Model.Chatroom;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,6 +37,7 @@ import static com.example.alvar.chatapp.Constant.CHATROOM_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Constant.DOCUMENT_ID;
 
 public class ContactsActivity extends AppCompatActivity {
 
@@ -222,19 +226,36 @@ public class ContactsActivity extends AppCompatActivity {
      * @param name
      * @param image
      */
-    private void goToChatRoom(String listContactsID, String name, String image) {
+    private void goToChatRoom(final String listContactsID, final String name, final String image) {
 
-        String collectionID = chatroomRef.getId();  // random ID provided by Firestore db.
+        Chatroom chatroom = new Chatroom();
+        chatroom.setMember1ID(currentUserID); //current user
+        chatroom.setMember2ID(listContactsID);   //other user in chatroom
+
+        final String collectionID = chatroomRef.getId();  // random ID provided by Firestore db.
+        final String documentID = currentUserID + "_" + listContactsID;
 
         //we create chatroom  document when a chatroom is created by the user in the UI;
         chatroomRef = mDb.collection(getString(R.string.chatroom_ref))
-                          .document();
+                         .document(documentID);
 
-        Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
-        intentChatRoom.putExtra(CONTACT_ID, listContactsID);
-        intentChatRoom.putExtra(CONTACT_NAME, name);
-        intentChatRoom.putExtra(CONTACT_IMAGE, image);
-        startActivity(intentChatRoom);
+        chatroomRef.set(chatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Intent intentChatRoom = new Intent(ContactsActivity.this, ChatActivity.class);
+                    intentChatRoom.putExtra(CONTACT_ID, listContactsID);
+                    intentChatRoom.putExtra(CONTACT_NAME, name);
+                    intentChatRoom.putExtra(CONTACT_IMAGE, image);
+                    intentChatRoom.putExtra(CHATROOM_ID, collectionID);
+                    intentChatRoom.putExtra(DOCUMENT_ID, documentID);
+                    startActivity(intentChatRoom);
+                }
+
+            }
+        });
+
+
     }
 
     /**
