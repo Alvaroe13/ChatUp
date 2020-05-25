@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
-import com.example.alvar.chatapp.Model.Chatroom;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
@@ -31,7 +30,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -67,14 +65,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.alvar.chatapp.Constant.CHATROOM_ID;
 import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_PDF_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
-import static com.example.alvar.chatapp.Constant.DOCUMENT_ID;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
@@ -200,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
                     String locationUser1 = documentSnapshot.get("geo_point").toString();
-                    Log.d(TAG, "onSuccess: location current user: " + locationUser1 );
+                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + locationUser1 );
                 }else {
                     Log.d(TAG, "onSuccess: doc doesn't exist");
                 }
@@ -215,7 +211,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
                     String locationUser2 = documentSnapshot.get("geo_point").toString();
-                    Log.d(TAG, "onSuccess: location current user: " + locationUser2 );
+                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + locationUser2 );
                 } else {
                     Log.d(TAG, "onSuccess: doc doesn't exist");
                 }
@@ -982,7 +978,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * here we save users coordinates in firestore db.
+     * here we save user's coordinates in firestore db.
      */
     private void saveUserLocation() {
 
