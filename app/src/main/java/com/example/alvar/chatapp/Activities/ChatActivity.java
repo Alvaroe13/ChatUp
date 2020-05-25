@@ -67,12 +67,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.alvar.chatapp.Constant.CHATROOM_ID;
 import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_PDF_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Constant.DOCUMENT_ID;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
@@ -93,7 +95,7 @@ public class ChatActivity extends AppCompatActivity {
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef, userDocRef, chatroomDocRef;
+    private DocumentReference userLocationRef, userDocRef ;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -126,7 +128,6 @@ public class ChatActivity extends AppCompatActivity {
         fetchInfoIntent();
         initFirebase();
         initFirestore();
-        createChatroomDoc();
         setToolbar("", true);
         UIElements();
         initRecycleView();
@@ -182,47 +183,45 @@ public class ChatActivity extends AppCompatActivity {
         //docs ref
         userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(currentUserID);
         userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
-        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref)).document();
     }
 
-    /**
-     * create chat room Document in firestore
-     */
-    private void createChatroomDoc() {
-
-        Chatroom chatroom = new Chatroom();
-        chatroom.setMember1ID(currentUserID); //current user
-        chatroom.setMember2ID(contactID);   //other user in chatroom
-
-        String documentID = currentUserID + "_" + contactID ;
-        String collectionID = chatroomDocRef.getId();
-
-        chatroomDocRef = mDb.collection(getString(R.string.chatroom_ref))
-                .document(collectionID)
-                .collection(getString(R.string.users_ref))
-                .document(documentID);
-
-        chatroomDocRef.set(chatroom).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "onSuccess: successful");
-              //  getUsersLocation(userID, contactID);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "onFailure: error");
-            }
-        });
-
-    }
 
     /**
      * method will be the one fetching users location fro the DB
-     * @param userID
      * @param contactID
      */
-    private void getUsersLocation(String userID, String contactID) {
+    private void retrieveUsersLocationFromDB(String contactID) {
+
+        DocumentReference locationRefUser1 = mDb.collection(getString(R.string.collection_user_location))
+                .document(currentUserID);
+
+        locationRefUser1.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()){
+                    String locationUser1 = documentSnapshot.get("geo_point").toString();
+                    Log.d(TAG, "onSuccess: location current user: " + locationUser1 );
+                }else {
+                    Log.d(TAG, "onSuccess: doc doesn't exist");
+                }
+            }
+        });
+
+        DocumentReference locationRefUser2 = mDb.collection(getString(R.string.collection_user_location))
+                .document(contactID);
+
+        locationRefUser2.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()){
+                    String locationUser2 = documentSnapshot.get("geo_point").toString();
+                    Log.d(TAG, "onSuccess: location current user: " + locationUser2 );
+                } else {
+                    Log.d(TAG, "onSuccess: doc doesn't exist");
+                }
+            }
+        });
+
 
     }
 
@@ -935,7 +934,6 @@ public class ChatActivity extends AppCompatActivity {
                         User user = task.getResult().toObject(User.class);
                         Log.d(TAG, "onComplete: user: " + user.getName());
                         userLocation.setUser(user);
-                        //  ((UserClient)(getApplicationContext())).setUser(user);
                         getUserLastKnowLocation();
 
                     }
@@ -967,14 +965,14 @@ public class ChatActivity extends AppCompatActivity {
 
                     Location location = task.getResult();
                     GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    Log.i(TAG, "onComplete: latitude: " + location.getLatitude());
-                    Log.i(TAG, "onComplete: longitude: " + location.getLongitude());
+                    Log.i(TAG, "onComplete: saving in db latitude: " + location.getLatitude());
+                    Log.i(TAG, "onComplete: saving in db  longitude: " + location.getLongitude());
                     userLocation.setGeo_point(geoPoint);
                     userLocation.setTimeStamp(null);
                     saveUserLocation();
 
                 } else {
-                    Toast.makeText(ChatActivity.this, "Something wrong, check internet connection", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onComplete: error: " );
                 }
 
             }
@@ -995,11 +993,9 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
-                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLatitude());
-                        Log.i(TAG, "onComplete: location inserted in the db (latitude): " + userLocation.getGeo_point().getLongitude());
-                        Log.d(TAG, "onComplete name: " + userLocation.getUser().getName());
-                        Log.d(TAG, "onComplete: email: " + userLocation.getUser().getEmail());
-                        Log.d(TAG, "onComplete: password: " + userLocation.getUser().getPassword());
+
+                        retrieveUsersLocationFromDB(contactID);
+
                     }
 
                 }
