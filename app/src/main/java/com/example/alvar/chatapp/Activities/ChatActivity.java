@@ -1032,7 +1032,9 @@ public class ChatActivity extends AppCompatActivity {
         fragment.setArguments(data);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
         transaction.replace(R.id.layoutFrameID, fragment);
+        transaction.addToBackStack(getString(R.string.users_ref));
         transaction.commit();
 
 
