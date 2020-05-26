@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
+import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
@@ -61,6 +62,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -72,6 +74,10 @@ import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
@@ -186,22 +192,38 @@ public class ChatActivity extends AppCompatActivity {
      * method will be the one fetching users location fro the DB
      * @param contactID
      */
-    private void retrieveUsersLocationFromDB(String contactID) {
+    private void retrieveUsersLocationFromDB(final String contactID) {
 
-        DocumentReference locationRefUser1 = mDb.collection(getString(R.string.collection_user_location))
+
+        final DocumentReference locationRefUser1 = mDb.collection(getString(R.string.collection_user_location))
                 .document(currentUserID);
 
         locationRefUser1.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
+
                 if (documentSnapshot.exists()){
-                    String locationUser1 = documentSnapshot.get("geo_point").toString();
-                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + locationUser1 );
-                }else {
-                    Log.d(TAG, "onSuccess: doc doesn't exist");
+
+                    final  UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat1 = locationUser1.getGeo_point().getLatitude();
+                    double lon1 = locationUser1.getGeo_point().getLongitude();
+
+                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1 );
+                    retrieveOtherUserLocation( lat1, lon1 ,contactID);
+                }
+                 else {
+                        Log.d(TAG, "onSuccess: user1 location is not in db");
                 }
             }
+
         });
+    }
+
+    /**
+     * this methos retrieves contact's location
+     */
+    private void retrieveOtherUserLocation(final double lat1, final double lon1 , final String contactID) {
 
         DocumentReference locationRefUser2 = mDb.collection(getString(R.string.collection_user_location))
                 .document(contactID);
@@ -210,15 +232,24 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
-                    String locationUser2 = documentSnapshot.get("geo_point").toString();
-                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + locationUser2 );
+
+                    final  UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat2 = locationUser2.getGeo_point().getLatitude();
+                    double lon2 = locationUser2.getGeo_point().getLongitude();
+                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2 );
+
+                    chatProgresBar.setVisibility(View.INVISIBLE);
+                    inflateLocationFragment( lat1, lon1 , lat2,lon2 );
+
                 } else {
-                    Log.d(TAG, "onSuccess: doc doesn't exist");
+                    Log.d(TAG, "onSuccess: user2 location is not in db");
+                    Toast.makeText(ChatActivity.this, " Your contact " +
+                            "has not provided current location", Toast.LENGTH_SHORT).show();
+                    chatProgresBar.setVisibility(View.INVISIBLE);
                 }
             }
         });
-
-
     }
 
     /**
@@ -535,6 +566,7 @@ public class ChatActivity extends AppCompatActivity {
                     case 3:
                         //optionSelected = "share location";
                         Log.i(TAG, "onClick: Share location option pressed ");
+                        chatProgresBar.setVisibility(View.VISIBLE);
                         openMaps();
                         break;
                     default:
@@ -992,11 +1024,33 @@ public class ChatActivity extends AppCompatActivity {
 
                         retrieveUsersLocationFromDB(contactID);
 
+
                     }
 
                 }
             });
         }
+
+    }
+
+    private void inflateLocationFragment(double lat1, double lon1 , double lat2, double lon2) {
+
+        Log.d(TAG, "inflateLocationFragment: called");
+
+       LocationFragment fragment =  LocationFragment.newInstance();
+        Bundle data = new Bundle();
+        data.putDouble(LOCATION_USER_LAT, lat1);
+        data.putDouble(LOCATION_USER_LON, lon1 );
+        data.putDouble(LOCATION_CONTACT_LAT, lat2 );
+        data.putDouble(LOCATION_CONTACT_LON, lon2 );
+        fragment.setArguments(data);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
+        transaction.replace(R.id.layoutFrameID, fragment);
+        transaction.addToBackStack(getString(R.string.users_ref));
+        transaction.commit();
+
 
     }
 
