@@ -2,7 +2,6 @@ package com.example.alvar.chatapp;
 
 public class Constant {
 
-
     //Const for options intent in Alert Dialog (image, pdf, word)
     public static final String IMAGE_OPTION = "image/*";
     public static final String SELECT_IMAGE = "SELECT IMAGE";
@@ -26,8 +25,10 @@ public class Constant {
     public static final String CHATROOM_ID = "chatroomID";
     public static final String DOCUMENT_ID = "documentID";
     //fragment location
-    public static final String LOCATION_USER = "locationUser1";
-    public static final String LOCATION_CONTACT = "locationUser2";
+    public static final String LOCATION_USER_LAT = "latitude1";
+    public static final String LOCATION_USER_LON = "longitude1";
+    public static final String LOCATION_CONTACT_LAT = "latitude2";
+    public static final String LOCATION_CONTACT_LON = "longitude2";
     //gMaps
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 

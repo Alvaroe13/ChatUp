@@ -3,23 +3,27 @@ package com.example.alvar.chatapp.Fragments;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.alvar.chatapp.R;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Constant.MAPVIEW_BUNDLE_KEY;
 
 /**
@@ -29,13 +33,15 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
 
     private static final String TAG = "LocationFragment";
 
-    //vars
-    private String location1Fetched, location2Fetched;
     //ui
     private MapView mMapView;
+    //vars
+    private double lat1, lon1, lat2, lon2;
+    private GoogleMap gMaps;
+    private LatLng userCoordinates;
 
 
-    public static LocationFragment newInstance(String location1, String location2){
+    public static LocationFragment newInstance(){
         return  new LocationFragment();
     }
 
@@ -44,10 +50,12 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null){
-            location1Fetched = getArguments().getString(LOCATION_USER);
-            location2Fetched = getArguments().getString(LOCATION_CONTACT);
-            Log.d(TAG, "onCreateView: location user: " + location1Fetched);
-            Log.d(TAG, "onCreateView: location contact: " + location2Fetched);
+            lat1 = getArguments().getDouble(LOCATION_USER_LAT);
+            lon1 = getArguments().getDouble(LOCATION_USER_LON);
+            lat2 = getArguments().getDouble(LOCATION_CONTACT_LAT);
+            lon2 = getArguments().getDouble(LOCATION_CONTACT_LON);
+            Log.d(TAG, "onCreateView: location user: " + lat1 + " , " + lon1);
+            Log.d(TAG, "onCreateView: location contact: " + lat2 + " , " + lon2);
         }
 
     }
@@ -55,12 +63,12 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.fragment_location, container, false);
-        mMapView = v.findViewById(R.id.user_list_map);
+        View layout = inflater.inflate(R.layout.fragment_location, container, false);
+        mMapView = layout.findViewById(R.id.user_list_map);
 
         initGoogleMap(savedInstanceState);
 
-         return v;
+         return layout;
     }
 
     private void initGoogleMap(Bundle savedInstanceState){
@@ -110,6 +118,8 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             return;
         }
         map.setMyLocationEnabled(true);
+        gMaps = map;
+        setCameraView();
     }
 
     @Override
@@ -130,7 +140,22 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         mMapView.onLowMemory();
     }
 
+    /**
+     * here we set the camera view as soon as location windows pops up
+     */
+    private void setCameraView(){
 
+        userCoordinates = new LatLng( lat1, lon2);
+        CameraPosition camera = new CameraPosition.Builder()
+                .target(userCoordinates)
+                .zoom(12)           // zoom (max value = 21)
+                .bearing(360)       //view angle horizontal (360ºc maximum)
+                .tilt(0)            //view angle vertically
+                .build();
+
+        gMaps.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+
+    }
 
 
 }
