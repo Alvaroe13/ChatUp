@@ -28,5 +28,7 @@ public class Constant {
     //fragment location
     public static final String LOCATION_USER = "locationUser1";
     public static final String LOCATION_CONTACT = "locationUser2";
+    //gMaps
+    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
 }

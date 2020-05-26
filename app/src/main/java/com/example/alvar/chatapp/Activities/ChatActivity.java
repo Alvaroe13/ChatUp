@@ -232,6 +232,7 @@ public class ChatActivity extends AppCompatActivity {
                     final  String locationUser2 = documentSnapshot.get("geo_point").toString();
                     Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + locationUser2 );
 
+                    chatProgresBar.setVisibility(View.INVISIBLE);
                     inflateLocationFragment(locationUser1, locationUser2);
 
                 } else {
@@ -555,6 +556,7 @@ public class ChatActivity extends AppCompatActivity {
                     case 3:
                         //optionSelected = "share location";
                         Log.i(TAG, "onClick: Share location option pressed ");
+                        chatProgresBar.setVisibility(View.VISIBLE);
                         openMaps();
                         break;
                     default:
