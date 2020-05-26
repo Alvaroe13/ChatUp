@@ -1,6 +1,7 @@
 package com.example.alvar.chatapp.Activities;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Service.LocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
@@ -998,6 +1000,7 @@ public class ChatActivity extends AppCompatActivity {
                     userLocation.setGeo_point(geoPoint);
                     userLocation.setTimeStamp(null);
                     saveUserLocation();
+                    startLocationService();
 
                 } else {
                     Log.d(TAG, "onComplete: error: " );
@@ -1073,5 +1076,33 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+
+    //  -------------------- init Location Service ----------------------------
+
+    private void startLocationService(){
+        if(!isLocationServiceRunning()){
+            Intent serviceIntent = new Intent(this, LocationService.class);
+//        this.startService(serviceIntent);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+
+                ChatActivity.this.startForegroundService(serviceIntent);
+            }else{
+                startService(serviceIntent);
+            }
+        }
+    }
+
+    private boolean isLocationServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("com.example.alvar.chatapp.Service.LocationService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+        return false;
+    }
 
 }

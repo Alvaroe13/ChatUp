@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <!-- render map-->
     <uses-feature
@@ -76,6 +77,10 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
+
+        <service android:name=".Service.LocationService"
+            android:stopWithTask="true">     <!-- to make sure service stops running when app closes -->
+        </service>
 
     </application>
 
