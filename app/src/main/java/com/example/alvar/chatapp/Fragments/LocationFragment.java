@@ -13,8 +13,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -38,7 +40,8 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     //vars
     private double lat1, lon1, lat2, lon2;
     private GoogleMap gMaps;
-    private LatLng userCoordinates;
+    private LatLng userCoordinates, contactCoordinates;
+    private MarkerOptions markerUser, markerContact;
 
 
     public static LocationFragment newInstance(){
@@ -154,7 +157,45 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
                 .build();
 
         gMaps.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+      //gMaps.addMarker(markerUser());
+        gMaps.addMarker(markerContact());
 
+    }
+
+    /**
+     * this method creates a custom marker for user authenticated
+     * @return
+     */
+    private MarkerOptions markerUser(){
+
+            userCoordinates = new LatLng(lat1, lon1);
+            markerUser = new MarkerOptions();
+            markerUser.position(userCoordinates);
+            markerUser.title("this is you");
+            markerUser.draggable(false);
+            markerUser.snippet("");
+            markerUser.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_mylocation));
+
+
+
+        return markerUser;
+    }
+
+    /**
+     * this method creates a custom marker for contact in chat room
+     * @return
+     */
+    private MarkerOptions markerContact(){
+
+        contactCoordinates = new LatLng(lat2, lon2);
+        markerContact = new MarkerOptions();
+        markerContact.position(contactCoordinates);
+        markerContact.title("Contact");
+        markerContact.draggable(false);
+        markerContact.snippet("Set route to contact?");
+        markerContact.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
+
+        return markerContact;
     }
 
 
