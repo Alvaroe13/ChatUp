@@ -99,7 +99,6 @@
     <string name="maps">Maps</string>
     <string name="new_status">New status</string>
     <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
-    <string name="collection_user_location">User location</string>
     <string name="location_permission_requiered">Permission denied, it\'s required in order to share your location</string>
     <string name="share_location">Share location</string>
 
@@ -109,6 +108,7 @@
     <string name="contacts_ref">Contacts</string>
     <string name="chats_ref">Chats</string>
     <string name="messages_ref">Messages</string>
+    <string name="collection_user_location">User location</string>
 
 
     <!-- firebase / firestore fields-->
