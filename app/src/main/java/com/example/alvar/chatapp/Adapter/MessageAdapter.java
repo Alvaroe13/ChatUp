@@ -212,6 +212,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         messageViewHolder.textLeftSide.setVisibility(View.GONE);
         messageViewHolder.sendImageLeft.setVisibility(View.GONE);
         messageViewHolder.sendImageRight.setVisibility(View.GONE);
+        messageViewHolder.sendMapLeft.setVisibility(View.GONE);
+        messageViewHolder.sendMapRight.setVisibility(View.GONE);
     }
 
     /**
@@ -575,27 +577,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
-
     // -------------------------------------------- maps features -------------------------------
 
     private void showMapLayout(String messageSenderID, String messageInfo, MessageViewHolder messageViewHolder , final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
-            messageViewHolder.textRightSide.setVisibility(View.VISIBLE);
-            messageViewHolder.textRightSide.setBackgroundResource(R.drawable.right_message_layout);
-            messageViewHolder.textRightSide.setText(messageInfo);
-            messageViewHolder.textRightSide.setTextSize(15);
-            messageViewHolder.textRightSide.setOnClickListener(new View.OnClickListener() {
+            messageViewHolder.sendMapRight.setVisibility(View.VISIBLE);
+            messageViewHolder.sendMapRight.setClickable(true);
+            messageViewHolder.sendMapRight.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d(TAG, "onClick: map right side clicked");
                     retrieveUsersLocationFromDB( v, contactID );
 
                 }
             });
             //if long pressed over layout
-            messageViewHolder.textRightSide.setLongClickable(true);
-            messageViewHolder.textRightSide.setOnLongClickListener(new View.OnLongClickListener() {
+            messageViewHolder.sendMapRight.setLongClickable(true);
+            messageViewHolder.sendMapRight.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     longPressedOptionsRightSide(position);
@@ -607,20 +607,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
         //if the other user is the one sending the message
         else {
-            messageViewHolder.textLeftSide.setVisibility(View.VISIBLE);
+            messageViewHolder.sendMapLeft.setVisibility(View.VISIBLE);
             messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
-            messageViewHolder.textLeftSide.setText("This is my location");
-            messageViewHolder.textLeftSide.setTextSize(15);
-            messageViewHolder.textLeftSide.setOnClickListener(new View.OnClickListener() {
+            messageViewHolder.sendMapLeft.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d(TAG, "onClick: map right side clicked");
                     deployAlertDialog(v);
                 }
             });
             //if long pressed over layout
-            messageViewHolder.textLeftSide.setLongClickable(true);
-            messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
+            messageViewHolder.sendMapLeft.setLongClickable(true);
+            messageViewHolder.sendMapLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     longPressedOptionsLeftSide(position);
@@ -753,7 +751,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         //UI elements
         TextView textRightSide, textLeftSide;
         CircleImageView imageContact;
-        ImageView sendImageLeft, sendImageRight;
+        ImageView sendImageLeft, sendImageRight, sendMapLeft, sendMapRight;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -763,6 +761,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             imageContact = itemView.findViewById(R.id.imageChat);
             sendImageLeft = itemView.findViewById(R.id.imageLeft);
             sendImageRight = itemView.findViewById(R.id.imageRight);
+            sendMapLeft = itemView.findViewById(R.id.mapLeft);
+            sendMapRight = itemView.findViewById(R.id.mapRight);
 
         }
 
