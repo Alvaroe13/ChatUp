@@ -141,6 +141,7 @@ public class ChatActivity extends AppCompatActivity {
         toolbarPressed();
         attachFileButtonPressed();
 
+
     }
 
     private void initLocationProvider() {
@@ -179,7 +180,6 @@ public class ChatActivity extends AppCompatActivity {
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
     }
 
-
     private void initFirestore() {
 
         //db
@@ -187,71 +187,6 @@ public class ChatActivity extends AppCompatActivity {
         //docs ref
         userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(currentUserID);
         userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
-    }
-
-
-    /**
-     * method will be the one fetching users location fro the DB
-     * @param contactID
-     */
-    private void retrieveUsersLocationFromDB(final String contactID) {
-
-
-        final DocumentReference locationRefUser1 = mDb.collection(getString(R.string.collection_user_location))
-                .document(currentUserID);
-
-        locationRefUser1.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                if (documentSnapshot.exists()){
-
-                    final  UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
-
-                    double lat1 = locationUser1.getGeo_point().getLatitude();
-                    double lon1 = locationUser1.getGeo_point().getLongitude();
-
-                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1 );
-                    retrieveOtherUserLocation( lat1, lon1 ,contactID);
-                }
-                 else {
-                        Log.d(TAG, "onSuccess: user1 location is not in db");
-                }
-            }
-
-        });
-    }
-
-    /**
-     * this methos retrieves contact's location
-     */
-    private void retrieveOtherUserLocation(final double lat1, final double lon1 , final String contactID) {
-
-        DocumentReference locationRefUser2 = mDb.collection(getString(R.string.collection_user_location))
-                .document(contactID);
-
-        locationRefUser2.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()){
-
-                    final  UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
-
-                    double lat2 = locationUser2.getGeo_point().getLatitude();
-                    double lon2 = locationUser2.getGeo_point().getLongitude();
-                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2 );
-
-                    chatProgresBar.setVisibility(View.INVISIBLE);
-                    inflateLocationFragment( lat1, lon1 , lat2,lon2 );
-
-                } else {
-                    Log.d(TAG, "onSuccess: user2 location is not in db");
-                    Toast.makeText(ChatActivity.this, " Your contact " +
-                            "has not provided current location", Toast.LENGTH_SHORT).show();
-                    chatProgresBar.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
     }
 
     /**
@@ -389,6 +324,7 @@ public class ChatActivity extends AppCompatActivity {
 
         updateDateTime(getString(R.string.online_db));
         retrieveMessages();
+        openMaps();
 
     }
 
@@ -569,7 +505,8 @@ public class ChatActivity extends AppCompatActivity {
                         //optionSelected = "share location";
                         Log.i(TAG, "onClick: Share location option pressed ");
                         chatProgresBar.setVisibility(View.VISIBLE);
-                        openMaps();
+                       // openMaps();
+                        uploadMessageToDb("This is my location", "map");
                         break;
                     default:
                         Log.d(TAG, "onClick: You didn't select any option");
@@ -581,6 +518,7 @@ public class ChatActivity extends AppCompatActivity {
 
         builder.show();
     }
+
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
@@ -879,7 +817,7 @@ public class ChatActivity extends AppCompatActivity {
         if (!isGPSEnabled()) {
             buildAlertMessageNoGps();   //take user to settings
         } else {
-            getLocationPermission();    //ig gps is on ask location permission for the app
+            getLocationPermission();    //if gps is on ask for location permission for the app
         }
     }
 
@@ -946,7 +884,6 @@ public class ChatActivity extends AppCompatActivity {
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
-
 
     /**
      * here we pass information from the user's document to the user's location document (firestore)
@@ -1025,9 +962,7 @@ public class ChatActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
 
-                        retrieveUsersLocationFromDB(contactID);
-
-
+                        Log.d(TAG, "onComplete: done successfully");
                     }
 
                 }
@@ -1036,26 +971,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void inflateLocationFragment(double lat1, double lon1 , double lat2, double lon2) {
-
-        Log.d(TAG, "inflateLocationFragment: called");
-
-       LocationFragment fragment =  LocationFragment.newInstance();
-        Bundle data = new Bundle();
-        data.putDouble(LOCATION_USER_LAT, lat1);
-        data.putDouble(LOCATION_USER_LON, lon1 );
-        data.putDouble(LOCATION_CONTACT_LAT, lat2 );
-        data.putDouble(LOCATION_CONTACT_LON, lon2 );
-        fragment.setArguments(data);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
-        transaction.replace(R.id.layoutFrameID, fragment);
-        transaction.addToBackStack(getString(R.string.users_ref));
-        transaction.commit();
-
-
-    }
 
     /**
      * this is for the local permission request (NOT our dialog alert, this one from android)
