@@ -5,18 +5,23 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ImageActivity;
+import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
+import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -24,12 +29,22 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -39,10 +54,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private FirebaseAuth auth;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef , dbChatsNodeRef;
+    //Firestore
+    private FirebaseFirestore mDb;
     // List to contain the messages
     private List<Messages> messagesList;
     private String currentUserID;
     private Context mContext;
+    private String contactID;
 
     public MessageAdapter(Context mContext, List<Messages> messagesList) {
         this.messagesList = messagesList;
@@ -58,6 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         //init firebase services as soon as we inflate the view
         initFirebase();
+        initFirestore();
         return new MessageViewHolder(viewChat);
     }
 
@@ -71,18 +90,44 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         //first of all we get current user id
         currentUserID = auth.getCurrentUser().getUid();
+        Log.d(TAG, "onBindViewHolder: currentUserID= " + currentUserID);
         // here we retrieve all messages in chat room and stored into a messageList type of var.
         Messages messages = messagesList.get(position);
 
         String messageSenderID = messages.getSenderID();
+        String messageReceiverID = messages.getReceiverID();
         String messageType = messages.getType();
         String messageInfo = messages.getMessage();
         String messageTime = messages.getMessageTime();
+
+        if ( !messageSenderID.equals(currentUserID)){
+            contactID = messageSenderID;
+            Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
+        } else if (!messageReceiverID.equals(currentUserID)){
+            contactID = messageReceiverID;
+            Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
+        }
+
+
         //we fetch info from db Users node
         infoFetchedFromDb(messageSenderID, messageViewHolder);
         //here's where fun with the layouts starts
         layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
+
+
     }
+
+
+    /**
+     * this method is the one in charge of establishing the number of items to be shown in the recyclerView
+     * @return
+     */
+    @Override
+    public int getItemCount() {
+        //get the size of the List
+        return messagesList.size();
+    }
+
 
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
@@ -90,6 +135,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         dbUsersNodeRef = database.getReference().child("Users");
         dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
     }
+
 
     /**
      * here we fetch info from db and fill the fields with it
@@ -147,6 +193,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 //we show layout accordingly
                 showImageLayout(messageSenderID, messageInfo, messageViewHolder, messageType, position);
                 break;
+            case "map":
+                showMapLayout(messageSenderID, messageInfo, messageViewHolder, position);
+                break;
             default: //if message type is either pdf or docx.
                 showDocumentLayout(messageSenderID, messageViewHolder, messageType, position);
         }
@@ -163,6 +212,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         messageViewHolder.textLeftSide.setVisibility(View.GONE);
         messageViewHolder.sendImageLeft.setVisibility(View.GONE);
         messageViewHolder.sendImageRight.setVisibility(View.GONE);
+        messageViewHolder.sendMapLeft.setVisibility(View.GONE);
+        messageViewHolder.sendMapRight.setVisibility(View.GONE);
     }
 
     /**
@@ -274,6 +325,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             });
         }
     }
+
 
     /**
      * method in charge of showing file (pdf/docx) when sent by any user
@@ -428,7 +480,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         });
     }
 
-
     /**
      * method deletes messages sent by other user
      * @param position
@@ -512,6 +563,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
+
     /**
      * methos in charge of taking the user to the Big image room when image message is pressed
      * @param messageContent
@@ -524,15 +576,171 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
-    /**
-     * this method is the one in charge of establishing the number of items to be shown in the recyclerView
-     * @return
-     */
-    @Override
-    public int getItemCount() {
-        //get the size of the List
-        return messagesList.size();
+
+    // -------------------------------------------- maps features -------------------------------
+
+    private void showMapLayout(String messageSenderID, String messageInfo, MessageViewHolder messageViewHolder , final int position) {
+
+        //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
+        if (currentUserID.equals(messageSenderID)) {
+            messageViewHolder.sendMapRight.setVisibility(View.VISIBLE);
+            messageViewHolder.sendMapRight.setClickable(true);
+            messageViewHolder.sendMapRight.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: map right side clicked");
+                    retrieveUsersLocationFromDB( v, contactID );
+
+                }
+            });
+            //if long pressed over layout
+            messageViewHolder.sendMapRight.setLongClickable(true);
+            messageViewHolder.sendMapRight.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsRightSide(position);
+                    Log.i(TAG, "onLongClick: long pressed layout");
+                    return true;
+                }
+            });
+
+        }
+        //if the other user is the one sending the message
+        else {
+            messageViewHolder.sendMapLeft.setVisibility(View.VISIBLE);
+            messageViewHolder.imageContact.setVisibility(View.VISIBLE);
+            messageViewHolder.sendMapLeft.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: map right side clicked");
+                    deployAlertDialog(v);
+                }
+            });
+            //if long pressed over layout
+            messageViewHolder.sendMapLeft.setLongClickable(true);
+            messageViewHolder.sendMapLeft.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    longPressedOptionsLeftSide(position);
+                    Log.i(TAG, "onLongClick: long pressed left side");
+                    return true;
+                }
+            });
+        }
+
     }
+
+    private void deployAlertDialog(final View v) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Open location");
+            builder.setIcon(R.drawable.ic_location);
+            //options to be shown in the Alert Dialog
+           builder.setMessage("You must provide your location in order to open this message");
+           builder.setNegativeButton("No", null);
+           builder.setPositiveButton("Agreed", new DialogInterface.OnClickListener() {
+               @Override
+               public void onClick(DialogInterface dialog, int which) {
+                   Toast.makeText(mContext, "upload info in db", Toast.LENGTH_SHORT).show();
+                   retrieveUsersLocationFromDB( v , contactID );
+               }
+           });
+            builder.show();
+    }
+
+    private void initFirestore() {
+        //db
+        mDb = FirebaseFirestore.getInstance();
+    }
+
+    /**
+     * method will be the one fetching users location fro the DB
+     * @param contactID
+     */
+    private void retrieveUsersLocationFromDB(final View v,final String contactID) {
+
+
+        final DocumentReference locationRefUser1 = mDb.collection(mContext.getString(R.string.collection_user_location))
+                .document(currentUserID);
+
+        locationRefUser1.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if (documentSnapshot.exists()){
+
+                    final  UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat1 = locationUser1.getGeo_point().getLatitude();
+                    double lon1 = locationUser1.getGeo_point().getLongitude();
+
+                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1 );
+                    retrieveOtherUserLocation( v, lat1, lon1 , contactID);
+                }
+                else {
+                    Log.d(TAG, "onSuccess: user1 location is not in db");
+                }
+            }
+
+        });
+    }
+
+    /**
+     * this methos retrieves contact's location
+     */
+    private void retrieveOtherUserLocation( final View v, final double lat1, final double lon1 , final String contactID) {
+
+        DocumentReference locationRefUser2 = mDb.collection(mContext.getString(R.string.collection_user_location))
+                .document(contactID);
+
+        locationRefUser2.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()){
+
+                    final  UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat2 = locationUser2.getGeo_point().getLatitude();
+                    double lon2 = locationUser2.getGeo_point().getLongitude();
+                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2 );
+
+
+                    inflateLocationFragment( v, lat1, lon1, lat2, lon2 );
+
+                } else {
+                    Log.d(TAG, "onSuccess: user2 location is not in db");
+                    Toast.makeText(mContext, " Your contact " +
+                            "has not provided current location", Toast.LENGTH_SHORT).show();
+                    //chatProgresBar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+    }
+
+    private void inflateLocationFragment(View v, double lat1, double lon1 , double lat2, double lon2 ) {
+        // double lat1, double lon1 , double lat2, double lon2
+
+        Log.d(TAG, "inflateLocationFragment: called");
+
+        LocationFragment fragment =  LocationFragment.newInstance();
+        Bundle data = new Bundle();
+        data.putDouble(LOCATION_USER_LAT, lat1);
+        data.putDouble(LOCATION_USER_LON, lon1 );
+        data.putDouble(LOCATION_CONTACT_LAT, lat2 );
+        data.putDouble(LOCATION_CONTACT_LON, lon2 );
+        fragment.setArguments(data);
+
+        AppCompatActivity activity = (AppCompatActivity) v.getContext();
+
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
+        transaction.replace(R.id.layoutFrameID, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+
+    }
+
 
     /**
      * This is the viewHolder Class. The one in charge of finding the UI elements within each
@@ -543,7 +751,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         //UI elements
         TextView textRightSide, textLeftSide;
         CircleImageView imageContact;
-        ImageView sendImageLeft, sendImageRight;
+        ImageView sendImageLeft, sendImageRight, sendMapLeft, sendMapRight;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -553,6 +761,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             imageContact = itemView.findViewById(R.id.imageChat);
             sendImageLeft = itemView.findViewById(R.id.imageLeft);
             sendImageRight = itemView.findViewById(R.id.imageRight);
+            sendMapLeft = itemView.findViewById(R.id.mapLeft);
+            sendMapRight = itemView.findViewById(R.id.mapRight);
 
         }
 

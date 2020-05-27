@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -57,8 +58,10 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             lon1 = getArguments().getDouble(LOCATION_USER_LON);
             lat2 = getArguments().getDouble(LOCATION_CONTACT_LAT);
             lon2 = getArguments().getDouble(LOCATION_CONTACT_LON);
-            Log.d(TAG, "onCreateView: location user: " + lat1 + " , " + lon1);
-            Log.d(TAG, "onCreateView: location contact: " + lat2 + " , " + lon2);
+            Log.d(TAG, "onCreate: location user: " + lat1 + " , " + lon1);
+            Log.d(TAG, "onCreate: location contact: " + lat2 + " , " + lon2);
+        } else {
+            Toast.makeText(getActivity(), "info null", Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -148,10 +151,10 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
      */
     private void setCameraView(){
 
-        userCoordinates = new LatLng( lat1, lon2);
+        userCoordinates = new LatLng( lat1, lon1);
         CameraPosition camera = new CameraPosition.Builder()
                 .target(userCoordinates)
-                .zoom(12)           // zoom (max value = 21)
+                .zoom(14)           // zoom (max value = 21)
                 .bearing(360)       //view angle horizontal (360ºc maximum)
                 .tilt(0)            //view angle vertically
                 .build();
@@ -197,6 +200,9 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
 
         return markerContact;
     }
+
+
+
 
 
 }

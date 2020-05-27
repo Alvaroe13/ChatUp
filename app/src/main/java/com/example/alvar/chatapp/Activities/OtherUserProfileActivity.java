@@ -110,7 +110,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                setInfo(dataSnapshot);
+                if (dataSnapshot.exists()){
+
+                    setInfo(dataSnapshot);
+                }
+
+
             }
 
             @Override

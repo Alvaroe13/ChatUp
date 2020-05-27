@@ -139,6 +139,8 @@ public class LocationService extends Service {
                 User user = documentSnapshot.toObject(User.class);
                 GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
                 UserLocation userLocation = new UserLocation(user, geoPoint, null);
+                Log.d(TAG, "onSuccess: geopoint info: lat: " + location.getLatitude());
+                Log.d(TAG, "onSuccess: geopoint info: lon: " + location.getLongitude());
                 saveUserLocation(userLocation);
             }
         });
