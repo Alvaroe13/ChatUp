@@ -28,7 +28,8 @@
         <activity android:name=".Activities.PhoneLoginActivity" />
         <activity android:name=".Activities.AnswerRequestActivity" />
         <activity android:name=".Activities.MainActivity" />
-        <activity android:name=".Activities.LoginActivity"> <!-- Let's make the login activity the default one to be open first when app launched -->
+        <activity android:name=".Activities.LoginActivity"> <!-- Let's make the login activity the
+                                                                    default one to be open first when app launched -->
 
             <!-- using this -->
             <intent-filter>

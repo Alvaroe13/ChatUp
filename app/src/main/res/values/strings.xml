@@ -101,6 +101,10 @@
     <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
     <string name="location_permission_requiered">Permission denied, it\'s required in order to share your location</string>
     <string name="share_location">Share location</string>
+    <string name="other_user_location_off">Other user\'s location is off</string>
+    <string name="open_location">Open location</string>
+    <string name="open_location_message">You must provide your location in order to open this message, do you agree?</string>
+    <string name="sharing_location">Location</string>
 
     <!-- firebase / firestore nodes ref-->
     <string name="users_ref">Users</string>
@@ -140,5 +144,7 @@
     <string name="message_time_db">messageTime</string>
     <string name="message_id_db">messageID</string>
     <string name="seen_db">seen</string>
+
+
 
 </resources>

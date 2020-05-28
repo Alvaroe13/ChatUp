@@ -633,15 +633,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private void deployAlertDialog(final View v) {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Open location");
+            builder.setTitle(mContext.getString(R.string.open_location));
             builder.setIcon(R.drawable.ic_location);
             //options to be shown in the Alert Dialog
-           builder.setMessage("You must provide your location in order to open this message");
-           builder.setNegativeButton("No", null);
-           builder.setPositiveButton("Agreed", new DialogInterface.OnClickListener() {
+           builder.setMessage(mContext.getString(R.string.open_location_message));
+           builder.setNegativeButton(mContext.getString(R.string.no), null);
+           builder.setPositiveButton(mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
                @Override
                public void onClick(DialogInterface dialog, int which) {
-                   Toast.makeText(mContext, "upload info in db", Toast.LENGTH_SHORT).show();
                    retrieveUsersLocationFromDB( v , contactID );
                }
            });
@@ -728,12 +727,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         data.putDouble(LOCATION_USER_LON, lon1 );
         data.putDouble(LOCATION_CONTACT_LAT, lat2 );
         data.putDouble(LOCATION_CONTACT_LON, lon2 );
+        data.putString("contactID", contactID);
         fragment.setArguments(data);
 
         AppCompatActivity activity = (AppCompatActivity) v.getContext();
 
         FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
+        transaction.setCustomAnimations(R.anim.slide_in_down, R.anim.slide_out_down);
         transaction.replace(R.id.layoutFrameID, fragment);
         transaction.addToBackStack(null);
         transaction.commit();

@@ -364,7 +364,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
-        updateDateTime(getString(R.string.offline_db));
+       // updateDateTime(getString(R.string.offline_db));
         typingState((getString(R.string.no_db)));
     }
 
@@ -390,6 +390,7 @@ public class ChatActivity extends AppCompatActivity {
         userState.put((getString(R.string.state_db)), state);
         userState.put((getString(R.string.date_db)), currentDate);
         userState.put((getString(R.string.time_db)), currentTime);
+        userState.put( "location", "Off");
 
         dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
 
@@ -505,8 +506,7 @@ public class ChatActivity extends AppCompatActivity {
                         //optionSelected = "share location";
                         Log.i(TAG, "onClick: Share location option pressed ");
                         chatProgresBar.setVisibility(View.VISIBLE);
-                       // openMaps();
-                        uploadMessageToDb("This is my location", "map");
+                        uploadMessageToDb(getString(R.string.sharing_location), "map");
                         break;
                     default:
                         Log.d(TAG, "onClick: You didn't select any option");
