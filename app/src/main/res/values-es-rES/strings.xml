@@ -106,6 +106,8 @@
     <string name="open_location">Abrir ubicación</string>
     <string name="open_location_message"> Debes compartir tu ubicación para poder abrir este mensaje ¿de acuerdo?</string>
     <string name="sharing_location">Ubicación</string>
+    <string name="close_map_message">¿Quieres dejar de compartir tu ubicación?</string>
+    <string name="close_location">Cerrar mapa de ubicación</string>
 
     <!-- firebase / firestore nodes ref-->
     <string name="users_ref">Users</string>

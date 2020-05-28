@@ -733,7 +733,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         AppCompatActivity activity = (AppCompatActivity) v.getContext();
 
         FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-        transaction.setCustomAnimations(R.anim.slide_in_down, R.anim.slide_out_down);
+        transaction.setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_up);
         transaction.replace(R.id.layoutFrameID, fragment);
         transaction.addToBackStack(null);
         transaction.commit();

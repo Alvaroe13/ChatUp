@@ -1,6 +1,8 @@
 package com.example.alvar.chatapp.Fragments;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
@@ -62,6 +65,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     private DocumentReference userLocationRef ;
     //ui
     private MapView mMapView;
+    private ImageButton closeMapBtn;
     //vars
     private String currentUserID, contactID ;
     private double lat1, lon1, lat2, lon2;
@@ -95,15 +99,25 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
 
-        View layout = inflater.inflate(R.layout.fragment_location, container, false);
+        final View layout = inflater.inflate(R.layout.fragment_location, container, false);
         mMapView = layout.findViewById(R.id.user_list_map);
+        closeMapBtn = layout.findViewById(R.id.btn_close_map);
+
+        closeMapBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: phone button pressed");
+                deployAlertDialog( v, container, layout);
+
+            }
+        });
 
         initGoogleMap(savedInstanceState);
         initFirebase();
         initFirestore();
-        locationState();
+        locationState("On");
 
          return layout;
     }
@@ -312,12 +326,36 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
      * method updates in real time if user is in fragment MAp therefore wants to share current location
      * with other user
      */
-    private void locationState(){
+    private void locationState(String locationState){
 
         HashMap<String, Object> userState = new HashMap<>();
-        userState.put("location", "On");
+        userState.put("location", locationState);
 
         dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
+    }
+
+    /**
+     * alert notifies user is about to stop sharing location when bin image is pressed in mapView
+     * @param v
+     * @param container
+     * @param layout
+     */
+    private void deployAlertDialog(final View v,  final ViewGroup container , final View layout) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(getContext().getString(R.string.close_location));
+        builder.setIcon(R.drawable.ic_location);
+        //options to be shown in the Alert Dialog
+        builder.setMessage(getContext().getString(R.string.close_map_message));
+        builder.setNegativeButton(getContext().getString(R.string.no), null);
+        builder.setPositiveButton(getContext().getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                container.removeView(layout);
+                locationState("Off");
+            }
+        });
+        builder.show();
     }
 
 
