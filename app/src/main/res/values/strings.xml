@@ -105,6 +105,8 @@
     <string name="open_location">Open location</string>
     <string name="open_location_message">You must provide your location in order to open this message, do you agree?</string>
     <string name="sharing_location">Location</string>
+    <string name="close_map_message">Do you want to stop sharing your location?</string>
+    <string name="close_location">Close location room</string>
 
     <!-- firebase / firestore nodes ref-->
     <string name="users_ref">Users</string>
