@@ -289,17 +289,21 @@ public class MainActivity extends AppCompatActivity {
 
                     String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token;
 
-                    imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
-                    usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
-                    status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
 
-                    //these are to populate firestore only
-                    email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
-                    imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
-                    password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
-                    token = dataSnapshot.child(getString(R.string.token_db)).getValue().toString();
+                        imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+                        usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+                        status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
 
-                    populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token);
+                        //these are to populate firestore only
+                        email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
+                        imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
+                        password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
+                        token = dataSnapshot.child(getString(R.string.token_db)).getValue().toString();
+
+
+
+
+                   populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token);
 
                     Log.i(TAG, "onDataChange: username set");
                     usernameNav.setText(usernameToolbar);
@@ -323,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
 
 
     }
@@ -388,6 +394,7 @@ public class MainActivity extends AppCompatActivity {
         userState.put(getString(R.string.state_db), state);
         userState.put(getString(R.string.date_db), currentDate);
         userState.put(getString(R.string.time_db), currentTime);
+        userState.put( "location", "Off");
 
         dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(userState);
 
