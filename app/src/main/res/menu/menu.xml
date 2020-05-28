@@ -8,10 +8,6 @@
             android:id="@+id/contacts"
             android:title="@string/contacts"
             android:icon="@drawable/ic_contact"/>
-        <item
-            android:id="@+id/maps"
-            android:title="@string/maps"
-            android:icon="@drawable/ic_maps"/>
     </group>
     <item android:title="@string/account">
         <menu>

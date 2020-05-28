@@ -2,6 +2,7 @@ package com.example.alvar.chatapp.Fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -24,11 +26,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -48,7 +57,9 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     private FirebaseAuth auth;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef;
-
+    //Firestore
+    private FirebaseFirestore mDb;
+    private DocumentReference userLocationRef ;
     //ui
     private MapView mMapView;
     //vars
@@ -57,6 +68,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap gMaps;
     private LatLng userCoordinates, contactCoordinates;
     private MarkerOptions markerUser, markerContact;
+    private Marker marker;
 
 
     public static LocationFragment newInstance(){
@@ -90,6 +102,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
 
         initGoogleMap(savedInstanceState);
         initFirebase();
+        initFirestore();
         locationState();
 
          return layout;
@@ -100,6 +113,13 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         currentUserID = auth.getCurrentUser().getUid();
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
+    }
+
+    private void initFirestore(){
+        //db
+        mDb = FirebaseFirestore.getInstance();
+        //docs ref
+        userLocationRef = mDb.collection(getString(R.string.collection_user_location)).document(contactID);
     }
 
     private void initGoogleMap(Bundle savedInstanceState){
@@ -179,7 +199,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         userCoordinates = new LatLng( lat1, lon1);
         CameraPosition camera = new CameraPosition.Builder()
                 .target(userCoordinates)
-                .zoom(14)           // zoom (max value = 21)
+                .zoom(13)           // zoom (max value = 21)
                 .bearing(360)       //view angle horizontal (360ºc maximum)
                 .tilt(0)            //view angle vertically
                 .build();
@@ -196,15 +216,19 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
      * method in charge of showing other user marker when using location fragment only
      */
     private void showMarkersOnMap() {
+
         dbUsersNodeRef.child(contactID).child((getString(R.string.user_state_db)))
                 .child("location").addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
                     try {
                         String locationState = dataSnapshot.getValue().toString();
                         if (locationState.equals("On")){
-                            gMaps.addMarker(markerContact());
+                            //this line only fetches location when location windows pops up
+                            marker = gMaps.addMarker(markerContact());
+                            updateMarkerLocation(marker);
                         } else {
                             Toast.makeText(getActivity().getApplicationContext(),
                                         getString(R.string.other_user_location_off), Toast.LENGTH_SHORT).show();
@@ -225,7 +249,33 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     }
 
     /**
+     * this method updates in real time contact marker location
+     * @param marker
+     */
+    private void updateMarkerLocation(final Marker marker) {
+
+        userLocationRef.addSnapshotListener(getActivity(), new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot.exists()){
+
+                    GeoPoint value = documentSnapshot.getGeoPoint("geo_point");
+                    double latContact = value.getLatitude();
+                    double lonContact = value.getLongitude();
+                    marker.setPosition(new LatLng(latContact, lonContact));
+                    Log.d(TAG, "onEvent: location update in real time: " + value);
+
+                }
+            }
+        });
+
+
+    }
+
+    /**
      * this method creates a custom marker for user authenticated
+     * (I wont use it but wont delete it in case later I want to replace the default blue dot with a
+     * custom marker)
      * @return
      */
     private MarkerOptions markerUser(){
@@ -253,7 +303,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         markerContact.title("Contact");
         markerContact.draggable(false);
         markerContact.snippet("Set route to contact?");
-        markerContact.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
+        markerContact.icon(BitmapDescriptorFactory.fromResource(R.mipmap.location_icon2));
 
         return markerContact;
     }

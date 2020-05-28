@@ -12,7 +12,7 @@
         android:id="@+id/imageNavDrawer"
         android:layout_width="95dp"
         android:layout_height="95dp"
-        android:layout_marginTop="9dp"
+        android:layout_marginTop="15dp"
         android:src="@drawable/profile_image" />
 
     <TextView
@@ -20,17 +20,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Username"
-        android:layout_marginTop="9dp"
-        android:textSize="15dp"
+        android:layout_marginTop="5dp"
+        android:textSize="15sp"
         android:textColor="@color/color_white"/>
 
     <TextView
         android:id="@+id/statusNavDrawer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:text="Status"
         android:layout_marginTop="3dp"
-        android:textSize="12dp"
+        android:textSize="12sp"
         android:textStyle="italic"
         android:textColor="@color/color_white"/>
 

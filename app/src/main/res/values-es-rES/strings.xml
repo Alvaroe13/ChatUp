@@ -49,7 +49,7 @@
     <string name="cancel">Cancelar</string>
     <string name="groupCreated">Grupo creado</string>
     <string name="groups">Grupos</string>
-    <string name="chat">Chats</string>
+    <string name="chat">Conversaciones</string>
     <string name="textHint">Este es tu mensaje</string>
     <string name="writeMessageHint">Escribe tu mensaje aquí</string>
     <string name="status">Status</string>
