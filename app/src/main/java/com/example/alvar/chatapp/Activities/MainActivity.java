@@ -153,9 +153,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intentContacts = new Intent(MainActivity.this, ContactsActivity.class);
                 startActivity(intentContacts);
                 break;
-            case R.id.maps:
-                Log.i(TAG, "drawerOptionsMenu: maps pressed");
-                break;
             case R.id.settingsAccount:
                 goToSettingAccount();
                 Log.i(TAG, "onOptionsItemSelected: setting btn pressed");

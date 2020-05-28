@@ -364,7 +364,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
-       // updateDateTime(getString(R.string.offline_db));
+        updateDateTime(getString(R.string.offline_db));
         typingState((getString(R.string.no_db)));
     }
 
