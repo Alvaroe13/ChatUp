@@ -303,7 +303,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         markerContact.title("Contact");
         markerContact.draggable(false);
         markerContact.snippet("Set route to contact?");
-        markerContact.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
+        markerContact.icon(BitmapDescriptorFactory.fromResource(R.mipmap.location_icon2));
 
         return markerContact;
     }
