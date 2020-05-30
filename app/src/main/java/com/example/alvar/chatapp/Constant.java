@@ -31,5 +31,7 @@ public class Constant {
     public static final String LOCATION_CONTACT_LON = "longitude2";
     //gMaps
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+    // read file permission
+    public static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 20;
 
 }
