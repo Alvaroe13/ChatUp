@@ -23,7 +23,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
-import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
@@ -33,7 +32,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -64,7 +62,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -76,10 +73,6 @@ import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
@@ -109,11 +102,11 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView imageProfile, onlineIcon;
     private TextView usernameToolbarChat, lastSeenToolbarChat;
     private LinearLayoutManager linearLayoutManager;
-    private ProgressBar chatProgresBar;
+    private ProgressBar chatProgressBar;
     //vars
     private String contactID, currentUserID;
     private String contactName, contactImage;
-    private String messageText;
+    private String messageText, optionSelected;
     private MessageAdapter adapter;
     private List<Messages> messagesList;
     private Uri file;
@@ -153,7 +146,7 @@ public class ChatActivity extends AppCompatActivity {
         chatEditText = findViewById(R.id.chatEditText);
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
-        chatProgresBar = findViewById(R.id.progressBarChat);
+        chatProgressBar = findViewById(R.id.progressBarChat);
     }
 
     /**
@@ -492,24 +485,25 @@ public class ChatActivity extends AppCompatActivity {
 
                 switch (option) {
                     case 0: //if user selected photo option in pop up window
+                         optionSelected = "photo";
                          if (checkPermissions()){
                              openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
                          }
-
                         break;
                     case 1: //if user selected pdf option in pop up window
+                         optionSelected = "pdf file";
                         if (checkPermissions()){
                             openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
                         }
                         break;
                     case 2: //if user selected word option in pop up window
+                         optionSelected = "word document";
                         if (checkPermissions()){
                             openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
                         }
                         break;
                     case 3:
                         Log.i(TAG, "onClick: Share location option pressed ");
-                        chatProgresBar.setVisibility(View.VISIBLE);
                         uploadMessageToDb(getString(R.string.sharing_location), "map");
                         break;
                     default:
@@ -541,7 +535,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
      */
@@ -565,17 +558,17 @@ public class ChatActivity extends AppCompatActivity {
 
             switch (requestCode) {
                 case CHAT_IMAGE_MENU_REQUEST:
-                    chatProgresBar.setVisibility(View.VISIBLE);
+                    chatProgressBar.setVisibility(View.VISIBLE);
                     savePhotoInStorage(file);
                     Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                     break;
                 case CHAT_PDF_MENU_REQUEST:
-                    chatProgresBar.setVisibility(View.VISIBLE);
+                    chatProgressBar.setVisibility(View.VISIBLE);
                     savePDFInStorage(file);
                     Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                     break;
                 case CHAT_DOCX_MENU_REQUEST:
-                    chatProgresBar.setVisibility(View.VISIBLE);
+                    chatProgressBar.setVisibility(View.VISIBLE);
                     saveWordInStorage(file);
                     Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                     break;
@@ -591,8 +584,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //this request code is for enabling the gps on the device
         if (requestCode == PERMISSIONS_REQUEST_ENABLE_GPS) {
-                Log.i(TAG, "onActivityResult: share location");
-                Toast.makeText(this, "testing", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
                 getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
         }
 
@@ -815,7 +807,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        chatProgresBar.setVisibility(View.INVISIBLE);
+        chatProgressBar.setVisibility(View.INVISIBLE);
         //we remove any text enter by the user once it's been sent
         chatEditText.setText("");
     }
@@ -950,7 +942,7 @@ public class ChatActivity extends AppCompatActivity {
         locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()) { 
+                if (task.isSuccessful()) {
                     Location location = task.getResult();
                     Log.d(TAG, "onComplete: location retrieved: " + location );
                     if (location != null){
@@ -1017,11 +1009,30 @@ public class ChatActivity extends AppCompatActivity {
                     Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
                 }
                 break;
+                //here we catch the result of reading external storage permission
             case READ_EXTERNAL_STORAGE_REQUEST_CODE:
+
                 if ( grantResults.length > 0  &&  grantResults[0] == PackageManager.PERMISSION_GRANTED )   {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted");
-                    Toast.makeText(this, getString(R.string.read_storage_enabled), Toast.LENGTH_LONG).show();
-                } else{
+
+                    //here in this switch we manage to redirect the user to gallery of folder depending on what user's request
+                    switch (optionSelected){
+                        case "photo" :
+                            Log.d(TAG, "onRequestPermissionsResult: option selected photo");
+                            openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
+                            break;
+                        case "pdf file" :
+                            Log.d(TAG, "onRequestPermissionsResult: option selected pdf file");
+                            openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
+                            break;
+                        case "word document" :
+                            Log.d(TAG, "onRequestPermissionsResult: option selected word document");
+                            openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
+                            break;
+                    }
+                }
+                //if permission is rejected by the user
+                else{
                     Toast.makeText(ChatActivity.this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
                 }
                 break;
