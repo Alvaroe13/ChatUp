@@ -93,7 +93,7 @@ public class ChatActivity extends AppCompatActivity {
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
-    private DocumentReference userLocationRef, userDocRef ;
+    private DocumentReference userLocationRef, userDocRef;
     //UI elements
     private Toolbar toolbarChat;
     private RecyclerView recyclerViewChat;
@@ -154,7 +154,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void fetchInfoIntent() {
 
-        if (getIntent() != null){
+        if (getIntent() != null) {
             contactID = getIntent().getStringExtra(CONTACT_ID);
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
@@ -316,9 +316,12 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        Log.d(TAG, "onStart: called");
+
         updateDateTime(getString(R.string.online_db));
         retrieveMessages();
-        openMaps();
+       // openMaps();
+        checkLocationStatus();
 
     }
 
@@ -384,7 +387,7 @@ public class ChatActivity extends AppCompatActivity {
         userState.put((getString(R.string.state_db)), state);
         userState.put((getString(R.string.date_db)), currentDate);
         userState.put((getString(R.string.time_db)), currentTime);
-        userState.put( "location", "Off");
+        userState.put("location", "Off");
 
         dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
 
@@ -408,11 +411,11 @@ public class ChatActivity extends AppCompatActivity {
 
                 //in edit text is empty we set typing state as "no"
                 if (text.isEmpty()) {
-                    typingState( (getString(R.string.no_db) ) ) ;
+                    typingState((getString(R.string.no_db)));
                 }
                 //if edit text is not empty we set typing state as "yes"
                 else {
-                    typingState((getString(R.string.yes_db) ));
+                    typingState((getString(R.string.yes_db)));
                 }
             }
 
@@ -461,7 +464,7 @@ public class ChatActivity extends AppCompatActivity {
         buttonAttachFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               showAlertDialog();
+                showAlertDialog();
             }
         });
 
@@ -485,26 +488,26 @@ public class ChatActivity extends AppCompatActivity {
 
                 switch (option) {
                     case 0: //if user selected photo option in pop up window
-                         optionSelected = "photo";
-                         if (checkPermissions()){
-                             openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
-                         }
+                        optionSelected = "photo";
+                        if (checkPermissions()) {
+                            openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
+                        }
                         break;
                     case 1: //if user selected pdf option in pop up window
-                         optionSelected = "pdf file";
-                        if (checkPermissions()){
+                        optionSelected = "pdf file";
+                        if (checkPermissions()) {
                             openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
                         }
                         break;
                     case 2: //if user selected word option in pop up window
-                         optionSelected = "word document";
-                        if (checkPermissions()){
+                        optionSelected = "word document";
+                        if (checkPermissions()) {
                             openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
                         }
                         break;
                     case 3:
-                        Log.i(TAG, "onClick: Share location option pressed ");
-                        uploadMessageToDb(getString(R.string.sharing_location), "map");
+                        Log.d(TAG, "onClick: share location option pressed");
+                        shareLocationPressed();
                         break;
                     default:
                         Log.d(TAG, "onClick: You didn't select any option");
@@ -517,23 +520,6 @@ public class ChatActivity extends AppCompatActivity {
         builder.show();
     }
 
-    /**
-     * check permission for reading internal docs and media only so far
-     * @return
-     */
-    private Boolean checkPermissions() {
-        Log.d(TAG, "checkPermissions: called");
-
-        String[] permissions = { Manifest.permission.READ_EXTERNAL_STORAGE };
-
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[0] )  == PackageManager.PERMISSION_GRANTED ){
-            return true;
-        } else{
-            ActivityCompat.requestPermissions(ChatActivity.this , permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE );
-            return  false;
-        }
-    }
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
@@ -553,39 +539,35 @@ public class ChatActivity extends AppCompatActivity {
                 requestCode == CHAT_DOCX_MENU_REQUEST && resultCode == RESULT_OK && data != null) {
 
             //we store the file (image, pdf, word) selected in this var of URI type.
-            try{
+            try {
                 file = data.getData();
 
-            switch (requestCode) {
-                case CHAT_IMAGE_MENU_REQUEST:
-                    chatProgressBar.setVisibility(View.VISIBLE);
-                    savePhotoInStorage(file);
-                    Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
-                    break;
-                case CHAT_PDF_MENU_REQUEST:
-                    chatProgressBar.setVisibility(View.VISIBLE);
-                    savePDFInStorage(file);
-                    Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
-                    break;
-                case CHAT_DOCX_MENU_REQUEST:
-                    chatProgressBar.setVisibility(View.VISIBLE);
-                    saveWordInStorage(file);
-                    Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
-                    break;
-                default:
-                    Log.i(TAG, "onActivityResult: nothing selected, something impossible happened");
-            }
+                switch (requestCode) {
+                    case CHAT_IMAGE_MENU_REQUEST:
+                        chatProgressBar.setVisibility(View.VISIBLE);
+                        savePhotoInStorage(file);
+                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
+                        break;
+                    case CHAT_PDF_MENU_REQUEST:
+                        chatProgressBar.setVisibility(View.VISIBLE);
+                        savePDFInStorage(file);
+                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
+                        break;
+                    case CHAT_DOCX_MENU_REQUEST:
+                        chatProgressBar.setVisibility(View.VISIBLE);
+                        saveWordInStorage(file);
+                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
+                        break;
+                    case PERMISSIONS_REQUEST_ENABLE_GPS:
+                        Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
+                        getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
+                }
 
-            }catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 e.printStackTrace();
                 Log.d(TAG, "onActivityResult: error: " + e.getMessage());
             }
-        }       //this switch is for image and doc options
 
-        //this request code is for enabling the gps on the device
-        if (requestCode == PERMISSIONS_REQUEST_ENABLE_GPS) {
-                Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
-                getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
         }
 
 
@@ -824,14 +806,52 @@ public class ChatActivity extends AppCompatActivity {
     // ---------------------------------------------- Maps permissions ------------------------------  //
 
     /**
-     * first we check if GPS is enabled on device and if app has location permission granted.
+     * if GPS is enabled as soon as we open the chat room we call method getUsers()
+     * IMPORTANT NOTE :this method contains getUserLastKnowLocation() which will check if
+     * location permission for the app is granted, if not app wont get the user's
+     * location as soon as we open the chat room, if location permission for the app is granted
+     * the app will fetch the user's location as soon as we open the chat room.
      */
-    private void openMaps() {
-        //if gps is off
-        if (!isGPSEnabled()) {
-            buildAlertMessageNoGps();   //take user to settings
+    private void checkLocationStatus() {
+
+        Log.d(TAG, "checkLocationStatus: called as soon as the chat room is open");
+        if (isGPSEnabled() ) {
+            Log.d(TAG, "checkLocationStatus: get details as soon as chat room is open");
+            getUserDetails();
+        }
+
+    }
+
+    private void shareLocationPressed() {
+        Log.d(TAG, "shareLocationPressed: called when share location pressed in alert dialog");
+        if (!isGPSEnabled()){
+            buildAlertMessageNoGps();
+        }  else if ( !locationPermissionGranted){
+            getLocationPermission();
         } else {
-            getLocationPermission();    //if gps is on ask for location permission for the app
+            getUserDetails();
+            Log.i(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
+            uploadMessageToDb(getString(R.string.sharing_location), "map");
+        }
+
+    }
+
+    /**
+     * check permission for reading internal docs and media only so far
+     *
+     * @return
+     */
+    private Boolean checkPermissions() {
+        Log.d(TAG, "checkPermissions: called");
+
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
+            return false;
         }
     }
 
@@ -915,13 +935,13 @@ public class ChatActivity extends AppCompatActivity {
                         User user = task.getResult().toObject(User.class);
                         Log.d(TAG, "onComplete: user: " + user.getName());
                         userLocation.setUser(user);
-                        getUserLastKnowLocation();
+                        getUserLastKnownLocation();
 
                     }
                 }
             });
         } else {
-            getUserLastKnowLocation();
+            getUserLastKnownLocation();
         }
     }
 
@@ -929,7 +949,7 @@ public class ChatActivity extends AppCompatActivity {
      * method in charge of fetching user location (lat/long coordinates) using GPS on phone device
      * to later be saved in Firestore db.
      */
-    private void getUserLastKnowLocation() {
+    private void getUserLastKnownLocation() {
 
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -944,8 +964,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Location> task) {
                 if (task.isSuccessful()) {
                     Location location = task.getResult();
-                    Log.d(TAG, "onComplete: location retrieved: " + location );
-                    if (location != null){
+                    Log.d(TAG, "onComplete: location retrieved: " + location);
+                    if (location != null) {
                         GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
                         Log.i(TAG, "onComplete: saving in db latitude: " + location.getLatitude());
                         Log.i(TAG, "onComplete: saving in db  longitude: " + location.getLongitude());
@@ -989,7 +1009,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * this is for the local permission request (NOT our dialog alert, this one from android)
      */
@@ -998,41 +1017,42 @@ public class ChatActivity extends AppCompatActivity {
 
         locationPermissionGranted = false;
 
-        switch (requestCode){
+        switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true;
                     Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
                     getUserDetails();
+                    uploadMessageToDb(getString(R.string.sharing_location), "map");
                 } else {
                     Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
                 }
                 break;
-                //here we catch the result of reading external storage permission
+            //here we catch the result of reading external storage permission
             case READ_EXTERNAL_STORAGE_REQUEST_CODE:
 
-                if ( grantResults.length > 0  &&  grantResults[0] == PackageManager.PERMISSION_GRANTED )   {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted");
 
                     //here in this switch we manage to redirect the user to gallery of folder depending on what user's request
-                    switch (optionSelected){
-                        case "photo" :
+                    switch (optionSelected) {
+                        case "photo":
                             Log.d(TAG, "onRequestPermissionsResult: option selected photo");
                             openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
                             break;
-                        case "pdf file" :
+                        case "pdf file":
                             Log.d(TAG, "onRequestPermissionsResult: option selected pdf file");
                             openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
                             break;
-                        case "word document" :
+                        case "word document":
                             Log.d(TAG, "onRequestPermissionsResult: option selected word document");
                             openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
                             break;
                     }
                 }
                 //if permission is rejected by the user
-                else{
+                else {
                     Toast.makeText(ChatActivity.this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -1043,15 +1063,15 @@ public class ChatActivity extends AppCompatActivity {
 
     //  -------------------- init Location Service ----------------------------
 
-    private void startLocationService(){
-        if(!isLocationServiceRunning()){
+    private void startLocationService() {
+        if (!isLocationServiceRunning()) {
             Intent serviceIntent = new Intent(this, LocationService.class);
 //        this.startService(serviceIntent);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
                 ChatActivity.this.startForegroundService(serviceIntent);
-            }else{
+            } else {
                 startService(serviceIntent);
             }
         }
@@ -1059,8 +1079,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private boolean isLocationServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-            if("com.example.alvar.chatapp.Service.LocationService".equals(service.service.getClassName())) {
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if ("com.example.alvar.chatapp.Service.LocationService".equals(service.service.getClassName())) {
                 Log.d(TAG, "isLocationServiceRunning: location service is already running.");
                 return true;
             }
