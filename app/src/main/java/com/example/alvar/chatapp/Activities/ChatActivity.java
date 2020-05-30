@@ -83,6 +83,7 @@ import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.example.alvar.chatapp.Constant.READ_EXTERNAL_STORAGE_REQUEST_CODE;
 import static com.example.alvar.chatapp.Constant.SELECT_IMAGE;
 import static com.example.alvar.chatapp.Constant.SELECT_PDF;
 import static com.example.alvar.chatapp.Constant.SELECT_WORD_DOCUMENT;
@@ -491,19 +492,22 @@ public class ChatActivity extends AppCompatActivity {
 
                 switch (option) {
                     case 0: //if user selected photo option in pop up window
-                        // optionSelected = "photo";
-                        openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
+                         if (checkPermissions()){
+                             openOption(IMAGE_OPTION, SELECT_IMAGE, CHAT_IMAGE_MENU_REQUEST);
+                         }
+
                         break;
                     case 1: //if user selected pdf option in pop up window
-                        // optionSelected = "pdf file";
-                        openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
+                        if (checkPermissions()){
+                            openOption(PDF_OPTION, SELECT_PDF, CHAT_PDF_MENU_REQUEST);
+                        }
                         break;
                     case 2: //if user selected word option in pop up window
-                        // optionSelected = "word document";
-                        openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
+                        if (checkPermissions()){
+                            openOption(WORD_DOCUMENT_OPTION, SELECT_WORD_DOCUMENT, CHAT_DOCX_MENU_REQUEST);
+                        }
                         break;
                     case 3:
-                        //optionSelected = "share location";
                         Log.i(TAG, "onClick: Share location option pressed ");
                         chatProgresBar.setVisibility(View.VISIBLE);
                         uploadMessageToDb(getString(R.string.sharing_location), "map");
@@ -517,6 +521,24 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+    /**
+     * check permission for reading internal docs and media only so far
+     * @return
+     */
+    private Boolean checkPermissions() {
+        Log.d(TAG, "checkPermissions: called");
+
+        String[] permissions = { Manifest.permission.READ_EXTERNAL_STORAGE };
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[0] )  == PackageManager.PERMISSION_GRANTED ){
+            return true;
+        } else{
+            ActivityCompat.requestPermissions(ChatActivity.this , permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE );
+            return  false;
+        }
     }
 
 
@@ -928,19 +950,22 @@ public class ChatActivity extends AppCompatActivity {
         locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()) {
-
+                if (task.isSuccessful()) { 
                     Location location = task.getResult();
-                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    Log.i(TAG, "onComplete: saving in db latitude: " + location.getLatitude());
-                    Log.i(TAG, "onComplete: saving in db  longitude: " + location.getLongitude());
-                    userLocation.setGeo_point(geoPoint);
-                    userLocation.setTimeStamp(null);
-                    saveUserLocation();
-                    startLocationService();
+                    Log.d(TAG, "onComplete: location retrieved: " + location );
+                    if (location != null){
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        Log.i(TAG, "onComplete: saving in db latitude: " + location.getLatitude());
+                        Log.i(TAG, "onComplete: saving in db  longitude: " + location.getLongitude());
+                        userLocation.setGeo_point(geoPoint);
+                        userLocation.setTimeStamp(null);
+                        saveUserLocation();
+                        startLocationService();
 
-                } else {
-                    Log.d(TAG, "onComplete: error: " );
+                    } else {
+                        Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onComplete: db retrieving null again");
+                    }
                 }
 
             }
@@ -972,6 +997,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
+
     /**
      * this is for the local permission request (NOT our dialog alert, this one from android)
      */
@@ -980,17 +1006,29 @@ public class ChatActivity extends AppCompatActivity {
 
         locationPermissionGranted = false;
 
-        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
-            // If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                locationPermissionGranted = true;
-                Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
-            } else {
-                Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
-            }
+        switch (requestCode){
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationPermissionGranted = true;
+                    Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
+                    getUserDetails();
+                } else {
+                    Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
+                }
+                break;
+            case READ_EXTERNAL_STORAGE_REQUEST_CODE:
+                if ( grantResults.length > 0  &&  grantResults[0] == PackageManager.PERMISSION_GRANTED )   {
+                    Log.d(TAG, "onRequestPermissionsResult: permission granted");
+                    Toast.makeText(this, getString(R.string.read_storage_enabled), Toast.LENGTH_LONG).show();
+                } else{
+                    Toast.makeText(ChatActivity.this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
-    }
 
+
+    }
 
     //  -------------------- init Location Service ----------------------------
 

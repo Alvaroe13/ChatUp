@@ -1,4 +1,45 @@
 <resources>
+
+    <!-- firebase / firestore nodes ref-->
+    <string name="users_ref">Users</string>
+    <string name="chatroom_ref">Chatroom</string>
+    <string name="contacts_ref">Contacts</string>
+    <string name="chats_ref">Chats</string>
+    <string name="messages_ref">Messages</string>
+    <string name="collection_user_location">User location</string>
+
+
+    <!-- firebase / firestore fields-->
+    <string name="status_db">status</string>
+    <string name="user_state_db">userState</string>
+    <string name="state_db">state</string>
+    <string name="date_db">date</string>
+    <string name="time_db">time</string>
+    <string name="typing_db">typing</string>
+    <string name="name_db">name</string>
+    <string name="email_db">email</string>
+    <string name="password_db">password</string>
+    <string name="image_db">image</string>
+    <string name="imageThumbnail_db">imageThumbnail</string>
+    <string name="token_db">token</string>
+    <string name="contact_status_db">contact_status</string>
+    <string name="sende_db">sender</string>
+    <string name="type_db">type</string>
+    <string name="no_db">no</string>
+    <string name="yes_db">yes</string>
+    <string name="notifications_ref">Notifications</string>
+    <string name="chats_requests_ref">Chat_Requests</string>
+    <string name="online_db">Online</string>
+    <string name="offline_db">Offline</string>
+    <string name="message_db">message</string>
+    <string name="sende_id_db">senderID</string>
+    <string name="receiver_id_db">receiverID</string>
+    <string name="message_date_db">messageDate</string>
+    <string name="message_time_db">messageTime</string>
+    <string name="message_id_db">messageID</string>
+    <string name="seen_db">seen</string>
+
+    <!-- layout texts -->
     <string name="app_name">ChatUp</string>
     <string name="register">Register</string>
     <string name="signOut">Sign out</string>
@@ -107,46 +148,9 @@
     <string name="sharing_location">Location</string>
     <string name="close_map_message">Do you want to stop sharing your location?</string>
     <string name="close_location">Close location room</string>
-
-    <!-- firebase / firestore nodes ref-->
-    <string name="users_ref">Users</string>
-    <string name="chatroom_ref">Chatroom</string>
-    <string name="contacts_ref">Contacts</string>
-    <string name="chats_ref">Chats</string>
-    <string name="messages_ref">Messages</string>
-    <string name="collection_user_location">User location</string>
-
-
-    <!-- firebase / firestore fields-->
-    <string name="status_db">status</string>
-    <string name="user_state_db">userState</string>
-    <string name="state_db">state</string>
-    <string name="date_db">date</string>
-    <string name="time_db">time</string>
-    <string name="typing_db">typing</string>
-    <string name="name_db">name</string>
-    <string name="email_db">email</string>
-    <string name="password_db">password</string>
-    <string name="image_db">image</string>
-    <string name="imageThumbnail_db">imageThumbnail</string>
-    <string name="token_db">token</string>
-    <string name="contact_status_db">contact_status</string>
-    <string name="sende_db">sender</string>
-    <string name="type_db">type</string>
-    <string name="no_db">no</string>
-    <string name="yes_db">yes</string>
-    <string name="notifications_ref">Notifications</string>
-    <string name="chats_requests_ref">Chat_Requests</string>
-    <string name="online_db">Online</string>
-    <string name="offline_db">Offline</string>
-    <string name="message_db">message</string>
-    <string name="sende_id_db">senderID</string>
-    <string name="receiver_id_db">receiverID</string>
-    <string name="message_date_db">messageDate</string>
-    <string name="message_time_db">messageTime</string>
-    <string name="message_id_db">messageID</string>
-    <string name="seen_db">seen</string>
-
+    <string name="permission_required">Permission required</string>
+    <string name="GPS_Required">This application requires GPS to work properly, do you want to enable it?</string>
+    <string name="read_storage_enabled">Now yo can send Photos and Documents</string>
 
 
 </resources>
