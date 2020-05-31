@@ -33,5 +33,11 @@ public class Constant {
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     // read file permission
     public static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 20;
+    //phone Login AND Register Activity
+    public static final String DEFAULT_EMAIL = "email";
+    public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
+    public static final String DEFAULT_IMAGE = "image";
+    public static final String DEFAULT_THUMBNAIL = "imgThumbnail";
+    public static final String DEFAULT_PASSWORD = "null";
 
 }

@@ -25,6 +25,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import static com.example.alvar.chatapp.Constant.DEFAULT_IMAGE;
+import static com.example.alvar.chatapp.Constant.DEFAULT_STATUS;
+import static com.example.alvar.chatapp.Constant.DEFAULT_THUMBNAIL;
+
 
 public class RegisterActivity extends AppCompatActivity {
     //Log
@@ -42,10 +46,7 @@ public class RegisterActivity extends AppCompatActivity {
     private CoordinatorLayout coordinatorLayout;
     //Vars
     private String username, email, password, repeatPassword, deviceToken;
-    //Constants
-    private static final String DEFAULT_IMG = "image";
-    public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
-    private static final String DEFAULT_THUMBNAIL = "imgThumbnail";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +185,7 @@ public class RegisterActivity extends AppCompatActivity {
         String currentUserID = mAuth.getCurrentUser().getUid();
 
         //Init User object and set it's values to be saved into the db
-        User user = new User(username, email, password, DEFAULT_STATUS, DEFAULT_IMG, DEFAULT_THUMBNAIL, deviceToken, currentUserID);
+        User user = new User(username, email, password, DEFAULT_STATUS, DEFAULT_IMAGE, DEFAULT_THUMBNAIL, deviceToken, currentUserID);
 
         //save info into database and we do a last check
         dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {

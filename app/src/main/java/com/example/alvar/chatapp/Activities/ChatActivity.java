@@ -317,10 +317,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onStart();
 
         Log.d(TAG, "onStart: called");
-
         updateDateTime(getString(R.string.online_db));
         retrieveMessages();
-       // openMaps();
         checkLocationStatus();
 
     }
@@ -329,32 +327,32 @@ public class ChatActivity extends AppCompatActivity {
      * fetch messages in the chat room.
      */
     private void retrieveMessages() {
-        dbChatsNodeRef.child(currentUserID).child(contactID)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        messagesList.clear();
+            dbChatsNodeRef.child(currentUserID).child(contactID)
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        for (DataSnapshot info : dataSnapshot.getChildren()) {
+                            messagesList.clear();
 
-                            Messages messages = info.getValue(Messages.class);
+                            if (dataSnapshot.exists()){
 
-                            messagesList.add(messages);
+                                for (DataSnapshot info : dataSnapshot.getChildren()) {
 
-                            adapter.notifyDataSetChanged();
+                                    Messages messages = info.getValue(Messages.class);
 
-                            recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
-
+                                    messagesList.add(messages);
+                                    adapter.notifyDataSetChanged();
+                                    recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
+                                }
+                            }
                         }
 
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                        }
+                    });
     }
 
     @Override
@@ -518,7 +516,6 @@ public class ChatActivity extends AppCompatActivity {
 
         builder.show();
     }
-
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"

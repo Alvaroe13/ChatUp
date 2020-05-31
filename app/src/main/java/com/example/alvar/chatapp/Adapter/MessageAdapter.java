@@ -108,13 +108,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
         }
 
-
         //we fetch info from db Users node
         infoFetchedFromDb(messageSenderID, messageViewHolder);
         //here's where fun with the layouts starts
         layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
 
-
+       
     }
 
 
@@ -128,14 +127,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return messagesList.size();
     }
 
-
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
         dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
     }
-
 
     /**
      * here we fetch info from db and fill the fields with it
@@ -462,22 +459,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void deleteRightSideMessage(int position) {
 
-        String senderID = messagesList.get(position).getSenderID();
-        String receiverID = messagesList.get(position).getReceiverID();
-        String messageID = messagesList.get(position).getMessageID();
+        try{
+            String senderID = messagesList.get(position).getSenderID();
+            String receiverID = messagesList.get(position).getReceiverID();
+            String messageID = messagesList.get(position).getMessageID();
 
-        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete:message deleted right side");
+                    if (task.isSuccessful()){
+                        Log.i(TAG, "onComplete:message deleted right side");
+                    }
+                    else{
+                        Log.i(TAG, "onComplete:something failed");
+                    }
                 }
-                 else{
-                    Log.i(TAG, "onComplete:something failed");
-                }
-            }
-        });
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
     }
 
     /**
@@ -510,35 +513,45 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void deleteMessageForEveryone(int position){
 
-        final String senderID = messagesList.get(position).getSenderID();
-        final String receiverID = messagesList.get(position).getReceiverID();
-        final String messageID = messagesList.get(position).getMessageID();
+        try{
+            final String senderID = messagesList.get(position).getSenderID();
+            final String receiverID = messagesList.get(position).getReceiverID();
+            final String messageID = messagesList.get(position).getMessageID();
 
-        //lets first of all erase from the current user side
-        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            //lets first of all erase from the current user side
+            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
-                    //lets first of all erase from the other user side
-                    dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        //lets first of all erase from the other user side
+                        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
 
-                            if (task.isSuccessful()){
-                                Log.i(TAG, "onComplete: message deleted for everyone ");
+                                if (task.isSuccessful()){
+                                    Log.i(TAG, "onComplete: message deleted for everyone ");
+                                }
+                                else{
+                                    Log.i(TAG, "onComplete: Error, something failed ");
+                                }
                             }
-                            else{
-                                Log.i(TAG, "onComplete: Error, something failed ");
-                            }
-                        }
-                    });
+                        });
 
-                } else{
-                    Log.i(TAG, "onComplete: Error, something failed ");
+                    } else{
+                        Log.i(TAG, "onComplete: Error, something failed ");
+                    }
                 }
-            }
-        });
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
+
+
+
+
 
     }
 
