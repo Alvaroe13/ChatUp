@@ -453,10 +453,9 @@ public class ChatActivity extends AppCompatActivity {
         HashMap<String, Object> typingStateMap = new HashMap<>();
         typingStateMap.put(getString(R.string.typing_db), typingState);
 
-        dbUsersNodeRef.child(currentUserID).child(getString(R.string.users_ref)).updateChildren(typingStateMap);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(typingStateMap);
 
     }
-
     /**
      * when attach file button is pressed
      */

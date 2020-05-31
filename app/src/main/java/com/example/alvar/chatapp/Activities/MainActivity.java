@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
-       // typingState("no");
+        typingState("no");
     }
 
     @Override
