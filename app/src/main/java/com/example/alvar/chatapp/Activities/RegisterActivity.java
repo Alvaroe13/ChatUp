@@ -184,7 +184,7 @@ public class RegisterActivity extends AppCompatActivity {
         String currentUserID = mAuth.getCurrentUser().getUid();
 
         //Init User object and set it's values to be saved into the db
-        User user = new User(username, email, password, DEFAULT_STATUS, DEFAULT_IMG, DEFAULT_THUMBNAIL, deviceToken);
+        User user = new User(username, email, password, DEFAULT_STATUS, DEFAULT_IMG, DEFAULT_THUMBNAIL, deviceToken, currentUserID);
 
         //save info into database and we do a last check
         dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {

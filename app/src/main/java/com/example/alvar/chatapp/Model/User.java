@@ -9,12 +9,13 @@ public class User {
     private String image;
     private String imageThumbnail;
     private String token;
+    private String userID;
 
     public User(){
 
     }
 
-    public User(String name, String email, String password, String status, String image, String imageThumbnail, String token) {
+    public User(String name, String email, String password, String status, String image, String imageThumbnail, String token, String userID) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -22,6 +23,7 @@ public class User {
         this.image = image;
         this.imageThumbnail = imageThumbnail;
         this.token = token;
+        this.userID = userID;
     }
 
     /**
@@ -56,6 +58,9 @@ public class User {
         return token;
     }
 
+    public String getUserID() {
+        return userID;
+    }
 
     /**
      * Setters
@@ -88,5 +93,9 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 }

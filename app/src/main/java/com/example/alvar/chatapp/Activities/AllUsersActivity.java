@@ -1,38 +1,47 @@
 package com.example.alvar.chatapp.Activities;
 
-import android.content.Intent;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
-import com.bumptech.glide.Glide;
-import com.example.alvar.chatapp.Model.Contacts;
+import com.example.alvar.chatapp.Adapter.UsersAdapter;
+import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import java.util.ArrayList;
+import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class AllUsersActivity extends AppCompatActivity {
 
     //log
     private static final String TAG = "AllUsersPage";
     //firebase
+    private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersRef;
     //ui elements
     private Toolbar toolbarAllUsers;
     private RecyclerView recyclerView;
+    private UsersAdapter adapter;
+    //vars
+    private String currentUserID;
+    private List<User> userList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +54,8 @@ public class AllUsersActivity extends AppCompatActivity {
     }
 
     private void initFirebase() {
+        mAuth = FirebaseAuth.getInstance();
+        currentUserID = mAuth.getUid();
         //we init firebase database service
         database = FirebaseDatabase.getInstance();
         //here we init db reference and pointed to "Users" node
@@ -53,14 +64,122 @@ public class AllUsersActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
         recyclerView = findViewById(R.id.contactRecyclerView);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    private void setToolbar(String title, Boolean backOption){
+    private void setToolbar(String title, Boolean backOption) {
         toolbarAllUsers = findViewById(R.id.toolbarAllUsers);
         setSupportActionBar(toolbarAllUsers);
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+
+        inflateSearchIcon(menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /**
+     * method in charge of searching for users
+     *
+     * @param menu
+     */
+    private void inflateSearchIcon(Menu menu) {
+
+        MenuItem.OnActionExpandListener expandMenuListener = new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                Log.d(TAG, "onMenuItemActionExpand: inflated");
+                return false;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                Log.d(TAG, "onMenuItemActionCollapse: collapse");
+                return false;
+            }
+        };
+        menu.findItem(R.id.searchUser).setOnActionExpandListener(expandMenuListener);
+        SearchView searchView = (SearchView) menu.findItem(R.id.searchUser).getActionView();
+        searchView.setQueryHint("Insert username");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if (!TextUtils.isEmpty( query.trim() ) ) {
+                    searchUser(query);
+                } else{
+                    showAllUsers();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+
+                if (!TextUtils.isEmpty( query.trim() ) ) {
+                    searchUser(query);
+                } else{
+                    showAllUsers();
+                }
+                return false;
+            }
+        });
+
+    }
+
+    /**
+     * method in charge of searching for the user
+     * @param query
+     */
+    private void searchUser(final String query) {
+
+        dbUsersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                userList.clear();
+
+                if (dataSnapshot.exists()) {
+                    //loop through all user ref in db
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                        User user = snapshot.getValue(User.class);
+
+                        if (user.getUserID() != null) {
+
+                            if (!currentUserID.equals(user.getUserID())) {
+                                if (user.getName().toLowerCase().contains(query.toLowerCase())
+                                        || user.getEmail().toLowerCase().contains(query.toLowerCase())) {
+                                    userList.add(user);
+                                }
+                            }
+
+                        } else {
+                            Log.d(TAG, "onDataChange: userID field empty");
+                        }
+
+                        adapter = new UsersAdapter(AllUsersActivity.this, userList);
+                        adapter.notifyDataSetChanged();
+                        recyclerView.setAdapter(adapter);
+
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     /**
@@ -71,94 +190,49 @@ public class AllUsersActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        callFirebaseAdapter();
+        showAllUsers();
     }
 
     /**
-     * this method contains the logic to fill the recyclerView with the info from the database node "Users".
+     * method retrieves all users in user node
      */
-    private void callFirebaseAdapter(){
+    private void showAllUsers() {
 
-        //we create firebaseOptions to pass it to firebaseAdapter
-        FirebaseRecyclerOptions<Contacts> firebaseOptions  = new FirebaseRecyclerOptions.Builder<Contacts>()
-                .setQuery(dbUsersRef , Contacts.class)
-                .build();
+        dbUsersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //we clear the list first to make sure next time we open this view items are not duplicated
+                userList.clear();
 
-        // model and viewHolder class are the parameter
-        FirebaseRecyclerAdapter< Contacts , AllUsersViewHolder > firebaseAdapter = new
-                FirebaseRecyclerAdapter<Contacts, AllUsersViewHolder>(firebaseOptions) {
-                    @Override
-                    protected void onBindViewHolder(@NonNull AllUsersViewHolder holder, final int position, @NonNull Contacts model) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
-                        //set info from db into the Cardviews
-                        setInfoIntoUI( holder, model);
-                        //onClick when any of the users displayed has been pressed
-                        holder.itemView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                //here we get user id given by Firebase
-                                String otherUserId = getRef(position).getKey();
-                                goToOtherUserLayout(otherUserId);
-                            }
-                        });
+                    User user = snapshot.getValue(User.class);
+                    
+                    if (user.getUserID() != null ){
+
+                        //here we fetch every user in userRef in db that except for the user authenticated
+                        if ( !currentUserID.equals(user.getUserID()) ){
+                            userList.add(user);
+                        }
+                        
+                    } else {
+                        Log.d(TAG, "onDataChange: userId field null");
                     }
 
-                    @NonNull
-                    @Override
-                    public AllUsersViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                    adapter = new UsersAdapter(AllUsersActivity.this, userList);
+                    recyclerView.setAdapter(adapter);
 
-                        //here we bind the user layout to the firebase adapter
-                        View allUsersView = LayoutInflater.from(viewGroup.getContext()).
-                                inflate(R.layout.users_individual_layout, viewGroup, false);
+                }
 
-                        AllUsersViewHolder viewHolder = new AllUsersViewHolder(allUsersView);
-                        return viewHolder;
 
-                    }
-                };
+            }
 
-        recyclerView.setAdapter(firebaseAdapter);
-        firebaseAdapter.startListening();
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
     }
 
-    private void goToOtherUserLayout(String otherUserId) {
-        Intent intentOtherUserProf = new Intent(AllUsersActivity.this, OtherUserProfileActivity.class);
-        //we send user id through an intent
-        intentOtherUserProf.putExtra("otherUserId" , otherUserId);
-        startActivity(intentOtherUserProf);
-    }
-
-    private void setInfoIntoUI(AllUsersViewHolder holder, Contacts model ) {
-
-        //  here we fetch info from database and set it to the UI
-        holder.username.setText(model.getName());
-        holder.currentStatus.setText(model.getStatus());
-        //here we set the default image is user has not upload any pic
-        if (model.getImageThumbnail().equals("imgThumbnail")){
-            holder.imgProfile.setImageResource(R.drawable.profile_image);
-        }else{
-            //lets upload images from db to ui using glide instead of picasso
-            Glide.with(getApplicationContext()).load(model.getImageThumbnail()).into(holder.imgProfile);
-        }
-
-
-    }
-
-    public static class AllUsersViewHolder extends RecyclerView.ViewHolder{
-
-        //we get ui elements from all users layout
-        TextView username, currentStatus;
-        CircleImageView imgProfile;
-
-        public AllUsersViewHolder(@NonNull View itemView) {
-            super(itemView);
-
-            //we init ui elements
-            username = itemView.findViewById(R.id.usernameAllUsers);
-            currentStatus = itemView.findViewById(R.id.statusAllUsers);
-            imgProfile = itemView.findViewById(R.id.imageAllUsers);
-        }
-    }
 
 }

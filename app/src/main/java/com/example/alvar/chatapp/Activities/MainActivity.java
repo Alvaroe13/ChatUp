@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
-        typingState("no");
+       // typingState("no");
     }
 
     @Override
@@ -297,9 +297,7 @@ public class MainActivity extends AppCompatActivity {
                         password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
                         token = dataSnapshot.child(getString(R.string.token_db)).getValue().toString();
 
-
-
-
+                    //pass info to firestore db
                    populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token);
 
                     Log.i(TAG, "onDataChange: username set");

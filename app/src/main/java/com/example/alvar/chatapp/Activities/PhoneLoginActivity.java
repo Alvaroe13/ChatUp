@@ -276,7 +276,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
         //here we get user's device token  (NOT APPLIED TO THE APP JUST YET)
         String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
-        User user = new User(name,DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_STATUS,DEFAULT_IMAGE,DEFAULT_THUMBNAIL,deviceToken);
+        User user = new User(name,DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_STATUS,DEFAULT_IMAGE,DEFAULT_THUMBNAIL,deviceToken, currentUserID);
 
         //save info into database and we do a last check
         dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
