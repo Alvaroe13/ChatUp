@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +29,7 @@ import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Service.LocationService;
+import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
@@ -85,6 +87,8 @@ import static com.example.alvar.chatapp.Constant.WORD_DOCUMENT_OPTION;
 public class ChatActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatActivityPage";
+    private static final int OPEN_CAMERA_REQUEST_CODE = 55;
+    private static final int CAMERA_PERMISSION_REQUEST = 56;
 
     //firebase services
     private FirebaseAuth auth;
@@ -477,7 +481,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.setTitle(R.string.Choose_file);
         builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location)};
+        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location), getString(R.string.open_camera)};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -506,8 +510,12 @@ public class ChatActivity extends AppCompatActivity {
                         Log.d(TAG, "onClick: share location option pressed");
                         shareLocationPressed();
                         break;
-                    default:
-                        Log.d(TAG, "onClick: You didn't select any option");
+                    case 4:
+                        Log.d(TAG, "onClick: take photo option selected");
+                        if (checkCameraPermission()){
+                            openCamera();
+                        }
+                        break;
                 }
 
 
@@ -515,6 +523,54 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+
+    /**
+     * check permission for reading internal docs and media only so far
+     *
+     * @return
+     */
+    private Boolean checkPermissions() {
+        Log.d(TAG, "checkPermissions: called");
+
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE };
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
+            return false;
+        }
+    }
+
+    /**
+     * this method check if users camera and create files in device are granted or not, if not we ask for them
+     * @return
+     */
+    private Boolean checkCameraPermission(){
+
+        String[] cameraPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext() ,
+                cameraPermissions[0]) == PackageManager.PERMISSION_GRANTED  &&
+                                   ContextCompat.checkSelfPermission(this.getApplicationContext() ,
+                                           cameraPermissions[1]) == PackageManager.PERMISSION_GRANTED ){
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, cameraPermissions , CAMERA_PERMISSION_REQUEST);
+            return false;
+        }
+
+    }
+
+    /**
+     * open camera
+     */
+    private void openCamera() {
+        Intent intentCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intentCamera, OPEN_CAMERA_REQUEST_CODE);
     }
 
     /**
@@ -532,7 +588,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
-                requestCode == CHAT_DOCX_MENU_REQUEST && resultCode == RESULT_OK && data != null) {
+                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE
+                                                            && resultCode == RESULT_OK && data != null) {
 
             //we store the file (image, pdf, word) selected in this var of URI type.
             try {
@@ -557,6 +614,9 @@ public class ChatActivity extends AppCompatActivity {
                     case PERMISSIONS_REQUEST_ENABLE_GPS:
                         Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
                         getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
+                    case OPEN_CAMERA_REQUEST_CODE:
+                        Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
+                        break;
                 }
 
             } catch (NullPointerException e) {
@@ -833,25 +893,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * check permission for reading internal docs and media only so far
-     *
-     * @return
-     */
-    private Boolean checkPermissions() {
-        Log.d(TAG, "checkPermissions: called");
-
-        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
-            return false;
-        }
-    }
-
-    /**
      * method checks if gps is enabled on the device only
      *
      * @return
@@ -1031,7 +1072,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted");
 
-                    //here in this switch we manage to redirect the user to gallery of folder depending on what user's request
+                    //here in this switch we manage to redirect the user to gallery or files depending on what the user requested
                     switch (optionSelected) {
                         case "photo":
                             Log.d(TAG, "onRequestPermissionsResult: option selected photo");
@@ -1050,6 +1091,15 @@ public class ChatActivity extends AppCompatActivity {
                 //if permission is rejected by the user
                 else {
                     Toast.makeText(ChatActivity.this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case CAMERA_PERMISSION_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED ) {
+                    openCamera();
+                } else{
+                    Log.d(TAG, "onRequestPermissionsResult: something went wrong with the permissions");
+                    Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }

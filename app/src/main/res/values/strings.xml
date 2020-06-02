@@ -151,6 +151,7 @@
     <string name="permission_required">Permission required</string>
     <string name="GPS_Required">This application requires GPS to work properly, do you want to enable it?</string>
     <string name="read_storage_enabled">Now yo can send Photos and Documents</string>
+    <string name="open_camera">Camera</string>
 
 
 </resources>
