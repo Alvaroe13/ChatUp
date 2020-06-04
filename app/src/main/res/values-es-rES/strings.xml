@@ -154,6 +154,7 @@
     <string name="GPS_Required">Esta aplicación necesita tener el GPS habilitado para compartir ubicación ¿Quieres habilitarlo?</string>
     <string name="read_storage_enabled">Ahora si puedes enviar fotos y documentos</string>
     <string name="open_camera">Camara</string>
+    <string name="place_username">Nombre de usuario</string>
 
 
 </resources>

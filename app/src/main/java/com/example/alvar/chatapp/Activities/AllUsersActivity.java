@@ -78,7 +78,7 @@ public class AllUsersActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        inflater.inflate(R.menu.menu_search_user, menu);
 
         inflateSearchIcon(menu);
 
@@ -107,7 +107,7 @@ public class AllUsersActivity extends AppCompatActivity {
         };
         menu.findItem(R.id.searchUser).setOnActionExpandListener(expandMenuListener);
         SearchView searchView = (SearchView) menu.findItem(R.id.searchUser).getActionView();
-        searchView.setQueryHint("Insert username");
+        searchView.setQueryHint(getString(R.string.place_username));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

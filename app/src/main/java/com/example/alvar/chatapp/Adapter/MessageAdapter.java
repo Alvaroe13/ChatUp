@@ -123,8 +123,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     @Override
     public int getItemCount() {
-        //get the size of the List
-        return messagesList.size();
+        if (messagesList != null ){
+            //get the size of the List is is not null
+            return messagesList.size();
+        }
+        return 0;
     }
 
     private void initFirebase() {
