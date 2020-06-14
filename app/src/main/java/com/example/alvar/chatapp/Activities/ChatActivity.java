@@ -23,13 +23,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
+import com.example.alvar.chatapp.Notifications.Data;
+import com.example.alvar.chatapp.Notifications.NotificationAPI;
+import com.example.alvar.chatapp.Notifications.PushNotification;
+import com.example.alvar.chatapp.Notifications.ResponseFCM;
+import com.example.alvar.chatapp.Notifications.RetrofitClient;
+import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Service.LocationService;
-import com.google.android.gms.dynamic.IFragmentWrapper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
@@ -67,6 +73,9 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
@@ -93,7 +102,7 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef;
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
@@ -117,6 +126,8 @@ public class ChatActivity extends AppCompatActivity {
     private boolean locationPermissionGranted = false;
     private UserLocation userLocation;
     private FusedLocationProviderClient locationProvider;
+    private NotificationAPI apiService;
+    private  boolean notify;
 
 
     @Override
@@ -124,13 +135,11 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-
-        initLocationProvider();
-
-        fetchInfoIntent();
         initFirebase();
         initFirestore();
-        setToolbar("", true);
+        initLocationProvider();
+        getIncomingIntent();
+     //   setToolbar("", true);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -138,8 +147,14 @@ public class ChatActivity extends AppCompatActivity {
         otherUserState();
         toolbarPressed();
         attachFileButtonPressed();
+        retrofit();
+
+    }
 
 
+
+    private void retrofit() {
+        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
     }
 
     private void initLocationProvider() {
@@ -151,17 +166,21 @@ public class ChatActivity extends AppCompatActivity {
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
         chatProgressBar = findViewById(R.id.progressBarChat);
+        toolbarChat = findViewById(R.id.toolbarChat);
+
     }
 
     /**
      * this method receives de bundles from "ContactsActivity"
      */
-    private void fetchInfoIntent() {
+    private void getIncomingIntent() {
 
         if (getIntent() != null) {
-            contactID = getIntent().getStringExtra(CONTACT_ID);
+            contactID = getIntent().getStringExtra(CONTACT_ID);            
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
+            Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
+            fetchInfoDB(contactID);
         }
 
     }
@@ -176,10 +195,33 @@ public class ChatActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
+        dbTokensNodeRef = database.getReference().child("Tokens");
+
+    }
+
+    private void fetchInfoDB(String contactID){
+
+        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    User user = dataSnapshot.getValue(User.class);
+                    String username = user.getName();
+                    String image = user.getImageThumbnail();
+                    setToolbar("",username, image, true);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     private void initFirestore() {
-
         //db
         mDb = FirebaseFirestore.getInstance();
         //docs ref
@@ -190,9 +232,8 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Create toolbar and inflate the custom bar chat bar layout
      */
-    private void setToolbar(String title, Boolean backOption) {
+    private void setToolbar(String title, final String contactUsername, final String contactProfPic, Boolean backOption) {
 
-        toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
 
         ActionBar actionBar = getSupportActionBar();
@@ -211,13 +252,25 @@ public class ChatActivity extends AppCompatActivity {
         onlineIcon = findViewById(R.id.onlineIcon);
 
         //here we set info from bundles into the ui elements in custom toolbar
-        usernameToolbarChat.setText(contactName);
-        if (contactImage.equals("imgThumbnail")) {
-            imageProfile.setImageResource(R.drawable.profile_image);
-        } else {
-            Glide.with(getApplicationContext()).load(contactImage).into(imageProfile);
-        }
+        usernameToolbarChat.setText(contactUsername);
 
+            //GLIDE
+        RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.profile_image);
+
+        Glide.with(getApplicationContext())
+                    .setDefaultRequestOptions(options)
+                    .load(contactProfPic)
+                    .into(imageProfile);
+
+        toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToMain();
+            }
+        });
+      
 
     }
 
@@ -294,6 +347,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                notify = true;
+
                 //we get message written by the user
                 messageText = chatEditText.getText().toString();
 
@@ -306,6 +361,9 @@ public class ChatActivity extends AppCompatActivity {
                     //otherwise we send the message
                     //sendMessage();
                     uploadMessageToDb(messageText, "text");
+                    //we remove any text enter by the user once it's been sent
+                    chatEditText.setText("");
+
 
                 }
 
@@ -537,7 +595,7 @@ public class ChatActivity extends AppCompatActivity {
         String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE };
 
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
+                        permissions[0]) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
             ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
@@ -613,9 +671,11 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     case PERMISSIONS_REQUEST_ENABLE_GPS:
                         Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
+                        chatProgressBar.setVisibility(View.VISIBLE);
                         getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
                     case OPEN_CAMERA_REQUEST_CODE:
                         Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
+                        //TODO pending to finnish: send photo in chat
                         break;
                 }
 
@@ -846,16 +906,93 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         chatProgressBar.setVisibility(View.INVISIBLE);
-        //we remove any text enter by the user once it's been sent
-        chatEditText.setText("");
+
+        notificationMethod(messageInfo);
+         
+
+    }
+
+    private void notificationMethod(String messageInfo) {
+
+        final String msg = messageInfo;
+
+        dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (notify){
+                    sendNotification(contactID, user.getName(), msg);
+                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT username " + user.getName() );
+                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT contactID " + contactID );
+                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT message " + msg );
+                }
+                notify = false;
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void sendNotification(final String contactID, final String name, final String msg) {
+
+       dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+           @Override
+           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               if (dataSnapshot.exists()){
+
+                   Token deviceToken = dataSnapshot.getValue(Token.class);
+                   Log.d(TAG, "onDataChange: token retrieved from firebase: " + deviceToken.getToken() );
+
+                   Data data = new Data(contactID ,  msg, name,  currentUserID );
+                   Log.d(TAG, "onDataChange: message to be sent: " + data.getMessage());
+
+                   PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
+
+                   apiService.sendNotification(pushNotification)
+                           .enqueue(new Callback<ResponseFCM>() {
+                               @Override
+                               public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
+                                   if (response.code() == 200){
+                                       Log.d(TAG, "onResponse: RETROFIT notification  sent ");
+                                   }
+
+                               }
+
+                               @Override
+                               public void onFailure(Call<ResponseFCM> call, Throwable t) {
+
+                               }
+                           });
+               } else {
+                   Toast.makeText(ChatActivity.this, "error fetching other user's token", Toast.LENGTH_SHORT).show();
+               }
+               
+               
+           }
+
+           @Override
+           public void onCancelled(@NonNull DatabaseError databaseError) {
+
+           }
+       });
+ 
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
-        finish();
+        goToMain();
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+      //  intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
 
@@ -885,8 +1022,9 @@ public class ChatActivity extends AppCompatActivity {
         }  else if ( !locationPermissionGranted){
             getLocationPermission();
         } else {
+            Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
+            chatProgressBar.setVisibility(View.INVISIBLE);
             getUserDetails();
-            Log.i(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
             uploadMessageToDb(getString(R.string.sharing_location), "map");
         }
 
@@ -1136,3 +1274,34 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 }
+
+
+   /* Query query = tokensNodeRef.orderByKey().equalTo(contactID);
+
+        query.addValueEventListener(new ValueEventListener() {
+@Override
+public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+        for (DataSnapshot snapshot: dataSnapshot.getChildren()){
+
+        Token token = snapshot.getValue(Token.class);
+
+        Data data = new Data(contactID , name+": " + msg, "New message",  currentUserID );
+
+        PushNotification pushNotification = new PushNotification(data, token.getToken());
+
+        apiService.sendNotification(pushNotification)
+        .enqueue(new Callback<ResponseFCM>() {
+@Override
+public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
+        if (response.code() == 200){
+        Toast.makeText(ChatActivity.this, "yep!!!!", Toast.LENGTH_SHORT).show();
+        }
+
+        }
+
+@Override
+public void onFailure(Call<ResponseFCM> call, Throwable t) {
+
+        }
+        });*/

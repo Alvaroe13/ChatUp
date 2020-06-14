@@ -1,8 +1,10 @@
 package com.example.alvar.chatapp;
 
+import androidx.annotation.NonNull;
+
 public class Constant {
 
-    //Const for options intent in Alert Dialog (image, pdf, word)
+    //Const for options intent in Alert Dialog in chat activity (image, pdf, word)
     public static final String IMAGE_OPTION = "image/*";
     public static final String SELECT_IMAGE = "SELECT IMAGE";
     public static final String PDF_OPTION = "application/pdf";
@@ -39,5 +41,14 @@ public class Constant {
     public static final String DEFAULT_IMAGE = "image";
     public static final String DEFAULT_THUMBNAIL = "imgThumbnail";
     public static final String DEFAULT_PASSWORD = "null";
+    // retrofit NOTIFICATION
+    public static final String BASE_URL = "https://fcm.googleapis.com";
+    public static final String CONTENT_TYPE = "application/json";
+    public static final String KEY_FCM = "AAAAhNQdtcA:APA91bHRs49seNR290a9-G5v98yAcXk96uLTb_096KKP4i-Av_YaMTsANcnJ2cP5XMZN4UCDUqq7dF6JxQdXhh_9o6QXQ7_vgHOPBYv-eowNdKwa8SLVlWdAqgOQLxzPA_WY9m42E9ME";
+    //shared prefs
+    public static final String USER_INFO_PREFS= "user_info";
+    public static final String USER_ID_PREFS = "user_ID";
+    public static final String TOKEN_PREFS= "token";
+
 
 }
