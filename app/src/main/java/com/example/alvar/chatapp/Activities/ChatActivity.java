@@ -516,6 +516,7 @@ public class ChatActivity extends AppCompatActivity {
         dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(typingStateMap);
 
     }
+
     /**
      * when attach file button is pressed
      */
@@ -582,7 +583,6 @@ public class ChatActivity extends AppCompatActivity {
 
         builder.show();
     }
-
 
     /**
      * check permission for reading internal docs and media only so far
@@ -729,6 +729,7 @@ public class ChatActivity extends AppCompatActivity {
                     //we parse it to String type.
                     String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    notify = true;
                     //send message here
                     uploadMessageToDb(fileURLInFirebase, "pdf");
 
@@ -782,6 +783,7 @@ public class ChatActivity extends AppCompatActivity {
                     String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
                     //send message here
+                    notify = true;
                     uploadMessageToDb(fileURLInFirebase, "docx");
 
                 } else {
@@ -835,6 +837,7 @@ public class ChatActivity extends AppCompatActivity {
                     String imageURLInFirebase = imageUri.toString();
                     Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
                     //send message here
+                    notify = true;
                     uploadMessageToDb(imageURLInFirebase, getString(R.string.image_db));
 
                 } else {
@@ -907,26 +910,55 @@ public class ChatActivity extends AppCompatActivity {
 
         chatProgressBar.setVisibility(View.INVISIBLE);
 
-        notificationMethod(messageInfo);
+        sendNotification(messageInfo, messageType);
          
 
     }
 
-    private void notificationMethod(String messageInfo) {
+    /**
+     * method is the one right before pushing the notification to the server
+     * (here we fetch user information and set the message text to be shown in the recipient's notification)
+     * @param messageInfo
+     * @param messageType
+     */
+    private void sendNotification(String messageInfo, String messageType) {
 
-        final String msg = messageInfo;
+        //first we set the text message to be delivered depending on the type of message the user sends
+
+        switch (messageType){
+            case "map":
+                messageInfo = "Location";
+                break;
+            case "docx":
+                messageInfo = "Document";
+                break;
+            case "pdf":
+                messageInfo = "PDF";
+                break;
+            case "image":
+                messageInfo = "Photo";
+                break;
+        }
+
+        //here we have the message to be sent
+         final String msg = messageInfo;
 
         dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                if (notify){
-                    sendNotification(contactID, user.getName(), msg);
-                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT username " + user.getName() );
-                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT contactID " + contactID );
-                    Log.d(TAG, "onDataChange: NOTIFICATION  SENT message " + msg );
+                if (dataSnapshot.exists()){
+                    
+                    User user = dataSnapshot.getValue(User.class);
+                    if (notify){
+
+                        pushNotificationToServer(contactID, user.getName(), msg);
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName() );
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID );
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg );
+                    }
+                    notify = false;
                 }
-                notify = false;
+                
 
             }
 
@@ -937,7 +969,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void sendNotification(final String contactID, final String name, final String msg) {
+    private void pushNotificationToServer(final String contactID, final String name, final String msg) {
 
        dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
            @Override
@@ -945,10 +977,10 @@ public class ChatActivity extends AppCompatActivity {
                if (dataSnapshot.exists()){
 
                    Token deviceToken = dataSnapshot.getValue(Token.class);
-                   Log.d(TAG, "onDataChange: token retrieved from firebase: " + deviceToken.getToken() );
+                   Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken() );
 
                    Data data = new Data(contactID ,  msg, name,  currentUserID );
-                   Log.d(TAG, "onDataChange: message to be sent: " + data.getMessage());
+                   Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
 
                    PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
 
@@ -967,11 +999,7 @@ public class ChatActivity extends AppCompatActivity {
 
                                }
                            });
-               } else {
-                   Toast.makeText(ChatActivity.this, "error fetching other user's token", Toast.LENGTH_SHORT).show();
                }
-               
-               
            }
 
            @Override
@@ -1024,6 +1052,7 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
             chatProgressBar.setVisibility(View.INVISIBLE);
+            notify = true;
             getUserDetails();
             uploadMessageToDb(getString(R.string.sharing_location), "map");
         }
@@ -1275,33 +1304,3 @@ public class ChatActivity extends AppCompatActivity {
 
 }
 
-
-   /* Query query = tokensNodeRef.orderByKey().equalTo(contactID);
-
-        query.addValueEventListener(new ValueEventListener() {
-@Override
-public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-        for (DataSnapshot snapshot: dataSnapshot.getChildren()){
-
-        Token token = snapshot.getValue(Token.class);
-
-        Data data = new Data(contactID , name+": " + msg, "New message",  currentUserID );
-
-        PushNotification pushNotification = new PushNotification(data, token.getToken());
-
-        apiService.sendNotification(pushNotification)
-        .enqueue(new Callback<ResponseFCM>() {
-@Override
-public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
-        if (response.code() == 200){
-        Toast.makeText(ChatActivity.this, "yep!!!!", Toast.LENGTH_SHORT).show();
-        }
-
-        }
-
-@Override
-public void onFailure(Call<ResponseFCM> call, Throwable t) {
-
-        }
-        });*/

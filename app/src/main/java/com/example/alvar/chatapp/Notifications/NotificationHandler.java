@@ -6,10 +6,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 
+import com.example.alvar.chatapp.Activities.MainActivity;
 import com.example.alvar.chatapp.R;
 
 import androidx.annotation.RequiresApi;
@@ -19,10 +21,12 @@ public class NotificationHandler extends ContextWrapper {
 
     private NotificationManager manager;
 
-    public static final String CHANNEL_HIGH_NAME="1";
-    public static final String CHANNEL_LOW_NAME="2";
-    private final String CHANNEL_HIGH_ID="HIGH CHANNEL";
-    private final String CHANNEL_LOW_ID="LOW CHANNEL";
+    public static final String CHANNEL_HIGH_NAME = "1";
+    public static final String CHANNEL_LOW_NAME = "2";
+    private final String CHANNEL_HIGH_ID = "HIGH CHANNEL";
+    private final String CHANNEL_LOW_ID = "LOW CHANNEL";
+    public final int GROUP_ID = 100;
+    private final String GROUP_NAME = "GROUP NAME";
 
 
     public NotificationHandler(Context context) {
@@ -51,18 +55,18 @@ public class NotificationHandler extends ContextWrapper {
 
             getNotificationManager().createNotificationChannel(channelHigh);
 
+
+            //----------------------- CHANNEL 2-----------------------------//
+
             //Lets create low channel
-            /*NotificationChannel lowChannel = new NotificationChannel(CHANNEL_LOW_ID ,
+            NotificationChannel lowChannel = new NotificationChannel(CHANNEL_LOW_ID ,
                                                         CHANNEL_LOW_NAME, NotificationManager.IMPORTANCE_LOW);
 
             lowChannel.enableLights(true);
             lowChannel.enableVibration(true);
             lowChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-            Uri sound2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            lowChannel.setSound(sound2, null);
 
-
-            getNotificationManager().createNotificationChannel(lowChannel);*/
+            getNotificationManager().createNotificationChannel(lowChannel);
         }
 
 
@@ -97,15 +101,13 @@ public class NotificationHandler extends ContextWrapper {
                     .setContentIntent(pendingIntent)
                     .setSmallIcon(R.drawable.icon_message_notification)
                     .setColor(getColor(R.color.color_blue_light))
-                    .setShowWhen(true)
+                    .setGroup(GROUP_NAME)
                     .setAutoCancel(true);
         }
 
         return  null;
 
     }
-
-
 
     private Notification.Builder createNotificationWithOutChannel(String title, String message, PendingIntent pendingIntent){
 
@@ -115,6 +117,28 @@ public class NotificationHandler extends ContextWrapper {
                     .setContentIntent(pendingIntent)
                     .setSmallIcon(R.drawable.icon_message_notification)
                     .setAutoCancel(true);
+
+    }
+
+    public void showGroupNotification(boolean highImportance){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+
+            String channelId = (highImportance) ? CHANNEL_HIGH_ID : CHANNEL_LOW_ID;
+            Notification groupNotification = new Notification.Builder(getApplicationContext(), channelId)
+                    .setSmallIcon(R.drawable.icon_message_notification )
+                    .setGroup(GROUP_NAME)
+                    .setContentIntent(pendingIntent)
+                    .setGroupSummary(true)
+                    .setAutoCancel(true)
+                    .build();
+            getNotificationManager().notify(GROUP_ID, groupNotification);
+
+        }
 
     }
 }

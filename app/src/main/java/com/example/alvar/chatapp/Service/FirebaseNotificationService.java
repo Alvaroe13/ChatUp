@@ -20,6 +20,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Random;
+
 import androidx.annotation.NonNull;
 
 import static com.example.alvar.chatapp.Constant.CONTACT_ID;
@@ -39,6 +41,10 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     private String userIDPrefs;
     private  String userID2;
 
+    /**
+     * method triggered whenever there's a new instance of this app therefore a new token is generated
+     * @param token
+     */
     @Override
     public void onNewToken(@NonNull String token) {
         Log.d(TAG, "onNewToken: token: " + token);
@@ -92,10 +98,15 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     }
 
 
-
+    /**
+     * this method is triggered whenever there is an incoming notification from the cloud messaging service
+     * @param remoteMessage
+     */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "message received NOTIFICATION RECEIVED");
+
+
 
         userFirebase = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -124,9 +135,14 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
     }
 
+    /**
+     * this method is in charge of pushing the pop up notification for an incoming notification ONLY.
+     * @param remoteMessage
+     */
     private void sendNotification(RemoteMessage remoteMessage) {
 
-        int counter = 0;
+        Random random = new Random();
+        int notificationID = random.nextInt();
 
         String senderID = remoteMessage.getData().get("senderID");
         String message = remoteMessage.getData().get("message");
@@ -146,12 +162,11 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         NotificationHandler notificationHandler = new NotificationHandler(this);
         Notification.Builder builder = notificationHandler.createNotification(title, message, pendingIntent, true);
 
-        notificationHandler.getNotificationManager().notify(++counter , builder.build());
+        notificationHandler.getNotificationManager().notify(1, builder.build());
+    //    notificationHandler.showGroupNotification(true);
     }
         /* intent.putExtra( CONTACT_IMAGE, image);
         intent.putExtra( CONTACT_NAME, contactName);*/
-        /*  Random random = new Random();
-        int notificationID = random.nextInt();*/
 }
 
 
