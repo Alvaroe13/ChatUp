@@ -127,7 +127,7 @@ public class ChatActivity extends AppCompatActivity {
     private UserLocation userLocation;
     private FusedLocationProviderClient locationProvider;
     private NotificationAPI apiService;
-    private  boolean notify;
+    private boolean notify;
 
 
     @Override
@@ -139,7 +139,7 @@ public class ChatActivity extends AppCompatActivity {
         initFirestore();
         initLocationProvider();
         getIncomingIntent();
-     //   setToolbar("", true);
+        //   setToolbar("", true);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -150,7 +150,6 @@ public class ChatActivity extends AppCompatActivity {
         retrofit();
 
     }
-
 
 
     private void retrofit() {
@@ -176,7 +175,7 @@ public class ChatActivity extends AppCompatActivity {
     private void getIncomingIntent() {
 
         if (getIntent() != null) {
-            contactID = getIntent().getStringExtra(CONTACT_ID);            
+            contactID = getIntent().getStringExtra(CONTACT_ID);
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
             Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
@@ -199,16 +198,16 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void fetchInfoDB(String contactID){
+    private void fetchInfoDB(String contactID) {
 
         dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     User user = dataSnapshot.getValue(User.class);
                     String username = user.getName();
                     String image = user.getImageThumbnail();
-                    setToolbar("",username, image, true);
+                    setToolbar("", username, image, true);
 
                 }
             }
@@ -254,15 +253,15 @@ public class ChatActivity extends AppCompatActivity {
         //here we set info from bundles into the ui elements in custom toolbar
         usernameToolbarChat.setText(contactUsername);
 
-            //GLIDE
+        //GLIDE
         RequestOptions options = new RequestOptions()
-                    .centerCrop()
-                    .error(R.drawable.profile_image);
+                .centerCrop()
+                .error(R.drawable.profile_image);
 
         Glide.with(getApplicationContext())
-                    .setDefaultRequestOptions(options)
-                    .load(contactProfPic)
-                    .into(imageProfile);
+                .setDefaultRequestOptions(options)
+                .load(contactProfPic)
+                .into(imageProfile);
 
         toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -270,7 +269,7 @@ public class ChatActivity extends AppCompatActivity {
                 goToMain();
             }
         });
-      
+
 
     }
 
@@ -390,31 +389,31 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void retrieveMessages() {
 
-            dbChatsNodeRef.child(currentUserID).child(contactID)
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        dbChatsNodeRef.child(currentUserID).child(contactID)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            messagesList.clear();
+                        messagesList.clear();
 
-                            if (dataSnapshot.exists()){
+                        if (dataSnapshot.exists()) {
 
-                                for (DataSnapshot info : dataSnapshot.getChildren()) {
+                            for (DataSnapshot info : dataSnapshot.getChildren()) {
 
-                                    Messages messages = info.getValue(Messages.class);
+                                Messages messages = info.getValue(Messages.class);
 
-                                    messagesList.add(messages);
-                                    adapter.notifyDataSetChanged();
-                                    recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
-                                }
+                                messagesList.add(messages);
+                                adapter.notifyDataSetChanged();
+                                recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                             }
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
+                    }
+                });
     }
 
     @Override
@@ -567,13 +566,13 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     case 3:
                         Log.d(TAG, "onClick: share location option pressed");
-                        if (getLocationPermission()){
+                        if (getLocationPermission()) {
                             shareLocationPressed();
                         }
                         break;
                     case 4:
                         Log.d(TAG, "onClick: take photo option selected");
-                        if (checkCameraPermission()){
+                        if (checkCameraPermission()) {
                             openCamera();
                         }
                         break;
@@ -594,10 +593,10 @@ public class ChatActivity extends AppCompatActivity {
     private Boolean checkPermissions() {
         Log.d(TAG, "checkPermissions: called");
 
-        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE };
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                        permissions[0]) == PackageManager.PERMISSION_GRANTED) {
+                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
             ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
@@ -607,19 +606,20 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * this method check if users camera and create files in device are granted or not, if not we ask for them
+     *
      * @return
      */
-    private Boolean checkCameraPermission(){
+    private Boolean checkCameraPermission() {
 
         String[] cameraPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
 
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext() ,
-                cameraPermissions[0]) == PackageManager.PERMISSION_GRANTED  &&
-                                   ContextCompat.checkSelfPermission(this.getApplicationContext() ,
-                                           cameraPermissions[1]) == PackageManager.PERMISSION_GRANTED ){
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                cameraPermissions[0]) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                        cameraPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            ActivityCompat.requestPermissions(ChatActivity.this, cameraPermissions , CAMERA_PERMISSION_REQUEST);
+            ActivityCompat.requestPermissions(ChatActivity.this, cameraPermissions, CAMERA_PERMISSION_REQUEST);
             return false;
         }
 
@@ -648,45 +648,43 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
-                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE
-                          ||  requestCode == PERMISSIONS_REQUEST_ENABLE_GPS  && resultCode == RESULT_OK    ) {
+                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE  ) {
 
-            //we store the file (image, pdf, word) selected in this var of URI type.
-            try {
-                file = data.getData();
+            if (resultCode == RESULT_OK) {
+                //we store the file (image, pdf, word) selected in this var of URI type.
 
-                switch (requestCode) {
-                    case CHAT_IMAGE_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        savePhotoInStorage(file);
-                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
-                        break;
-                    case CHAT_PDF_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        savePDFInStorage(file);
-                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
-                        break;
-                    case CHAT_DOCX_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        saveWordInStorage(file);
-                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
-                        break;
-                    case PERMISSIONS_REQUEST_ENABLE_GPS:
-                        Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        Toast.makeText(this, "Now you can share your location", Toast.LENGTH_SHORT).show();
-                        getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
-                        break;
-                    case OPEN_CAMERA_REQUEST_CODE:
-                        Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
-                        //TODO pending to finnish: send photo in chat
-                        break;
+                try {
+                    file = data.getData();
+
+                    switch (requestCode) {
+                        case CHAT_IMAGE_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            savePhotoInStorage(file);
+                            break;
+                        case CHAT_PDF_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            savePDFInStorage(file);
+                            break;
+                        case CHAT_DOCX_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            saveWordInStorage(file);
+                            break;
+                        case OPEN_CAMERA_REQUEST_CODE:
+                            Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
+                            //TODO pending to finnish: send photo in chat
+                            break;
+                    }
+
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "onActivityResult: error: " + e.getMessage());
                 }
 
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-                Log.d(TAG, "onActivityResult: error: " + e.getMessage());
             }
+
 
         }
 
@@ -718,9 +716,9 @@ public class ChatActivity extends AppCompatActivity {
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
 
                 if (!task.isSuccessful()) {
-
                     throw task.getException();
                 }
+
                 return fileLocation.getDownloadUrl();
             }
         }).addOnCompleteListener(new OnCompleteListener<Uri>() {
@@ -915,13 +913,14 @@ public class ChatActivity extends AppCompatActivity {
         chatProgressBar.setVisibility(View.INVISIBLE);
 
         sendNotification(messageInfo, messageType);
-         
+
 
     }
 
     /**
      * method is the one right before pushing the notification to the server
      * (here we fetch user information and set the message text to be shown in the recipient's notification)
+     *
      * @param messageInfo
      * @param messageType
      */
@@ -929,7 +928,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //first we set the text message to be delivered depending on the type of message the user sends
 
-        switch (messageType){
+        switch (messageType) {
             case "map":
                 messageInfo = "Location";
                 break;
@@ -945,24 +944,24 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         //here we have the message to be sent
-         final String msg = messageInfo;
+        final String msg = messageInfo;
 
         dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    
+                if (dataSnapshot.exists()) {
+
                     User user = dataSnapshot.getValue(User.class);
-                    if (notify){
+                    if (notify) {
 
                         pushNotificationToServer(contactID, user.getName(), msg);
-                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName() );
-                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID );
-                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg );
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName());
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID);
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg);
                     }
                     notify = false;
                 }
-                
+
 
             }
 
@@ -975,43 +974,43 @@ public class ChatActivity extends AppCompatActivity {
 
     private void pushNotificationToServer(final String contactID, final String name, final String msg) {
 
-       dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               if (dataSnapshot.exists()){
+        dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
 
-                   Token deviceToken = dataSnapshot.getValue(Token.class);
-                   Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken() );
+                    Token deviceToken = dataSnapshot.getValue(Token.class);
+                    Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
-                   Data data = new Data(contactID ,  msg, name,  currentUserID );
-                   Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
+                    Data data = new Data(contactID, msg, name, currentUserID);
+                    Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
 
-                   PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
+                    PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
 
-                   apiService.sendNotification(pushNotification)
-                           .enqueue(new Callback<ResponseFCM>() {
-                               @Override
-                               public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
-                                   if (response.code() == 200){
-                                       Log.d(TAG, "onResponse: RETROFIT notification  sent ");
-                                   }
+                    apiService.sendNotification(pushNotification)
+                            .enqueue(new Callback<ResponseFCM>() {
+                                @Override
+                                public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
+                                    if (response.code() == 200) {
+                                        Log.d(TAG, "onResponse: RETROFIT notification  sent ");
+                                    }
 
-                               }
+                                }
 
-                               @Override
-                               public void onFailure(Call<ResponseFCM> call, Throwable t) {
+                                @Override
+                                public void onFailure(Call<ResponseFCM> call, Throwable t) {
 
-                               }
-                           });
-               }
-           }
+                                }
+                            });
+                }
+            }
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-           }
-       });
- 
+            }
+        });
+
     }
 
     @Override
@@ -1022,7 +1021,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void goToMain() {
         Intent intent = new Intent(this, MainActivity.class);
-      //  intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //  intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
@@ -1040,7 +1039,7 @@ public class ChatActivity extends AppCompatActivity {
     private void checkLocationStatus() {
 
         Log.d(TAG, "checkLocationStatus: called as soon as the chat room is open");
-        if (isGPSEnabled() ) {
+        if (isGPSEnabled()) {
             Log.d(TAG, "checkLocationStatus: get details as soon as chat room is open");
             getUserDetails();
         }
@@ -1049,15 +1048,15 @@ public class ChatActivity extends AppCompatActivity {
 
     private void shareLocationPressed() {
         Log.d(TAG, "shareLocationPressed: called when share location pressed in alert dialog");
-        if (!isGPSEnabled()){
+        if (!isGPSEnabled()) {
             buildAlertMessageNoGps();
-        }  else if ( locationPermissionGranted){
+        } else if (locationPermissionGranted) {
             Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
             chatProgressBar.setVisibility(View.INVISIBLE);
             notify = true;
             getUserDetails();
             uploadMessageToDb(getString(R.string.sharing_location), "map");
-            
+
         } else {
             //if the app doesn't have the user permission we ask for it
             getLocationPermission();
@@ -1094,7 +1093,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void buildAlertMessageNoGps() {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
+        builder.setMessage(getString(R.string.dialog_location))
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -1187,7 +1186,7 @@ public class ChatActivity extends AppCompatActivity {
                         startLocationService();
 
                     } else {
-                      //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
+                        //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onComplete: db retrieving null again");
                     }
                 }
@@ -1236,7 +1235,7 @@ public class ChatActivity extends AppCompatActivity {
                     locationPermissionGranted = true;
                     Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
                     getUserDetails();
-                  //  uploadMessageToDb(getString(R.string.sharing_location), "map");
+                    //  uploadMessageToDb(getString(R.string.sharing_location), "map");
                 } else {
                     Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
                 }
@@ -1270,9 +1269,9 @@ public class ChatActivity extends AppCompatActivity {
                 break;
             case CAMERA_PERMISSION_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                        grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED ) {
+                        grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     openCamera();
-                } else{
+                } else {
                     Log.d(TAG, "onRequestPermissionsResult: something went wrong with the permissions");
                     Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
                 }

@@ -153,6 +153,7 @@
     <string name="read_storage_enabled">Now yo can send Photos and Documents</string>
     <string name="open_camera">Camera</string>
     <string name="place_username">Username</string>
+    <string name="dialog_location">This application requires GPS to work properly, do you want to enable it?</string>
 
 
 </resources>
