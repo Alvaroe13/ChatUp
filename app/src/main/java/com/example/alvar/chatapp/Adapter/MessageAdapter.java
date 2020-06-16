@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
@@ -341,8 +342,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             //let's make sure every time we sent a file Glide retrieves the Doc image template
             // to avoid being one file replaced when other is send after
+
+            //image template
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.file);
+
             Glide.with(mContext.getApplicationContext())
-                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .setDefaultRequestOptions(options)
+                    .load("")
                     .into(messageViewHolder.sendImageRight);
 
             //if user clicks on the file it opens
@@ -370,8 +378,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
             //let's make sure every time we sent a file Glide retrieves the Doc image template
             // to avoid being one file replaced when other is send after
+
+            //image template
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.file);
+
             Glide.with(mContext.getApplicationContext())
-                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .setDefaultRequestOptions(options)
+                    .load("")
                     .into(messageViewHolder.sendImageLeft);
             //if user clicks on the file it opens
             messageViewHolder.sendImageLeft.setOnClickListener(new View.OnClickListener() {
@@ -593,7 +608,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
-    // -------------------------------------------- maps features -------------------------------
+    // -------------------------------------------- maps related -------------------------------
 
     private void showMapLayout(String messageSenderID, String messageInfo, MessageViewHolder messageViewHolder , final int position) {
 
