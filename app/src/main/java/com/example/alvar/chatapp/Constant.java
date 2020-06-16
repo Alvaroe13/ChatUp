@@ -49,6 +49,16 @@ public class Constant {
     public static final String USER_INFO_PREFS= "user_info";
     public static final String USER_ID_PREFS = "user_ID";
     public static final String TOKEN_PREFS= "token";
+    //File (image, pdf, word) to be uploaded to firebase storage
+    public static final String PHOTO_FOLDER_REF= "photo_for_chat";
+    public static final String PHOTO_FILE_EXTENSION= ".jpg";
+    public static final String PHOTO_MESSAGE_TYPE= "image";
+    public static final String PDF_FOLDER_REF= "pdf_for_chat";
+    public static final String PDF_FILE_EXTENSION= ".pdf";
+    public static final String PDF_MESSAGE_TYPE= "pdf";
+    public static final String WORD_DOC_FOLDER_REF= "word_docs_for_chat";
+    public static final String WORD_DOC_FILE_EXTENSION= ".docx";
+    public static final String WORD_DOC_MESSAGE_TYPE= "docx";
 
 
 }

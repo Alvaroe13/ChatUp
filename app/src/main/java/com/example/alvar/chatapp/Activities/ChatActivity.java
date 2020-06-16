@@ -84,14 +84,23 @@ import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Constant.PDF_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.PDF_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.PDF_MESSAGE_TYPE;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.example.alvar.chatapp.Constant.PHOTO_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.PHOTO_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.PHOTO_MESSAGE_TYPE;
 import static com.example.alvar.chatapp.Constant.READ_EXTERNAL_STORAGE_REQUEST_CODE;
 import static com.example.alvar.chatapp.Constant.SELECT_IMAGE;
 import static com.example.alvar.chatapp.Constant.SELECT_PDF;
 import static com.example.alvar.chatapp.Constant.SELECT_WORD_DOCUMENT;
 import static com.example.alvar.chatapp.Constant.WORD_DOCUMENT_OPTION;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_MESSAGE_TYPE;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -660,17 +669,17 @@ public class ChatActivity extends AppCompatActivity {
                         case CHAT_IMAGE_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            savePhotoInStorage(file);
+                            saveFileInStorage(file, PHOTO_FOLDER_REF , PHOTO_FILE_EXTENSION , PHOTO_MESSAGE_TYPE);
                             break;
                         case CHAT_PDF_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            savePDFInStorage(file);
+                            saveFileInStorage(file, PDF_FOLDER_REF , PDF_FILE_EXTENSION , PDF_MESSAGE_TYPE );
                             break;
                         case CHAT_DOCX_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            saveWordInStorage(file);
+                            saveFileInStorage(file, WORD_DOC_FOLDER_REF , WORD_DOC_FILE_EXTENSION , WORD_DOC_MESSAGE_TYPE);
                             break;
                         case OPEN_CAMERA_REQUEST_CODE:
                             Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
@@ -692,23 +701,26 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of uploading pdf file selected by user into firebase storage
-     *
-     * @param file
+     * method in charge of saving file ( photo, pdf, document) in firebase storage
+     * @param fileToUpload
+     * @param folderRef
+     * @param fileExtension
+     * @param messageType
      */
-    private void savePDFInStorage(Uri file) {
+    private void saveFileInStorage(final Uri fileToUpload, final String folderRef, final String fileExtension, final String messageType ){
 
+        Log.d(TAG, "saveFileInStorage: TRIGGERED!!!!!!!!!!!!!");
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
+        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child(folderRef);
 
         messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
         //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".pdf");
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + fileExtension );
         // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
+        uploadTask = fileLocation.putFile(fileToUpload);
 
         //lets check if image was uploaded correctly in the firebase storage service
         uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -733,60 +745,7 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
                     notify = true;
                     //send message here
-                    uploadMessageToDb(fileURLInFirebase, "pdf");
-
-                } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-    }
-
-    /**
-     * method in charge of uploading word file selected by user into firebase storage
-     *
-     * @param file
-     */
-    private void saveWordInStorage(Uri file) {
-
-        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
-
-        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
-
-        String messagePushKey = messagePushID.getKey();
-
-        //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".docx");
-        // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
-
-        //lets check if image was uploaded correctly in the firebase storage service
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-
-                if (!task.isSuccessful()) {
-
-                    throw task.getException();
-                }
-                return fileLocation.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-
-                if (task.isSuccessful()) {
-                    // here we get the final image URI from storage
-                    Uri fileUri = task.getResult();
-                    //we parse it to String type.
-                    String fileURLInFirebase = fileUri.toString();
-                    Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
-                    //send message here
-                    notify = true;
-                    uploadMessageToDb(fileURLInFirebase, "docx");
+                    uploadMessageToDb(fileURLInFirebase, messageType );
 
                 } else {
                     String error = task.getException().toString();
@@ -798,61 +757,7 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * file in charge of uploading photo from device to firebase
-     *
-     * @param file
-     */
-    private void savePhotoInStorage(Uri file) {
 
-        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("photo_for_chat");
-
-        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
-
-        String messagePushKey = messagePushID.getKey();
-
-        //we store picture inside "photo_for_chat" folder and add extension ".jpg" to convert it into an image file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".jpg");
-        // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
-
-        //lets check if image was uploaded correctly in the firebase storage service
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-
-                if (!task.isSuccessful()) {
-
-                    throw task.getException();
-                }
-                return fileLocation.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-
-                if (task.isSuccessful()) {
-                    // here we get the final image URI from storage
-                    Uri imageUri = task.getResult();
-                    //we parse it to String type.
-                    String imageURLInFirebase = imageUri.toString();
-                    Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
-                    //send message here
-                    notify = true;
-                    uploadMessageToDb(imageURLInFirebase, getString(R.string.image_db));
-
-                } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
-                    Log.i(TAG, "onComplete: error");
-                }
-
-            }
-        });
-
-
-    }
 
     /**
      * method in charge of uploading message (either text, image, or file type) in database
@@ -1027,7 +932,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-    // ---------------------------------------------- Maps permissions ------------------------------  //
+    // ---------------------------------------------- Maps related ------------------------------  //
 
     /**
      * if GPS is enabled as soon as we open the chat room we call method getUsers()
