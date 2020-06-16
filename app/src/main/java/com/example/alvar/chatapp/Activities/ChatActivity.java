@@ -567,7 +567,9 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     case 3:
                         Log.d(TAG, "onClick: share location option pressed");
-                        shareLocationPressed();
+                        if (getLocationPermission()){
+                            shareLocationPressed();
+                        }
                         break;
                     case 4:
                         Log.d(TAG, "onClick: take photo option selected");
@@ -647,7 +649,7 @@ public class ChatActivity extends AppCompatActivity {
 
         if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
                 requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE
-                                                            && resultCode == RESULT_OK && data != null) {
+                          ||  requestCode == PERMISSIONS_REQUEST_ENABLE_GPS  && resultCode == RESULT_OK    ) {
 
             //we store the file (image, pdf, word) selected in this var of URI type.
             try {
@@ -672,7 +674,9 @@ public class ChatActivity extends AppCompatActivity {
                     case PERMISSIONS_REQUEST_ENABLE_GPS:
                         Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
                         chatProgressBar.setVisibility(View.VISIBLE);
+                        Toast.makeText(this, "Now you can share your location", Toast.LENGTH_SHORT).show();
                         getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
+                        break;
                     case OPEN_CAMERA_REQUEST_CODE:
                         Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
                         //TODO pending to finnish: send photo in chat
@@ -1047,14 +1051,16 @@ public class ChatActivity extends AppCompatActivity {
         Log.d(TAG, "shareLocationPressed: called when share location pressed in alert dialog");
         if (!isGPSEnabled()){
             buildAlertMessageNoGps();
-        }  else if ( !locationPermissionGranted){
-            getLocationPermission();
-        } else {
+        }  else if ( locationPermissionGranted){
             Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
             chatProgressBar.setVisibility(View.INVISIBLE);
             notify = true;
             getUserDetails();
             uploadMessageToDb(getString(R.string.sharing_location), "map");
+            
+        } else {
+            //if the app doesn't have the user permission we ask for it
+            getLocationPermission();
         }
 
     }
@@ -1103,7 +1109,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * location permission for the app
      */
-    private void getLocationPermission() {
+    private boolean getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
@@ -1115,12 +1121,14 @@ public class ChatActivity extends AppCompatActivity {
             locationPermissionGranted = true;
             Log.d(TAG, "getLocationPermission: apps location permission granted");
             getUserDetails();
+            return true;
         } else {
             Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
+        return false;
     }
 
     /**
@@ -1179,7 +1187,7 @@ public class ChatActivity extends AppCompatActivity {
                         startLocationService();
 
                     } else {
-                        Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
+                      //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onComplete: db retrieving null again");
                     }
                 }
@@ -1228,7 +1236,7 @@ public class ChatActivity extends AppCompatActivity {
                     locationPermissionGranted = true;
                     Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
                     getUserDetails();
-                    uploadMessageToDb(getString(R.string.sharing_location), "map");
+                  //  uploadMessageToDb(getString(R.string.sharing_location), "map");
                 } else {
                     Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
                 }
