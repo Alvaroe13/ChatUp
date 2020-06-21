@@ -7,19 +7,28 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.alvar.chatapp.Activities.ChatActivity;
+import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
 import com.example.alvar.chatapp.Notifications.Token;
+import com.firebase.ui.database.FirebaseArray;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import androidx.annotation.NonNull;
@@ -119,14 +128,17 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         //params in .get() must match with the one's in our Data model.
         String senderID = remoteMessage.getData().get("senderID");
         String userID = remoteMessage.getData().get("recipientUserID");
+        String messageID = remoteMessage.getData().get("messageID");
 
 
         if (userFirebase != null && !senderID.equals(userID2) ){
             if (!getUserIDPrefs().equals(userID)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                    sendNotification(remoteMessage);
+                    //sendNotification(remoteMessage);
+                    messageSeenState(remoteMessage, messageID);
                 }else{
-                    sendNotification(remoteMessage);
+                 //   sendNotification(remoteMessage);
+                    messageSeenState(remoteMessage, messageID);
 
                 }
             }
@@ -147,10 +159,12 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         String senderID = remoteMessage.getData().get("senderID");
         String message = remoteMessage.getData().get("message");
         String title = remoteMessage.getData().get("title");
+        String messageID = remoteMessage.getData().get("messageID");
 
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED senderID: " + senderID);
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED message: " + message);
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED title: " + title);
+        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED messageID: " + messageID);
 
 
         Intent intent = new Intent(this, ChatActivity.class);
@@ -167,6 +181,36 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     }
         /* intent.putExtra( CONTACT_IMAGE, image);
         intent.putExtra( CONTACT_NAME, contactName);*/
+
+    private void messageSeenState(final RemoteMessage remoteMessage, final String messageID){
+
+        Log.d(TAG, "messageSeenState: enters here");
+
+
+      DatabaseReference dbChatsRef = database.getReference().child("Chats").child("Messages");
+
+      dbChatsRef.child(messageID).child("seen").addValueEventListener(new ValueEventListener() {
+          @Override
+          public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+         
+              if (dataSnapshot.exists()){
+                  if (dataSnapshot.getValue().equals(false)){
+                      Log.d(TAG, "messageSeenState: seen false ");
+                      sendNotification(remoteMessage);
+                  }else{
+                      Log.d(TAG, "messageSeenState: seen true ");
+                  }
+              }
+          }
+
+          @Override
+          public void onCancelled(@NonNull DatabaseError databaseError) {
+
+          }
+      });
+
+
+    }
 }
 
 

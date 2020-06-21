@@ -113,6 +113,7 @@ public class ChatActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef;
     private UploadTask uploadTask;
+    private ValueEventListener seenListener;
     //Firestore
     private FirebaseFirestore mDb;
     private DocumentReference userLocationRef, userDocRef;
@@ -157,12 +158,8 @@ public class ChatActivity extends AppCompatActivity {
         toolbarPressed();
         attachFileButtonPressed();
         retrofit();
+        seenMessage();
 
-    }
-
-
-    private void retrofit() {
-        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
     }
 
     private void initLocationProvider() {
@@ -398,8 +395,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void retrieveMessages() {
 
-        dbChatsNodeRef.child(currentUserID).child(contactID)
-                .addValueEventListener(new ValueEventListener() {
+        dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -411,7 +407,17 @@ public class ChatActivity extends AppCompatActivity {
 
                                 Messages messages = info.getValue(Messages.class);
 
-                                messagesList.add(messages);
+                                try {
+
+                                    if(messages.getSenderID().equals(currentUserID) && messages.getReceiverID().equals(contactID) ||
+                                            messages.getSenderID().equals(contactID) && messages.getReceiverID().equals(currentUserID) ){
+
+                                        messagesList.add(messages);
+                                    }
+                                }catch (Exception e){
+                                    Log.e(TAG, "onDataChange: error: " + e.getMessage() );
+                                }
+
                                 adapter.notifyDataSetChanged();
                                 recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                             }
@@ -425,12 +431,46 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * method in charge of setting true in seen field when receiver has seen the message.
+     */
+    private void seenMessage() {
+
+        seenListener =  dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        Messages messages = snapshot.getValue(Messages.class);
+                        try {
+                            if (messages.getReceiverID().equals(currentUserID) && messages.getSenderID().equals(contactID)){
+                                HashMap<String, Object> hashMap = new HashMap<>();
+                                hashMap.put("seen", true);
+                                snapshot.getRef().updateChildren(hashMap);
+                            }
+                        }catch (Exception e){
+                            Log.e(TAG, "onDataChange: exception: " + e.getMessage() );
+                        }
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
         updateDateTime(getString(R.string.offline_db));
         typingState((getString(R.string.no_db)));
+        dbChatsNodeRef.removeEventListener(seenListener);
     }
 
     /**
@@ -767,10 +807,6 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void uploadMessageToDb(String messageInfo, String messageType) {
 
-        //first we create a ref for sender and receiver to be later saved in the db
-        String messageSenderRef = currentUserID + "/" + contactID;
-        String messageReceiverRef = contactID + "/" + currentUserID;
-
         String lastMessageTime, lastMessageDate;
         Calendar calendar = Calendar.getInstance();
 
@@ -798,8 +834,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //this map is for the info shown in the "Messages" node
         Map<String, Object> chatUsersInfo = new HashMap<>();
-        chatUsersInfo.put(messageSenderRef + "/" + messagePushKey, messageDetails);
-        chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey, messageDetails);
+        chatUsersInfo.put(messagePushKey, messageDetails);
 
         dbChatsNodeRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -808,7 +843,6 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i(TAG, "onComplete: successfully");
                 } else {
                     String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "error: " + error, Toast.LENGTH_SHORT).show();
                     Log.i(TAG, "onComplete: error: " + error);
                 }
 
@@ -817,10 +851,14 @@ public class ChatActivity extends AppCompatActivity {
 
         chatProgressBar.setVisibility(View.INVISIBLE);
 
-        sendNotification(messageInfo, messageType);
-
+        sendNotification(messageInfo, messageType, messagePushKey);
 
     }
+
+    private void retrofit() {
+        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
+    }
+
 
     /**
      * method is the one right before pushing the notification to the server
@@ -829,7 +867,7 @@ public class ChatActivity extends AppCompatActivity {
      * @param messageInfo
      * @param messageType
      */
-    private void sendNotification(String messageInfo, String messageType) {
+    private void sendNotification(String messageInfo, String messageType, final String messageID) {
 
         //first we set the text message to be delivered depending on the type of message the user sends
 
@@ -859,7 +897,7 @@ public class ChatActivity extends AppCompatActivity {
                     User user = dataSnapshot.getValue(User.class);
                     if (notify) {
 
-                        pushNotificationToServer(contactID, user.getName(), msg);
+                        pushNotificationToServer(contactID, user.getName(), msg, messageID);
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName());
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID);
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg);
@@ -877,7 +915,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void pushNotificationToServer(final String contactID, final String name, final String msg) {
+    private void pushNotificationToServer(final String contactID, final String name, final String msg, final String messageID) {
 
         dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -887,7 +925,7 @@ public class ChatActivity extends AppCompatActivity {
                     Token deviceToken = dataSnapshot.getValue(Token.class);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
-                    Data data = new Data(contactID, msg, name, currentUserID);
+                    Data data = new Data(contactID, msg, name, currentUserID, messageID);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
 
                     PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());

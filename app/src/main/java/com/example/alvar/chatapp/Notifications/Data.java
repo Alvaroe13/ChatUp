@@ -6,15 +6,17 @@ public class Data {
     private String message;
     private String title;
     private String senderID;
+    private String messageID;
 
     public Data() {
     }
 
-    public Data(String recipientUserID, String message, String title, String senderID)  {
+    public Data(String recipientUserID, String message, String title, String senderID, String messageID)  {
         this.recipientUserID = recipientUserID;
         this.message = message;
         this.title = title;
         this.senderID = senderID;
+        this.messageID = messageID;
     }
 
     public String getRecipientUserID() {
@@ -49,4 +51,11 @@ public class Data {
         this.senderID = senderID;
     }
 
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
 }
