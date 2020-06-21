@@ -1,8 +1,10 @@
 package com.example.alvar.chatapp;
 
+import androidx.annotation.NonNull;
+
 public class Constant {
 
-    //Const for options intent in Alert Dialog (image, pdf, word)
+    //Const for options intent in Alert Dialog in chat activity (image, pdf, word)
     public static final String IMAGE_OPTION = "image/*";
     public static final String SELECT_IMAGE = "SELECT IMAGE";
     public static final String PDF_OPTION = "application/pdf";
@@ -33,5 +35,30 @@ public class Constant {
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     // read file permission
     public static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 20;
+    //phone Login AND Register Activity
+    public static final String DEFAULT_EMAIL = "email";
+    public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
+    public static final String DEFAULT_IMAGE = "image";
+    public static final String DEFAULT_THUMBNAIL = "imgThumbnail";
+    public static final String DEFAULT_PASSWORD = "null";
+    // retrofit NOTIFICATION
+    public static final String BASE_URL = "https://fcm.googleapis.com";
+    public static final String CONTENT_TYPE = "application/json";
+    public static final String KEY_FCM = "AAAAhNQdtcA:APA91bHRs49seNR290a9-G5v98yAcXk96uLTb_096KKP4i-Av_YaMTsANcnJ2cP5XMZN4UCDUqq7dF6JxQdXhh_9o6QXQ7_vgHOPBYv-eowNdKwa8SLVlWdAqgOQLxzPA_WY9m42E9ME";
+    //shared prefs
+    public static final String USER_INFO_PREFS= "user_info";
+    public static final String USER_ID_PREFS = "user_ID";
+    public static final String TOKEN_PREFS= "token";
+    //File (image, pdf, word) to be uploaded to firebase storage
+    public static final String PHOTO_FOLDER_REF= "photo_for_chat";
+    public static final String PHOTO_FILE_EXTENSION= ".jpg";
+    public static final String PHOTO_MESSAGE_TYPE= "image";
+    public static final String PDF_FOLDER_REF= "pdf_for_chat";
+    public static final String PDF_FILE_EXTENSION= ".pdf";
+    public static final String PDF_MESSAGE_TYPE= "pdf";
+    public static final String WORD_DOC_FOLDER_REF= "word_docs_for_chat";
+    public static final String WORD_DOC_FILE_EXTENSION= ".docx";
+    public static final String WORD_DOC_MESSAGE_TYPE= "docx";
+
 
 }

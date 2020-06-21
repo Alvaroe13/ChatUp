@@ -1,6 +1,8 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -52,7 +54,11 @@ public class LoginActivity extends AppCompatActivity {
         initFirebase();
         BindUI();
         goToRegister();
+        buttonsUI();
 
+    }
+
+    private void buttonsUI(){
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,8 +77,6 @@ public class LoginActivity extends AppCompatActivity {
                     sigIn(email, password);
                 }
 
-
-
             }
         });
 
@@ -90,7 +94,6 @@ public class LoginActivity extends AppCompatActivity {
                 goToPhoneLogin();
             }
         });
-
 
     }
 
@@ -173,8 +176,8 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void getDeviceToken() {
 
-        String currentUserID = mAuth.getCurrentUser().getUid();
-        String deviceToken = FirebaseInstanceId.getInstance().getToken();
+        final String currentUserID = mAuth.getCurrentUser().getUid();
+        final String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
         //set token value id database's token child
         dbUsersNodeRef.child(currentUserID).child("token")
@@ -183,8 +186,6 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
-
-                    Toast.makeText(getApplicationContext(), getString(R.string.welcome), Toast.LENGTH_SHORT).show();
                     goToMain();
                 }
             }

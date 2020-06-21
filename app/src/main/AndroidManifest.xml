@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <!-- render map-->
     <uses-feature
@@ -79,9 +80,18 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-
         <service android:name=".Service.LocationService"
             android:stopWithTask="true">     <!-- to make sure service stops running when app closes -->
+        </service>
+
+        <!-- cloud messaging service -->
+        <service
+            android:name=".Service.FirebaseNotificationService"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+            </intent-filter>
         </service>
 
     </application>

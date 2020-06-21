@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,10 +23,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.Model.UserLocation;
+import com.example.alvar.chatapp.Notifications.Data;
+import com.example.alvar.chatapp.Notifications.NotificationAPI;
+import com.example.alvar.chatapp.Notifications.PushNotification;
+import com.example.alvar.chatapp.Notifications.ResponseFCM;
+import com.example.alvar.chatapp.Notifications.RetrofitClient;
+import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Service.LocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -65,6 +73,9 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
@@ -73,23 +84,34 @@ import static com.example.alvar.chatapp.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Constant.PDF_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.PDF_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.PDF_MESSAGE_TYPE;
 import static com.example.alvar.chatapp.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.example.alvar.chatapp.Constant.PHOTO_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.PHOTO_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.PHOTO_MESSAGE_TYPE;
 import static com.example.alvar.chatapp.Constant.READ_EXTERNAL_STORAGE_REQUEST_CODE;
 import static com.example.alvar.chatapp.Constant.SELECT_IMAGE;
 import static com.example.alvar.chatapp.Constant.SELECT_PDF;
 import static com.example.alvar.chatapp.Constant.SELECT_WORD_DOCUMENT;
 import static com.example.alvar.chatapp.Constant.WORD_DOCUMENT_OPTION;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_FOLDER_REF;
+import static com.example.alvar.chatapp.Constant.WORD_DOC_MESSAGE_TYPE;
 
 public class ChatActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatActivityPage";
+    private static final int OPEN_CAMERA_REQUEST_CODE = 55;
+    private static final int CAMERA_PERMISSION_REQUEST = 56;
 
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef;
     private UploadTask uploadTask;
     //Firestore
     private FirebaseFirestore mDb;
@@ -113,6 +135,8 @@ public class ChatActivity extends AppCompatActivity {
     private boolean locationPermissionGranted = false;
     private UserLocation userLocation;
     private FusedLocationProviderClient locationProvider;
+    private NotificationAPI apiService;
+    private boolean notify;
 
 
     @Override
@@ -120,13 +144,11 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-
-        initLocationProvider();
-
-        fetchInfoIntent();
         initFirebase();
         initFirestore();
-        setToolbar("", true);
+        initLocationProvider();
+        getIncomingIntent();
+        //   setToolbar("", true);
         UIElements();
         initRecycleView();
         sendButtonPressed();
@@ -134,8 +156,13 @@ public class ChatActivity extends AppCompatActivity {
         otherUserState();
         toolbarPressed();
         attachFileButtonPressed();
+        retrofit();
+
+    }
 
 
+    private void retrofit() {
+        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
     }
 
     private void initLocationProvider() {
@@ -147,17 +174,21 @@ public class ChatActivity extends AppCompatActivity {
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
         chatProgressBar = findViewById(R.id.progressBarChat);
+        toolbarChat = findViewById(R.id.toolbarChat);
+
     }
 
     /**
      * this method receives de bundles from "ContactsActivity"
      */
-    private void fetchInfoIntent() {
+    private void getIncomingIntent() {
 
         if (getIntent() != null) {
             contactID = getIntent().getStringExtra(CONTACT_ID);
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
+            Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
+            fetchInfoDB(contactID);
         }
 
     }
@@ -172,10 +203,33 @@ public class ChatActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
+        dbTokensNodeRef = database.getReference().child("Tokens");
+
+    }
+
+    private void fetchInfoDB(String contactID) {
+
+        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    User user = dataSnapshot.getValue(User.class);
+                    String username = user.getName();
+                    String image = user.getImageThumbnail();
+                    setToolbar("", username, image, true);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     private void initFirestore() {
-
         //db
         mDb = FirebaseFirestore.getInstance();
         //docs ref
@@ -186,9 +240,8 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Create toolbar and inflate the custom bar chat bar layout
      */
-    private void setToolbar(String title, Boolean backOption) {
+    private void setToolbar(String title, final String contactUsername, final String contactProfPic, Boolean backOption) {
 
-        toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
 
         ActionBar actionBar = getSupportActionBar();
@@ -207,12 +260,24 @@ public class ChatActivity extends AppCompatActivity {
         onlineIcon = findViewById(R.id.onlineIcon);
 
         //here we set info from bundles into the ui elements in custom toolbar
-        usernameToolbarChat.setText(contactName);
-        if (contactImage.equals("imgThumbnail")) {
-            imageProfile.setImageResource(R.drawable.profile_image);
-        } else {
-            Glide.with(getApplicationContext()).load(contactImage).into(imageProfile);
-        }
+        usernameToolbarChat.setText(contactUsername);
+
+        //GLIDE
+        RequestOptions options = new RequestOptions()
+                .centerCrop()
+                .error(R.drawable.profile_image);
+
+        Glide.with(getApplicationContext())
+                .setDefaultRequestOptions(options)
+                .load(contactProfPic)
+                .into(imageProfile);
+
+        toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToMain();
+            }
+        });
 
 
     }
@@ -290,6 +355,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                notify = true;
+
                 //we get message written by the user
                 messageText = chatEditText.getText().toString();
 
@@ -302,6 +369,9 @@ public class ChatActivity extends AppCompatActivity {
                     //otherwise we send the message
                     //sendMessage();
                     uploadMessageToDb(messageText, "text");
+                    //we remove any text enter by the user once it's been sent
+                    chatEditText.setText("");
+
 
                 }
 
@@ -317,10 +387,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onStart();
 
         Log.d(TAG, "onStart: called");
-
         updateDateTime(getString(R.string.online_db));
         retrieveMessages();
-       // openMaps();
         checkLocationStatus();
 
     }
@@ -329,6 +397,7 @@ public class ChatActivity extends AppCompatActivity {
      * fetch messages in the chat room.
      */
     private void retrieveMessages() {
+
         dbChatsNodeRef.child(currentUserID).child(contactID)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -336,18 +405,17 @@ public class ChatActivity extends AppCompatActivity {
 
                         messagesList.clear();
 
-                        for (DataSnapshot info : dataSnapshot.getChildren()) {
+                        if (dataSnapshot.exists()) {
 
-                            Messages messages = info.getValue(Messages.class);
+                            for (DataSnapshot info : dataSnapshot.getChildren()) {
 
-                            messagesList.add(messages);
+                                Messages messages = info.getValue(Messages.class);
 
-                            adapter.notifyDataSetChanged();
-
-                            recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
-
+                                messagesList.add(messages);
+                                adapter.notifyDataSetChanged();
+                                recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
+                            }
                         }
-
                     }
 
                     @Override
@@ -453,7 +521,7 @@ public class ChatActivity extends AppCompatActivity {
         HashMap<String, Object> typingStateMap = new HashMap<>();
         typingStateMap.put(getString(R.string.typing_db), typingState);
 
-        dbUsersNodeRef.child(currentUserID).child(getString(R.string.users_ref)).updateChildren(typingStateMap);
+        dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(typingStateMap);
 
     }
 
@@ -480,7 +548,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.setTitle(R.string.Choose_file);
         builder.setIcon(R.drawable.ic_add_circle);
         //options to be shown in the Alert Dialog
-        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location)};
+        CharSequence menuOptions[] = new CharSequence[]{getString(R.string.photo), getString(R.string.PDF), getString(R.string.Word_Document), getString(R.string.share_location), getString(R.string.open_camera)};
         // we set the options
         builder.setItems(menuOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -507,10 +575,16 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     case 3:
                         Log.d(TAG, "onClick: share location option pressed");
-                        shareLocationPressed();
+                        if (getLocationPermission()) {
+                            shareLocationPressed();
+                        }
                         break;
-                    default:
-                        Log.d(TAG, "onClick: You didn't select any option");
+                    case 4:
+                        Log.d(TAG, "onClick: take photo option selected");
+                        if (checkCameraPermission()) {
+                            openCamera();
+                        }
+                        break;
                 }
 
 
@@ -520,6 +594,53 @@ public class ChatActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * check permission for reading internal docs and media only so far
+     *
+     * @return
+     */
+    private Boolean checkPermissions() {
+        Log.d(TAG, "checkPermissions: called");
+
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
+            return false;
+        }
+    }
+
+    /**
+     * this method check if users camera and create files in device are granted or not, if not we ask for them
+     *
+     * @return
+     */
+    private Boolean checkCameraPermission() {
+
+        String[] cameraPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                cameraPermissions[0]) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                        cameraPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, cameraPermissions, CAMERA_PERMISSION_REQUEST);
+            return false;
+        }
+
+    }
+
+    /**
+     * open camera
+     */
+    private void openCamera() {
+        Intent intentCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intentCamera, OPEN_CAMERA_REQUEST_CODE);
+    }
 
     /**
      * this method opens the windows for the user to choose either to send "image", "pdf" or "word doc"
@@ -536,37 +657,43 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
-                requestCode == CHAT_DOCX_MENU_REQUEST && resultCode == RESULT_OK && data != null) {
+                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE  ) {
 
-            //we store the file (image, pdf, word) selected in this var of URI type.
-            try {
-                file = data.getData();
+            if (resultCode == RESULT_OK) {
+                //we store the file (image, pdf, word) selected in this var of URI type.
 
-                switch (requestCode) {
-                    case CHAT_IMAGE_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        savePhotoInStorage(file);
-                        Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
-                        break;
-                    case CHAT_PDF_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        savePDFInStorage(file);
-                        Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
-                        break;
-                    case CHAT_DOCX_MENU_REQUEST:
-                        chatProgressBar.setVisibility(View.VISIBLE);
-                        saveWordInStorage(file);
-                        Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
-                        break;
-                    case PERMISSIONS_REQUEST_ENABLE_GPS:
-                        Log.i(TAG, "onActivityResult: GPS enabled by the user manually");
-                        getUserDetails();   //as soon as gps is enabled on the device we retrieve user's details
+                try {
+                    file = data.getData();
+
+                    switch (requestCode) {
+                        case CHAT_IMAGE_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            saveFileInStorage(file, PHOTO_FOLDER_REF , PHOTO_FILE_EXTENSION , PHOTO_MESSAGE_TYPE);
+                            break;
+                        case CHAT_PDF_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            saveFileInStorage(file, PDF_FOLDER_REF , PDF_FILE_EXTENSION , PDF_MESSAGE_TYPE );
+                            break;
+                        case CHAT_DOCX_MENU_REQUEST:
+                            Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
+                            chatProgressBar.setVisibility(View.VISIBLE);
+                            saveFileInStorage(file, WORD_DOC_FOLDER_REF , WORD_DOC_FILE_EXTENSION , WORD_DOC_MESSAGE_TYPE);
+                            break;
+                        case OPEN_CAMERA_REQUEST_CODE:
+                            Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
+                            //TODO pending to finnish: send photo in chat
+                            break;
+                    }
+
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "onActivityResult: error: " + e.getMessage());
                 }
 
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-                Log.d(TAG, "onActivityResult: error: " + e.getMessage());
             }
+
 
         }
 
@@ -574,23 +701,26 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * method in charge of uploading pdf file selected by user into firebase storage
-     *
-     * @param file
+     * method in charge of saving file ( photo, pdf, document) in firebase storage
+     * @param fileToUpload
+     * @param folderRef
+     * @param fileExtension
+     * @param messageType
      */
-    private void savePDFInStorage(Uri file) {
+    private void saveFileInStorage(final Uri fileToUpload, final String folderRef, final String fileExtension, final String messageType ){
 
+        Log.d(TAG, "saveFileInStorage: TRIGGERED!!!!!!!!!!!!!");
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("pdf_for_chat");
+        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child(folderRef);
 
         messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
 
         String messagePushKey = messagePushID.getKey();
 
         //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".pdf");
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + fileExtension );
         // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
+        uploadTask = fileLocation.putFile(fileToUpload);
 
         //lets check if image was uploaded correctly in the firebase storage service
         uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -598,9 +728,9 @@ public class ChatActivity extends AppCompatActivity {
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
 
                 if (!task.isSuccessful()) {
-
                     throw task.getException();
                 }
+
                 return fileLocation.getDownloadUrl();
             }
         }).addOnCompleteListener(new OnCompleteListener<Uri>() {
@@ -613,60 +743,9 @@ public class ChatActivity extends AppCompatActivity {
                     //we parse it to String type.
                     String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    notify = true;
                     //send message here
-                    uploadMessageToDb(fileURLInFirebase, "pdf");
-
-                } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-    }
-
-    /**
-     * method in charge of uploading word file selected by user into firebase storage
-     *
-     * @param file
-     */
-    private void saveWordInStorage(Uri file) {
-
-        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("word_docs_for_chat");
-
-        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
-
-        String messagePushKey = messagePushID.getKey();
-
-        //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".docx");
-        // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
-
-        //lets check if image was uploaded correctly in the firebase storage service
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-
-                if (!task.isSuccessful()) {
-
-                    throw task.getException();
-                }
-                return fileLocation.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-
-                if (task.isSuccessful()) {
-                    // here we get the final image URI from storage
-                    Uri fileUri = task.getResult();
-                    //we parse it to String type.
-                    String fileURLInFirebase = fileUri.toString();
-                    Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
-                    //send message here
-                    uploadMessageToDb(fileURLInFirebase, "docx");
+                    uploadMessageToDb(fileURLInFirebase, messageType );
 
                 } else {
                     String error = task.getException().toString();
@@ -678,60 +757,7 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * file in charge of uploading photo from device to firebase
-     *
-     * @param file
-     */
-    private void savePhotoInStorage(Uri file) {
 
-        // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
-        StorageReference storageFolderRef = FirebaseStorage.getInstance().getReference().child("photo_for_chat");
-
-        messagePushID = dbChatsNodeRef.child(currentUserID).child(contactID).push();
-
-        String messagePushKey = messagePushID.getKey();
-
-        //we store picture inside "photo_for_chat" folder and add extension ".jpg" to convert it into an image file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + ".jpg");
-        // we upload file to the firebase storage using UploadTask
-        uploadTask = fileLocation.putFile(file);
-
-        //lets check if image was uploaded correctly in the firebase storage service
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-
-                if (!task.isSuccessful()) {
-
-                    throw task.getException();
-                }
-                return fileLocation.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-
-                if (task.isSuccessful()) {
-                    // here we get the final image URI from storage
-                    Uri imageUri = task.getResult();
-                    //we parse it to String type.
-                    String imageURLInFirebase = imageUri.toString();
-                    Log.i(TAG, "onComplete: image url: " + imageURLInFirebase);
-                    //send message here
-                    uploadMessageToDb(imageURLInFirebase, getString(R.string.image_db));
-
-                } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
-                    Log.i(TAG, "onComplete: error");
-                }
-
-            }
-        });
-
-
-    }
 
     /**
      * method in charge of uploading message (either text, image, or file type) in database
@@ -790,20 +816,123 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         chatProgressBar.setVisibility(View.INVISIBLE);
-        //we remove any text enter by the user once it's been sent
-        chatEditText.setText("");
+
+        sendNotification(messageInfo, messageType);
+
+
+    }
+
+    /**
+     * method is the one right before pushing the notification to the server
+     * (here we fetch user information and set the message text to be shown in the recipient's notification)
+     *
+     * @param messageInfo
+     * @param messageType
+     */
+    private void sendNotification(String messageInfo, String messageType) {
+
+        //first we set the text message to be delivered depending on the type of message the user sends
+
+        switch (messageType) {
+            case "map":
+                messageInfo = "Location";
+                break;
+            case "docx":
+                messageInfo = "Document";
+                break;
+            case "pdf":
+                messageInfo = "PDF";
+                break;
+            case "image":
+                messageInfo = "Photo";
+                break;
+        }
+
+        //here we have the message to be sent
+        final String msg = messageInfo;
+
+        dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+
+                    User user = dataSnapshot.getValue(User.class);
+                    if (notify) {
+
+                        pushNotificationToServer(contactID, user.getName(), msg);
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName());
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID);
+                        Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg);
+                    }
+                    notify = false;
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void pushNotificationToServer(final String contactID, final String name, final String msg) {
+
+        dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+
+                    Token deviceToken = dataSnapshot.getValue(Token.class);
+                    Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
+
+                    Data data = new Data(contactID, msg, name, currentUserID);
+                    Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
+
+                    PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
+
+                    apiService.sendNotification(pushNotification)
+                            .enqueue(new Callback<ResponseFCM>() {
+                                @Override
+                                public void onResponse(Call<ResponseFCM> call, Response<ResponseFCM> response) {
+                                    if (response.code() == 200) {
+                                        Log.d(TAG, "onResponse: RETROFIT notification  sent ");
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseFCM> call, Throwable t) {
+
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
-        finish();
+        goToMain();
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+        //  intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
 
-    // ---------------------------------------------- Maps permissions ------------------------------  //
+    // ---------------------------------------------- Maps related ------------------------------  //
 
     /**
      * if GPS is enabled as soon as we open the chat room we call method getUsers()
@@ -815,7 +944,7 @@ public class ChatActivity extends AppCompatActivity {
     private void checkLocationStatus() {
 
         Log.d(TAG, "checkLocationStatus: called as soon as the chat room is open");
-        if (isGPSEnabled() ) {
+        if (isGPSEnabled()) {
             Log.d(TAG, "checkLocationStatus: get details as soon as chat room is open");
             getUserDetails();
         }
@@ -824,35 +953,20 @@ public class ChatActivity extends AppCompatActivity {
 
     private void shareLocationPressed() {
         Log.d(TAG, "shareLocationPressed: called when share location pressed in alert dialog");
-        if (!isGPSEnabled()){
+        if (!isGPSEnabled()) {
             buildAlertMessageNoGps();
-        }  else if ( !locationPermissionGranted){
-            getLocationPermission();
-        } else {
+        } else if (locationPermissionGranted) {
+            Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
+            chatProgressBar.setVisibility(View.INVISIBLE);
+            notify = true;
             getUserDetails();
-            Log.i(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
             uploadMessageToDb(getString(R.string.sharing_location), "map");
-        }
 
-    }
-
-    /**
-     * check permission for reading internal docs and media only so far
-     *
-     * @return
-     */
-    private Boolean checkPermissions() {
-        Log.d(TAG, "checkPermissions: called");
-
-        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[0]) == PackageManager.PERMISSION_GRANTED) {
-            return true;
         } else {
-            ActivityCompat.requestPermissions(ChatActivity.this, permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
-            return false;
+            //if the app doesn't have the user permission we ask for it
+            getLocationPermission();
         }
+
     }
 
     /**
@@ -884,7 +998,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void buildAlertMessageNoGps() {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
+        builder.setMessage(getString(R.string.dialog_location))
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -899,7 +1013,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * location permission for the app
      */
-    private void getLocationPermission() {
+    private boolean getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
@@ -911,12 +1025,14 @@ public class ChatActivity extends AppCompatActivity {
             locationPermissionGranted = true;
             Log.d(TAG, "getLocationPermission: apps location permission granted");
             getUserDetails();
+            return true;
         } else {
             Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
+        return false;
     }
 
     /**
@@ -975,7 +1091,7 @@ public class ChatActivity extends AppCompatActivity {
                         startLocationService();
 
                     } else {
-                        Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
+                        //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onComplete: db retrieving null again");
                     }
                 }
@@ -1024,7 +1140,7 @@ public class ChatActivity extends AppCompatActivity {
                     locationPermissionGranted = true;
                     Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
                     getUserDetails();
-                    uploadMessageToDb(getString(R.string.sharing_location), "map");
+                    //  uploadMessageToDb(getString(R.string.sharing_location), "map");
                 } else {
                     Toast.makeText(this, getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
                 }
@@ -1035,7 +1151,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted");
 
-                    //here in this switch we manage to redirect the user to gallery of folder depending on what user's request
+                    //here in this switch we manage to redirect the user to gallery or files depending on what the user requested
                     switch (optionSelected) {
                         case "photo":
                             Log.d(TAG, "onRequestPermissionsResult: option selected photo");
@@ -1054,6 +1170,15 @@ public class ChatActivity extends AppCompatActivity {
                 //if permission is rejected by the user
                 else {
                     Toast.makeText(ChatActivity.this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case CAMERA_PERMISSION_REQUEST:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    openCamera();
+                } else {
+                    Log.d(TAG, "onRequestPermissionsResult: something went wrong with the permissions");
+                    Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -1090,3 +1215,4 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 }
+

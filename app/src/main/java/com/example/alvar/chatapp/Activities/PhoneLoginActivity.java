@@ -27,6 +27,12 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.example.alvar.chatapp.Constant.DEFAULT_EMAIL;
+import static com.example.alvar.chatapp.Constant.DEFAULT_IMAGE;
+import static com.example.alvar.chatapp.Constant.DEFAULT_PASSWORD;
+import static com.example.alvar.chatapp.Constant.DEFAULT_STATUS;
+import static com.example.alvar.chatapp.Constant.DEFAULT_THUMBNAIL;
+
 public class PhoneLoginActivity extends AppCompatActivity {
 
     private static final String TAG = "PhoneLoginActivity";
@@ -42,16 +48,6 @@ public class PhoneLoginActivity extends AppCompatActivity {
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     //vars
     private String name, phoneNumber, mVerificationId;
-    //Constants
-    private static final String DEFAULT_EMAIL = "email";
-    public static final String DEFAULT_STATUS = "Hi there I am using ChatUp";
-    private static final String DEFAULT_IMAGE = "image";
-    private static final String DEFAULT_THUMBNAIL = "imgThumbnail";
-    private static final String DEFAULT_PASSWORD = "null";
-
-
-
-
 
 
     @Override
@@ -276,7 +272,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
         //here we get user's device token  (NOT APPLIED TO THE APP JUST YET)
         String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
-        User user = new User(name,DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_STATUS,DEFAULT_IMAGE,DEFAULT_THUMBNAIL,deviceToken);
+        User user = new User(name , DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_STATUS,DEFAULT_IMAGE,DEFAULT_THUMBNAIL,deviceToken, currentUserID);
 
         //save info into database and we do a last check
         dbUsersNodeRef.child(currentUserID).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {

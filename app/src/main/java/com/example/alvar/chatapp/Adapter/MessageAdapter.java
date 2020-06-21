@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.Fragments.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
@@ -108,13 +109,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
         }
 
-
         //we fetch info from db Users node
         infoFetchedFromDb(messageSenderID, messageViewHolder);
         //here's where fun with the layouts starts
         layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
 
-
+       
     }
 
 
@@ -124,10 +124,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     @Override
     public int getItemCount() {
-        //get the size of the List
-        return messagesList.size();
+        if (messagesList != null ){
+            //get the size of the List is is not null
+            return messagesList.size();
+        }
+        return 0;
     }
-
 
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
@@ -135,7 +137,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         dbUsersNodeRef = database.getReference().child("Users");
         dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
     }
-
 
     /**
      * here we fetch info from db and fill the fields with it
@@ -341,8 +342,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             //let's make sure every time we sent a file Glide retrieves the Doc image template
             // to avoid being one file replaced when other is send after
+
+            //image template
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.file);
+
             Glide.with(mContext.getApplicationContext())
-                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .setDefaultRequestOptions(options)
+                    .load("")
                     .into(messageViewHolder.sendImageRight);
 
             //if user clicks on the file it opens
@@ -370,8 +378,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
             //let's make sure every time we sent a file Glide retrieves the Doc image template
             // to avoid being one file replaced when other is send after
+
+            //image template
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.file);
+
             Glide.with(mContext.getApplicationContext())
-                    .load("https://firebasestorage.googleapis.com/v0/b/chatapp-4adb2.appspot.com/o/file.png?alt=media&token=dc689859-fb7b-4cbf-8c9d-10304329629e")
+                    .setDefaultRequestOptions(options)
+                    .load("")
                     .into(messageViewHolder.sendImageLeft);
             //if user clicks on the file it opens
             messageViewHolder.sendImageLeft.setOnClickListener(new View.OnClickListener() {
@@ -462,22 +477,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void deleteRightSideMessage(int position) {
 
-        String senderID = messagesList.get(position).getSenderID();
-        String receiverID = messagesList.get(position).getReceiverID();
-        String messageID = messagesList.get(position).getMessageID();
+        try{
+            String senderID = messagesList.get(position).getSenderID();
+            String receiverID = messagesList.get(position).getReceiverID();
+            String messageID = messagesList.get(position).getMessageID();
 
-        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete:message deleted right side");
+                    if (task.isSuccessful()){
+                        Log.i(TAG, "onComplete:message deleted right side");
+                    }
+                    else{
+                        Log.i(TAG, "onComplete:something failed");
+                    }
                 }
-                 else{
-                    Log.i(TAG, "onComplete:something failed");
-                }
-            }
-        });
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
     }
 
     /**
@@ -510,35 +531,45 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      */
     private void deleteMessageForEveryone(int position){
 
-        final String senderID = messagesList.get(position).getSenderID();
-        final String receiverID = messagesList.get(position).getReceiverID();
-        final String messageID = messagesList.get(position).getMessageID();
+        try{
+            final String senderID = messagesList.get(position).getSenderID();
+            final String receiverID = messagesList.get(position).getReceiverID();
+            final String messageID = messagesList.get(position).getMessageID();
 
-        //lets first of all erase from the current user side
-        dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            //lets first of all erase from the current user side
+            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
-                    //lets first of all erase from the other user side
-                    dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        //lets first of all erase from the other user side
+                        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
 
-                            if (task.isSuccessful()){
-                                Log.i(TAG, "onComplete: message deleted for everyone ");
+                                if (task.isSuccessful()){
+                                    Log.i(TAG, "onComplete: message deleted for everyone ");
+                                }
+                                else{
+                                    Log.i(TAG, "onComplete: Error, something failed ");
+                                }
                             }
-                            else{
-                                Log.i(TAG, "onComplete: Error, something failed ");
-                            }
-                        }
-                    });
+                        });
 
-                } else{
-                    Log.i(TAG, "onComplete: Error, something failed ");
+                    } else{
+                        Log.i(TAG, "onComplete: Error, something failed ");
+                    }
                 }
-            }
-        });
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
+
+
+
+
 
     }
 
@@ -577,7 +608,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
-    // -------------------------------------------- maps features -------------------------------
+    // -------------------------------------------- maps related -------------------------------
 
     private void showMapLayout(String messageSenderID, String messageInfo, MessageViewHolder messageViewHolder , final int position) {
 

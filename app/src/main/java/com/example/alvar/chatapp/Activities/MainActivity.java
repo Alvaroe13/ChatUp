@@ -1,7 +1,9 @@
 package com.example.alvar.chatapp.Activities;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -15,12 +17,15 @@ import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.Fragments.RequestsFragment;
+import com.example.alvar.chatapp.Notifications.NotificationAPI;
+import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +33,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -43,6 +50,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.alvar.chatapp.Constant.TOKEN_PREFS;
+import static com.example.alvar.chatapp.Constant.USER_ID_PREFS;
+import static com.example.alvar.chatapp.Constant.USER_INFO_PREFS;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainPage";
@@ -50,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef;
+    private DatabaseReference dbUsersNodeRef, tokenNodeRef;
     //Firestore
     private FirebaseFirestore mDb;
     private DocumentReference userDocRef;
@@ -66,15 +77,19 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
+    private String deviceToken;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         bindUI();
         setToolbar("ChatUp", true);
         initFirebase();
+        getToken();
+
         //set image and username from db to toolbar
         fetchInfoFromDb();
         //when image within drawer is clicked by the user
@@ -98,8 +113,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        //this method will pass "Online" to the database as soon as the user is using the app
-        updateDateTime("Online");
+
+            //this method will pass "Online" to the database as soon as the user is using the app
+            updateDateTime("Online");
+
+
     }
 
     /**
@@ -122,6 +140,41 @@ public class MainActivity extends AppCompatActivity {
         usernameNav = navViewHeader.findViewById(R.id.usernameNavDrawer);
         statusNav = navViewHeader.findViewById(R.id.statusNavDrawer);
 
+    }
+
+    private void getToken(){
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                if (task.isSuccessful()){
+                    deviceToken = task.getResult().getToken();
+
+                    saveTokenInDB(deviceToken);
+                } else{
+                    Toast.makeText(MainActivity.this, "no token", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }
+
+    private void saveTokenInDB(final String deviceToken) {
+        //set token value id database's token child
+        dbUsersNodeRef.child(currentUserID).child("token")
+                .setValue(deviceToken).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    tokenNodeRef.child(currentUserID).child("token").setValue(deviceToken).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "onComplete: token " + deviceToken);
+                        }
+                    });
+
+                }
+            }
+        });
     }
 
     /**
@@ -190,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
         //database init
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
+        tokenNodeRef= database.getReference().child("Tokens");
     }
 
     /**
@@ -284,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (dataSnapshot.exists()) {
 
-                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password, token;
+                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password;
 
 
                         imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
@@ -295,12 +349,13 @@ public class MainActivity extends AppCompatActivity {
                         email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
                         imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
                         password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
-                        token = dataSnapshot.child(getString(R.string.token_db)).getValue().toString();
 
+                    //pass info to firestore db
+                    //User user = new User(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token, currentUserID);
 
+                    populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, deviceToken);
+                    saveTokenOnPreferences(currentUserID, deviceToken);
 
-
-                   populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token);
 
                     Log.i(TAG, "onDataChange: username set");
                     usernameNav.setText(usernameToolbar);
@@ -362,12 +417,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
+        if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
             super.onBackPressed();
+        } else {
+            drawerLayout.closeDrawer(GravityCompat.START);
         }
     }
+
+
 
     /**
      * method in charge of getting the user's current state, time and Date to update in db
@@ -437,6 +494,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    private void saveTokenOnPreferences(String userID , String token) {
+        SharedPreferences prefs = getSharedPreferences(USER_INFO_PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(TOKEN_PREFS, token);
+        editor.putString(USER_ID_PREFS, userID);
+        editor.apply();
+    }
+
 
     @Override
     protected void onPause() {
