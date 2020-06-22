@@ -159,6 +159,46 @@ public class ChatActivity extends AppCompatActivity {
         attachFileButtonPressed();
         retrofit();
         seenMessage();
+        createChatListDB();
+
+    }
+
+    private void createChatListDB() {
+
+        final DatabaseReference dbChatListNodeRef1 = database.getReference().child("ChatList")
+                .child(currentUserID).child(contactID);
+
+        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()){
+                    dbChatListNodeRef1.child("id").setValue(contactID);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+     final  DatabaseReference dbChatListNodeRef2 = database.getReference().child("ChatList")
+                .child(contactID).child(currentUserID);
+
+        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()){
+                    dbChatListNodeRef2.child("id").setValue(currentUserID);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 

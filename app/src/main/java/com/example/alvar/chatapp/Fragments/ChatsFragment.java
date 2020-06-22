@@ -13,9 +13,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Activities.ChatActivity;
-import com.example.alvar.chatapp.Activities.ContactsActivity;
+import com.example.alvar.chatapp.Adapter.ChatsAdapter;
+import com.example.alvar.chatapp.Model.ChatList;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.Model.Messages;
+import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -25,6 +27,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -43,11 +48,14 @@ public class ChatsFragment extends Fragment {
     private View viewContacts;
     private RecyclerView chatRecyclerView;
     //firebase
-    private DatabaseReference dbChatsNodeRef, dbUsersNodeRef;
+    private DatabaseReference dbChatsNodeRef, dbUsersNodeRef, dbChatListRef;
     //vars
     private String currentUserID, lastMessage, lastMessageDate;
     private FirebaseRecyclerOptions<Contacts> options;
     private FirebaseRecyclerAdapter<Contacts, ChatsViewHolder> adapter;
+    private List<ChatList> chatListList;
+    private List<User> userList;
+    private ChatsAdapter chatsAdapter;
 
 
     public ChatsFragment() {
@@ -62,10 +70,14 @@ public class ChatsFragment extends Fragment {
 
         initFirebase();
         initRecyclerView();
-        initFirebaseAdapter();
+        fetchChatLists();
+      /*  initFirebaseAdapter();
+        getUsersFromChats();*/
 
         return viewContacts;
     }
+
+
 
     /**
      * we init firebase services.
@@ -77,6 +89,7 @@ public class ChatsFragment extends Fragment {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
         dbUsersNodeRef = database.getReference().child("Users");
+        dbChatListRef = database.getReference().child("ChatList");
     }
 
     private void initRecyclerView() {
@@ -86,6 +99,140 @@ public class ChatsFragment extends Fragment {
         chatRecyclerView.setHasFixedSize(true);
 
     }
+
+    private void fetchChatLists(){
+
+        chatListList = new ArrayList<>();
+
+
+        dbChatListRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                chatListList.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    ChatList chatList = snapshot.getValue(ChatList.class);
+                    chatListList.add(chatList);
+                }
+
+                showChatList();
+
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showChatList() {
+
+        userList = new ArrayList<>();
+
+        dbUsersNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    User user = snapshot.getValue(User.class);
+
+                    for (ChatList chatList : chatListList){
+                        if (user.getUserID() != null && user.getUserID().equals(chatList.getId())){
+                            userList.add(user);
+                            break;
+                        }
+                    }
+
+                    chatsAdapter = new ChatsAdapter(getContext(), userList);
+                    chatRecyclerView.setAdapter(chatsAdapter);
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+
+/*
+
+    private void getUsersFromChats(){
+
+        chatListList = new ArrayList<>();
+
+        dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    for (DataSnapshot snapshot: dataSnapshot.getChildren()){
+
+                        Messages message = snapshot.getValue(Messages.class);
+
+                        try {
+                            if (message.getReceiverID().equals(currentUserID)  ){
+                                chatListList.add(message.getSenderID());
+                            }
+
+                            if (message.getSenderID().equals(currentUserID) ){
+                                chatListList.add(message.getReceiverID());
+                            }
+
+                        }catch (Exception e){
+                            Log.e(TAG, "onDataChange: error: " + e.getMessage() );
+                        }
+
+
+                        showChats();
+
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+*/
+
+  /*  private void showChats() {
+
+        userList = new ArrayList<>();
+
+        dbUsersNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userList.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    User user = snapshot.getValue(User.class);
+
+                }
+
+
+                chatsAdapter = new ChatsAdapter(getContext(), userList);
+                chatRecyclerView.setAdapter(chatsAdapter);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }*/
 
     /**
      * Contains the logic behind the firebase Adapter library.
@@ -216,6 +363,22 @@ public class ChatsFragment extends Fragment {
     }
 
     /**
+     * method in charge of taking the user to the chat room sending the info specified
+     *
+     * @param otherUserID
+     * @param name
+     * @param image
+     */
+    private void goToChatRoom(String otherUserID, String name, String image) {
+        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
+        intentChatRoom.putExtra("contactID", otherUserID);
+        intentChatRoom.putExtra("contactName", name);
+        intentChatRoom.putExtra("contactImage", image);
+        startActivity(intentChatRoom);
+    }
+
+
+    /**
      * this method is the one in charge of making visible the green dot when other user in online or not
      *
      * @param dataSnapshot
@@ -242,20 +405,6 @@ public class ChatsFragment extends Fragment {
 
     }
 
-    /**
-     * method in charge of taking the user to the chat room sending the info specified
-     *
-     * @param otherUserID
-     * @param name
-     * @param image
-     */
-    private void goToChatRoom(String otherUserID, String name, String image) {
-        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
-        intentChatRoom.putExtra("contactID", otherUserID);
-        intentChatRoom.putExtra("contactName", name);
-        intentChatRoom.putExtra("contactImage", image);
-        startActivity(intentChatRoom);
-    }
 
     /**
      * This method is the one in charge of showing the last message in a conversation
@@ -332,9 +481,9 @@ public class ChatsFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (adapter != null) {
+  /*      if (adapter != null) {
             adapter.startListening();
-        }
+        }*/
 
     }
 
