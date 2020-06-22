@@ -14,6 +14,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.alvar.chatapp.Notifications.NotificationAPI;
+import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -38,8 +41,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private static final String TAG = "OtherUserProfilePage";
     //firebase
     private FirebaseAuth auth;
-    private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbNotificationsRef, dbChatsNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef,  dbChatsNodeRef;
     //ui elements
     private CircleImageView otherUserImg;
     private TextView usernameOtherUser, statusOtherUser;
@@ -74,19 +76,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     private void initFirebase(){
-        //init firebase auth to get current user id
         auth = FirebaseAuth.getInstance();
-        //init firebase database service
-        database = FirebaseDatabase.getInstance();
-        //we aim to "Users" node
+        FirebaseDatabase  database = FirebaseDatabase.getInstance();
+        //nodes
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
-        //we aim to "Chat Request" node
         dbChatRequestNodeRef = database.getReference().child(getString(R.string.chats_requests_ref));
-        //we create "Contacts" node
         contactsNodeRef = database.getReference().child(getString(R.string.contacts_ref));
-        //we create "Notifications" node
-        dbNotificationsRef = database.getReference().child(getString(R.string.notifications_ref));
-        //We create chat node ref.
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
     }
 
@@ -137,18 +132,18 @@ public class OtherUserProfileActivity extends AppCompatActivity {
          imageThumbnail = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
          imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
 
-
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
-        if (imageThumbnail.equals("imgThumbnail")){
-            otherUserImg.setImageResource(R.drawable.profile_image);
-        } else{
-            //here we set image from database into imageView
-            Glide.with(getApplicationContext()).load(imageThumbnail).into(otherUserImg);
 
-        }
+        //GLIDE
+        RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.profile_image);
 
-
+        Glide.with(getApplicationContext())
+                    .setDefaultRequestOptions(options)
+                    .load(imageThumbnail)
+                    .into(otherUserImg);
     }
 
     /**
@@ -608,27 +603,13 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         return popUpWindow;
     }
 
+
     /**
      * method in charge of saving information in the "Notifications" node
      */
     private void sendNotification() {
 
-        HashMap<String, String> notificationsMap = new HashMap<>();
-        notificationsMap.put(getString(R.string.sende_db) , otherUserId);
-        notificationsMap.put(getString(R.string.type_db) , "request");
-
-        dbNotificationsRef.child(currentUserID).push()
-                .setValue(notificationsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
-                if (task.isSuccessful()){
-
-                    //show the user the request has been successfully sent
-                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.chatRequestSent));
-                }
-            }
-        });
+        //TODO send push notification when chat request is sent.
 
 
 

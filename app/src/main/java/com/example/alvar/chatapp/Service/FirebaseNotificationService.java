@@ -28,6 +28,8 @@ import java.util.Random;
 import androidx.annotation.NonNull;
 
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
@@ -35,7 +37,6 @@ import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 public class FirebaseNotificationService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebaseService";
-
     //firebase
     private FirebaseUser userFirebase;
     private FirebaseDatabase database;
@@ -107,9 +108,8 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
      */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+
         Log.d(TAG, "message received NOTIFICATION RECEIVED");
-
-
 
         userFirebase = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -119,7 +119,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
             userID2 = userFirebase.getUid();
         }
 
-        //params in .get() must match with the one's in our Data model.
+        //params in .get() must match with the vars in our Data model.
         String senderID = remoteMessage.getData().get("senderID");
         String userID = remoteMessage.getData().get("recipientUserID");
         String messageID = remoteMessage.getData().get("messageID");
@@ -128,10 +128,11 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         if (userFirebase != null && !senderID.equals(userID2) ){
             if (!getUserIDPrefs().equals(userID)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                    //sendNotification(remoteMessage);
+
                     messageSeenState(remoteMessage, messageID);
+
                 }else{
-                 //   sendNotification(remoteMessage);
+
                     messageSeenState(remoteMessage, messageID);
 
                 }
@@ -147,39 +148,47 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
      */
     private void sendNotification(RemoteMessage remoteMessage) {
 
-        Random random = new Random();
-        int notificationID = random.nextInt();
+        /*Random random = new Random();
+        int notificationID = random.nextInt();*/
 
         String senderID = remoteMessage.getData().get("senderID");
         String message = remoteMessage.getData().get("message");
-        String title = remoteMessage.getData().get("title");
+        String senderUsername = remoteMessage.getData().get("senderUsername");
         String messageID = remoteMessage.getData().get("messageID");
+        String senderPhoto = remoteMessage.getData().get("senderPhoto");
 
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED senderID: " + senderID);
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED message: " + message);
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED title: " + title);
+        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED senderUsername: " + senderUsername);
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED messageID: " + messageID);
+        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED image: " + senderPhoto);
 
 
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra( CONTACT_ID, senderID);
+        intent.putExtra( CONTACT_NAME, senderUsername);
+        intent.putExtra( CONTACT_IMAGE, senderPhoto);
         Log.d(TAG, "sendNotification: sender user ID : " + senderID);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationHandler notificationHandler = new NotificationHandler(this);
-        Notification.Builder builder = notificationHandler.createNotification(title, message, pendingIntent, true);
+        Notification.Builder builder = notificationHandler.createNotification(senderUsername, message, pendingIntent, true);
 
         notificationHandler.getNotificationManager().notify(1, builder.build());
     //    notificationHandler.showGroupNotification(true);
     }
-        /* intent.putExtra( CONTACT_IMAGE, image);
-        intent.putExtra( CONTACT_NAME, contactName);*/
 
+
+    /**
+     * created this method to check if other user has seen message in order to push notification
+     * if other user has not seen message only.
+     * @param remoteMessage
+     * @param messageID
+     */
     private void messageSeenState(final RemoteMessage remoteMessage, final String messageID){
 
         Log.d(TAG, "messageSeenState: enters here");
-
 
       DatabaseReference dbChatsRef = database.getReference().child("Chats").child("Messages");
 

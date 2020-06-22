@@ -148,9 +148,8 @@ public class ChatActivity extends AppCompatActivity {
         initFirebase();
         initFirestore();
         initLocationProvider();
-        getIncomingIntent();
-        //   setToolbar("", true);
         UIElements();
+        getIncomingIntent();
         initRecycleView();
         sendButtonPressed();
         editTextStatus();
@@ -174,8 +173,6 @@ public class ChatActivity extends AppCompatActivity {
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
         chatProgressBar = findViewById(R.id.progressBarChat);
-        toolbarChat = findViewById(R.id.toolbarChat);
-
     }
 
     /**
@@ -188,7 +185,9 @@ public class ChatActivity extends AppCompatActivity {
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
             Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
-            fetchInfoDB(contactID);
+            Log.d(TAG, "getIncomingIntent: contact name: " + contactName);
+            Log.d(TAG, "getIncomingIntent: contact Image: " + contactImage);
+            setToolbar( contactName, contactImage);
         }
 
     }
@@ -207,28 +206,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private void fetchInfoDB(String contactID) {
-
-        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    User user = dataSnapshot.getValue(User.class);
-                    String username = user.getName();
-                    String image = user.getImageThumbnail();
-                    setToolbar("", username, image, true);
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
     private void initFirestore() {
         //db
         mDb = FirebaseFirestore.getInstance();
@@ -240,13 +217,13 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Create toolbar and inflate the custom bar chat bar layout
      */
-    private void setToolbar(String title, final String contactUsername, final String contactProfPic, Boolean backOption) {
+    private void setToolbar(final String contactUsername, final String contactProfPic) {
 
+        toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle(title);
-        actionBar.setDisplayHomeAsUpEnabled(backOption);
+        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowCustomEnabled(true);
 
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -943,7 +920,7 @@ public class ChatActivity extends AppCompatActivity {
                     User user = dataSnapshot.getValue(User.class);
                     if (notify) {
 
-                        pushNotificationToServer(contactID, user.getName(), msg, messageID);
+                        pushNotificationToServer(contactID, user.getName(), msg, messageID, user.getImageThumbnail());
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName());
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID);
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg);
@@ -961,7 +938,8 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void pushNotificationToServer(final String contactID, final String name, final String msg, final String messageID) {
+    private void pushNotificationToServer(final String contactID, final String name, final String msg,
+                                            final String messageID, final String senderPhoto) {
 
         dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -971,7 +949,7 @@ public class ChatActivity extends AppCompatActivity {
                     Token deviceToken = dataSnapshot.getValue(Token.class);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
-                    Data data = new Data(contactID, msg, name, currentUserID, messageID);
+                    Data data = new Data(contactID, msg, name, currentUserID, messageID, senderPhoto);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
 
                     PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
