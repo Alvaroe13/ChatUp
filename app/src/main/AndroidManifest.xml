@@ -53,9 +53,6 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
-            android:name=".Activities.GroupChatActivity"
-            android:parentActivityName=".Activities.MainActivity" />
-        <activity
             android:name=".Activities.AllUsersActivity"
             android:parentActivityName=".Activities.MainActivity" />
         <activity android:name=".Activities.OtherUserProfileActivity" />
@@ -65,7 +62,6 @@
         <activity
             android:name=".Activities.ChatActivity"
             android:parentActivityName=".Activities.MainActivity" />
-
 
         <!--maps-->
         <meta-data
