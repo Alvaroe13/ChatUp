@@ -59,8 +59,33 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
         final User user = userList.get(position);
 
-        holder.username.setText(user.getName());
+        setUI(user, holder);
+        fetchInfoDB(user.getUserID(), holder);
 
+        holder.chatLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToChatRoom(user.getUserID(), user.getName(), user.getImageThumbnail(), holder);
+            }
+        });
+
+
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return userList.size();
+    }
+
+    /**
+     * set info from db into layout
+     * @param user
+     * @param holder
+     */
+    private void setUI(final User user, final ChatsViewHolder holder) {
+
+        holder.username.setText(user.getName());
         //GLIDE
         RequestOptions options = new RequestOptions()
                 .centerCrop()
@@ -70,24 +95,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                 .setDefaultRequestOptions(options)
                 .load(user.getImageThumbnail())
                 .into(holder.chatImageContact);
-
-        holder.chatLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToChatRoom(user.getUserID(), user.getName(), user.getImageThumbnail(), holder);
-            }
-        });
-
-        typingState(user.getUserID(), holder);
-
     }
 
-    @Override
-    public int getItemCount() {
-        return userList.size();
-    }
-
-    private void typingState(final String contactID, final ChatsViewHolder holder) {
+    /**
+     * fetch info from db
+     * @param contactID
+     * @param holder
+     */
+    private void fetchInfoDB(final String contactID, final ChatsViewHolder holder) {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference dbUsersNodeRef = database.getReference().child("Users");
@@ -99,7 +114,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
                 final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
 
-                typingStatus(typingState, contactID , holder );
+                typingState(typingState, contactID , holder );
+                otherUserState(dataSnapshot, holder);
 
             }
 
@@ -110,7 +126,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
         });
     }
 
-    private void typingStatus(String typingState, String contactID, ChatsViewHolder holder) {
+    /**
+     * update in real time contact's typing state
+     * @param contactID
+     * @param holder
+     */
+    private void typingState(String typingState, String contactID, ChatsViewHolder holder) {
 
         if (typingState.equals("yes")) {
             try {
@@ -124,6 +145,30 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
         }
 
 
+    }
+
+    /**
+     * method in charge of showing green dot if user is online
+     * @param dataSnapshot
+     * @param holder
+     */
+    private void otherUserState(DataSnapshot dataSnapshot, ChatsViewHolder holder) {
+        //here we show the current state of the other user
+        if (dataSnapshot.child("userState").hasChild("state")) {
+
+            //here we get the other user's current state and we store it in each var
+            String saveSate = dataSnapshot.child("userState").child("state").getValue().toString();
+
+            //if other user's state is "offline"
+            if (saveSate.equals("Offline")) {
+                //we show last message
+                holder.onlineIcon.setVisibility(View.GONE);
+            } else if (saveSate.equals("Online")) {
+                holder.onlineIcon.setVisibility(View.VISIBLE);
+
+            }
+
+        }
     }
 
 
