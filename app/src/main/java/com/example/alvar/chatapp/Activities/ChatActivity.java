@@ -159,48 +159,11 @@ public class ChatActivity extends AppCompatActivity {
         attachFileButtonPressed();
         retrofit();
         seenMessage();
-        createChatListDB();
+
 
     }
 
-    private void createChatListDB() {
 
-        final DatabaseReference dbChatListNodeRef1 = database.getReference().child("ChatList")
-                .child(currentUserID).child(contactID);
-
-        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()){
-                    dbChatListNodeRef1.child("id").setValue(contactID);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-     final  DatabaseReference dbChatListNodeRef2 = database.getReference().child("ChatList")
-                .child(contactID).child(currentUserID);
-
-        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()){
-                    dbChatListNodeRef2.child("id").setValue(currentUserID);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
 
     private void initLocationProvider() {
         locationProvider = LocationServices.getFusedLocationProviderClient(this);
@@ -404,7 +367,7 @@ public class ChatActivity extends AppCompatActivity {
                             getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
                 } else {
                     //otherwise we send the message
-                    //sendMessage();
+
                     uploadMessageToDb(messageText, "text");
                     //we remove any text enter by the user once it's been sent
                     chatEditText.setText("");
@@ -891,7 +854,50 @@ public class ChatActivity extends AppCompatActivity {
 
         chatProgressBar.setVisibility(View.INVISIBLE);
 
+        createChatListDB();
         sendNotification(messageInfo, messageType, messagePushKey);
+
+    }
+
+    /**
+     * method creates chatroom in db to be retrieved in chatFragment and show as a list.
+     */
+    private void createChatListDB() {
+
+        final DatabaseReference dbChatListNodeRef1 = database.getReference().child("ChatList")
+                .child(currentUserID).child(contactID);
+
+        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()){
+                    dbChatListNodeRef1.child("id").setValue(contactID);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        final  DatabaseReference dbChatListNodeRef2 = database.getReference().child("ChatList")
+                .child(contactID).child(currentUserID);
+
+        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()){
+                    dbChatListNodeRef2.child("id").setValue(currentUserID);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 

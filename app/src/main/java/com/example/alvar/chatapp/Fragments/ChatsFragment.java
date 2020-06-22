@@ -35,7 +35,7 @@ public class ChatsFragment extends Fragment {
     private View viewContacts;
     private RecyclerView chatRecyclerView;
     //firebase
-    private DatabaseReference dbUsersNodeRef, dbChatListRef;
+    private DatabaseReference dbUsersNodeRef, dbChatListRef ;
     //vars
     private String currentUserID;
     private List<ChatList> chatListList;
@@ -94,9 +94,11 @@ public class ChatsFragment extends Fragment {
                 chatListList.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    ChatList chatList = snapshot.getValue(ChatList.class);
+                   final ChatList chatList = snapshot.getValue(ChatList.class);
                     chatListList.add(chatList);
                 }
+
+
 
                 showChatList();
 
@@ -145,6 +147,7 @@ public class ChatsFragment extends Fragment {
         });
 
     }
+
 
 
 
