@@ -47,7 +47,7 @@ public class NotificationHandler extends ContextWrapper {
 
             //lets create high channel
             NotificationChannel channelHigh = new NotificationChannel(CHANNEL_HIGH_ID,
-                                                        CHANNEL_HIGH_NAME, NotificationManager.IMPORTANCE_HIGH);
+                                                        CHANNEL_HIGH_NAME, NotificationManager.IMPORTANCE_DEFAULT);
 
             channelHigh.enableLights(true);
             channelHigh.enableVibration(true);
