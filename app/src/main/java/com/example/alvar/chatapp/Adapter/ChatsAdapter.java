@@ -33,9 +33,13 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHolder> {
 
     private static final String TAG = "ChatsAdapter";
+    //firebase
+
+    private  DatabaseReference dbUsersNodeRef, dbChatsNodeRef;
 
      Context context;
      List<User> userList;
+     private String currentUserID;
 
 
 
@@ -51,6 +55,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     public ChatsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.chats_individual_layout, parent, false);
 
+        initFirebase();
 
         return new ChatsAdapter.ChatsViewHolder(view);
     }
@@ -81,6 +86,19 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     }
 
     /**
+     * we init firebase services.
+     */
+    private void initFirebase() {
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        //nodes
+        currentUserID = auth.getCurrentUser().getUid();
+        dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
+        dbUsersNodeRef = database.getReference().child("Users");
+    }
+
+    /**
      * set info from db into layout
      * @param user
      * @param holder
@@ -106,8 +124,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
      */
     private void fetchInfoDB(final String contactID, final ChatsViewHolder holder) {
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference dbUsersNodeRef = database.getReference().child("Users");
 
         dbUsersNodeRef.child(contactID)
                                 .addValueEventListener(new ValueEventListener() {
@@ -134,11 +150,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
      * @param holder
      */
     private void typingState(String typingState, String contactID, ChatsViewHolder holder) {
-
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        String currentUserID = auth.getCurrentUser().getUid();
-
-
 
         if (typingState.equals("yes")) {
             try {
@@ -173,10 +184,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
      * @param otherUserID
      */
     private void showLastMessage(final String currentUserID, final String otherUserID, final  ChatsViewHolder holder) {
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-        DatabaseReference dbChatsNodeRef = database.getReference().child("Chats").child("Messages");
 
         //retrieve info from the db node "Chats" / "Messages"
         dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
