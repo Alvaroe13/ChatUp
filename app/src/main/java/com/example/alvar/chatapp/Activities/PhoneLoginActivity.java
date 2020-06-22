@@ -27,11 +27,11 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.example.alvar.chatapp.Constant.DEFAULT_EMAIL;
-import static com.example.alvar.chatapp.Constant.DEFAULT_IMAGE;
-import static com.example.alvar.chatapp.Constant.DEFAULT_PASSWORD;
-import static com.example.alvar.chatapp.Constant.DEFAULT_STATUS;
-import static com.example.alvar.chatapp.Constant.DEFAULT_THUMBNAIL;
+import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_EMAIL;
+import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_IMAGE;
+import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_PASSWORD;
+import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_STATUS;
+import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_THUMBNAIL;
 
 public class PhoneLoginActivity extends AppCompatActivity {
 

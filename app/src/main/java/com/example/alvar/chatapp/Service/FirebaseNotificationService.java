@@ -7,13 +7,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.alvar.chatapp.Activities.ChatActivity;
-import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
 import com.example.alvar.chatapp.Notifications.Token;
-import com.firebase.ui.database.FirebaseArray;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,21 +19,18 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import androidx.annotation.NonNull;
 
-import static com.example.alvar.chatapp.Constant.CONTACT_ID;
-import static com.example.alvar.chatapp.Constant.TOKEN_PREFS;
-import static com.example.alvar.chatapp.Constant.USER_ID_PREFS;
-import static com.example.alvar.chatapp.Constant.USER_INFO_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 
 public class FirebaseNotificationService extends FirebaseMessagingService {
 

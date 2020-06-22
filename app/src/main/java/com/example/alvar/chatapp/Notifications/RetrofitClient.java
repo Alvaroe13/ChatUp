@@ -1,11 +1,9 @@
 package com.example.alvar.chatapp.Notifications;
 
-import com.example.alvar.chatapp.Constant;
-
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.example.alvar.chatapp.Constant.BASE_URL;
+import static com.example.alvar.chatapp.Utils.Constant.BASE_URL;
 
 public class RetrofitClient {
 

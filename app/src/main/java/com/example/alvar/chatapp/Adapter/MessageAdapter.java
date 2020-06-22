@@ -42,10 +42,10 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 

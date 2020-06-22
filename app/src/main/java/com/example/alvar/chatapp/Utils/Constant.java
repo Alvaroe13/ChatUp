@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp;
+package com.example.alvar.chatapp.Utils;
 
 import androidx.annotation.NonNull;
 

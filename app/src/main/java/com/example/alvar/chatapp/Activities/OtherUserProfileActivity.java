@@ -29,9 +29,9 @@ import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.alvar.chatapp.Constant.CONTACT_ID;
-import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
-import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 
 public class OtherUserProfileActivity extends AppCompatActivity {
     //log

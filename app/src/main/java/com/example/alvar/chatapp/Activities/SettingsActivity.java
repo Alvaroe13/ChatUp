@@ -42,8 +42,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
 
-import static com.example.alvar.chatapp.Constant.GALLERY_REQUEST_NUMBER;
-import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Utils.Constant.GALLERY_REQUEST_NUMBER;
+import static com.example.alvar.chatapp.Utils.Constant.IMAGE_OPTION;
 
 public class SettingsActivity extends AppCompatActivity {
 
