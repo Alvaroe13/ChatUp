@@ -68,8 +68,11 @@ public class LocationService extends Service {
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("")
-                    .setContentText("").build();
+                    .setContentTitle(getString(R.string.working_background))
+                    .setContentText(getString(R.string.updating_location))
+                    .setSmallIcon(R.drawable.icon_location_notification)
+                    .setColor(getColor(R.color.color_blue_light))
+                    .build();
 
             startForeground(1, notification);
         }

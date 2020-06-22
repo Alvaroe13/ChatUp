@@ -156,6 +156,8 @@
     <string name="open_camera">Cámara</string>
     <string name="place_username">Nombre de usuario</string>
     <string name="dialog_location">Necesitas tener activado el GPS para compartir ubicación ¿Deseas activarlo?</string>
+    <string name="updating_location">Actualizando tu ubicación</string>
+    <string name="working_background">Está funcionando en segundo plano</string>
 
 
 </resources>

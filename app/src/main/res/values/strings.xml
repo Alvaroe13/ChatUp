@@ -154,6 +154,8 @@
     <string name="open_camera">Camera</string>
     <string name="place_username">Username</string>
     <string name="dialog_location">This application requires GPS to work properly, do you want to enable it?</string>
+    <string name="updating_location">Updating your current location</string>
+    <string name="working_background">It\'s running in the background</string>
 
 
 </resources>
