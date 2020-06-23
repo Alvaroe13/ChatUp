@@ -221,7 +221,6 @@ public class AnswerRequestActivity extends AppCompatActivity {
 
                                             if (task.isSuccessful()){
 
-                                                Toast.makeText(AnswerRequestActivity.this, "decline", Toast.LENGTH_SHORT).show();
                                                 finish();
                                             }
                                         }

@@ -641,7 +641,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
                     String title = "Chat Request";
-                    String message = "Someone wants to connect with you";
+                    String message = "You have a new chat request";
 
                     RequestNotification notificationBody = new RequestNotification(title , message);
 

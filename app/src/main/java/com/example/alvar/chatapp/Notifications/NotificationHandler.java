@@ -7,14 +7,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 
 import com.example.alvar.chatapp.Activities.MainActivity;
 import com.example.alvar.chatapp.R;
 
-import androidx.annotation.RequiresApi;
 
 public class NotificationHandler extends ContextWrapper {
 
@@ -92,11 +89,7 @@ public class NotificationHandler extends ContextWrapper {
     private Notification.Builder createNotificationWithChannel(String title, String message, PendingIntent pendingIntent, String channelID){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            /*    Intent intent = new Intent(this, AnswerRequestActivity.class);
-            intent.putExtra("otherUserID", otherUserID);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-*/
+
             return new Notification.Builder(getApplicationContext(), channelID)
                     .setContentTitle(title)
                     .setContentText(message)
@@ -131,10 +124,16 @@ public class NotificationHandler extends ContextWrapper {
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(requestChannel);
 
+            Intent intent = new Intent(this, MainActivity.class);
+           /* intent.putExtra("otherUserID", otherUserID);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);*/
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
 
             return  new Notification.Builder(getApplicationContext(), REQUEST_CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(message)
+                    .setContentIntent(pendingIntent)
                     .setSmallIcon(R.drawable.ic_notification_person_add)
                     .setColor(getColor(R.color.color_blue_light))
                     .setAutoCancel(true);
