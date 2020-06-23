@@ -2,10 +2,12 @@ package com.example.alvar.chatapp.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -48,7 +50,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private static final String TAG = "OtherUserProfilePage";
     //firebase
     private FirebaseAuth auth;
-    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef,  dbChatsNodeRef, dbTokensNodeRef, dbChatListRef;
+    private DatabaseReference dbUsersNodeRef, dbChatRequestNodeRef, contactsNodeRef, dbChatsNodeRef, dbTokensNodeRef, dbChatListRef;
     private ValueEventListener removeListener;
     //ui elements
     private CircleImageView otherUserImg;
@@ -85,9 +87,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         coordinatorLayout = findViewById(R.id.coordinatorLayout);
     }
 
-    private void initFirebase(){
+    private void initFirebase() {
         auth = FirebaseAuth.getInstance();
-        FirebaseDatabase  database = FirebaseDatabase.getInstance();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
         //nodes
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbChatRequestNodeRef = database.getReference().child(getString(R.string.chats_requests_ref));
@@ -100,10 +102,11 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     /**
      * in this method we receive the unique user Id given by firebase to any user
      * coming from the "AllUsersActivity".
+     *
      * @return
      */
     private String receiveUserId() {
-       contactID = getIntent().getStringExtra("otherUserId");
+        contactID = getIntent().getStringExtra("otherUserId");
         Log.i(TAG, "receiveUserId: user ID: " + contactID);
         return contactID;
     }
@@ -111,13 +114,13 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     /**
      * here in this method is the logic to fetch info from the database
      */
-    private void retrieveInfo(){
+    private void retrieveInfo() {
 
         dbUsersNodeRef.child(receiveUserId()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
 
                     setInfo(dataSnapshot);
                 }
@@ -135,33 +138,34 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     /**
      * this method is in charge of setting up the info fetched from the db into the UI
+     *
      * @param dataSnapshot
      */
     private void setInfo(DataSnapshot dataSnapshot) {
 
-         username = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
-         status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
-         imageThumbnail = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
-         imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
+        username = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+        status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
+        imageThumbnail = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+        imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
 
         usernameOtherUser.setText(username);
         statusOtherUser.setText(status);
 
         //GLIDE
         RequestOptions options = new RequestOptions()
-                    .centerCrop()
-                    .error(R.drawable.profile_image);
+                .centerCrop()
+                .error(R.drawable.profile_image);
 
         Glide.with(getApplicationContext())
-                    .setDefaultRequestOptions(options)
-                    .load(imageThumbnail)
-                    .into(otherUserImg);
+                .setDefaultRequestOptions(options)
+                .load(imageThumbnail)
+                .into(otherUserImg);
     }
 
     /**
      * this method is in charge of managing the chat requests
      */
-    private void manageChatRequest(){
+    private void manageChatRequest() {
 
         //we get current user id
         currentUserID = auth.getCurrentUser().getUid();
@@ -170,41 +174,41 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         chatRequestStatus();
 
 
-            //in case the current user open it's own profile in the "all users" page
-        if (currentUserID.equals(contactID)){
+        //in case the current user open it's own profile in the "all users" page
+        if (currentUserID.equals(contactID)) {
             //we hide "send request" button
             buttonFirst.setVisibility(View.INVISIBLE);
 
-        } else{
+        } else {
 
             buttonFirst.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     //in case there is no request sent yet
-                    if (current_database_state.equals("not_friend_yet")){
+                    if (current_database_state.equals("not_friend_yet")) {
 
                         sendChatRequest();
                     }
                     //in case the request it's been sent
-                    if (current_database_state.equals("request_sent")){
+                    if (current_database_state.equals("request_sent")) {
 
                         cancelChatRequest();
                     }
                     //in case the user has received a chat request
-                    if(current_database_state.equals("request_received")){
+                    if (current_database_state.equals("request_received")) {
 
                         //accept the chat request
                         acceptRequest();
                     }
-                    if (current_database_state.equals("contact_added")){
+                    if (current_database_state.equals("contact_added")) {
 
                         alertMessage(getString(R.string.deleteContact), getString(R.string.deleteContactMessage));
                     }
 
                 }
             });
-            
+
         }
     }
 
@@ -227,14 +231,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     String request_type = dataSnapshot.child(contactID).child("request_type").getValue().toString();
 
                     //if the user sends a chat request
-                    if (request_type.equals("sent")){
+                    if (request_type.equals("sent")) {
 
                         current_database_state = "request_sent";
                         buttonFirst.setText(getString(R.string.cancelChatRequest));
-                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark) );
+                        buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark));
                     }
                     //in case the user receives a chat request
-                    else if (request_type.equals("received")){
+                    else if (request_type.equals("received")) {
 
                         current_database_state = "request_received";
                         buttonFirst.setText(getString(R.string.acceptChatRequest));
@@ -258,7 +262,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            if (dataSnapshot.hasChild(contactID)){
+                            if (dataSnapshot.hasChild(contactID)) {
                                 //here we update the UI and database status of the user who sent the request
                                 current_database_state = "contact_added";
                                 buttonFirst.setText(getString(R.string.removeContact));
@@ -304,43 +308,43 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         dbChatRequestNodeRef.child(currentUserID).child(contactID)
                 .child("request_type").setValue("sent")
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
 
                 /*
                 if we created the first 2 nodes now we create another 2 nodes (1 for the request receiver
                 and the other for the request sender)
                 */
-                if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
 
-                    dbChatRequestNodeRef.child(contactID).child(currentUserID)
-                            .child("request_type").setValue("received")
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
+                            dbChatRequestNodeRef.child(contactID).child(currentUserID)
+                                    .child("request_type").setValue("received")
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
 
-                                    //here we update the UI in the "all users" page
-                                    if (task.isSuccessful()){
+                                            //here we update the UI in the "all users" page
+                                            if (task.isSuccessful()) {
 
-                                        buttonFirst.setEnabled(true);
-                                        current_database_state = "request_sent";
-                                        buttonFirst.setText(getString(R.string.cancelChatRequest));
+                                                buttonFirst.setEnabled(true);
+                                                current_database_state = "request_sent";
+                                                buttonFirst.setText(getString(R.string.cancelChatRequest));
 
-                                        sendNotification();
+                                                sendNotification();
 
 
-                                    }
-                                    //if something goes wrong show message to the user
-                                    else{
-                                        Toast.makeText(OtherUserProfileActivity.this,
-                                                task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
+                                            }
+                                            //if something goes wrong show message to the user
+                                            else {
+                                                Toast.makeText(OtherUserProfileActivity.this,
+                                                        task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
 
-                                }
-                            });
-                }
-            }
-        });
+                                        }
+                                    });
+                        }
+                    }
+                });
 
 
     }
@@ -357,7 +361,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
-                        if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
 
 
                             dbChatRequestNodeRef.child(contactID).child(currentUserID)
@@ -367,7 +371,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<Void> task) {
 
                                             //here we update the UI in the "all users" page
-                                            if (task.isSuccessful()){
+                                            if (task.isSuccessful()) {
 
                                                 buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
@@ -376,7 +380,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
-                                                                  getString(R.string.canceledChatRequest));
+                                                        getString(R.string.canceledChatRequest));
 
                                                 buttonFirst.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                                                 buttonSecond.setVisibility(View.INVISIBLE);
@@ -384,7 +388,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                             }
                                             //if something goes wrong show message to the user
-                                            else{
+                                            else {
                                                 Toast.makeText(OtherUserProfileActivity.this,
                                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                             }
@@ -394,10 +398,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                     });
 
 
-
                         }
                         //if something goes wrong show message to the user
-                        else{
+                        else {
                             Toast.makeText(OtherUserProfileActivity.this,
                                     task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
@@ -423,7 +426,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
 
                     //here we create the "contacts" node for the user receiving the request
                     contactsNodeRef.child(contactID).child(currentUserID)
@@ -431,7 +434,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
 
-                            if (task.isSuccessful()){
+                            if (task.isSuccessful()) {
 
                                 //here we delete the info of the user sending the request saved in the "Chat request" node
                                 dbChatRequestNodeRef.child(currentUserID).child(contactID)
@@ -440,7 +443,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
 
-                                                if (task.isSuccessful()){
+                                                if (task.isSuccessful()) {
 
                                                     //here we delete the info of the user receiving the request saved in the "Chat request" node
                                                     dbChatRequestNodeRef.child(contactID).child(currentUserID)
@@ -450,7 +453,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                                 public void onComplete(@NonNull Task<Void> task) {
 
                                                                     //here we update the UI in the "all users" page
-                                                                    if (task.isSuccessful()){
+                                                                    if (task.isSuccessful()) {
 
                                                                         buttonFirst.setEnabled(true);
                                                                         current_database_state = "contact_added";
@@ -460,7 +463,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
                                                                         SnackbarHelper.showSnackBarLong(coordinatorLayout,
-                                                                                         getString(R.string.chatRequestAccepted));
+                                                                                getString(R.string.chatRequestAccepted));
                                                                         buttonSecond.setVisibility(View.VISIBLE);
                                                                         buttonSecond.setEnabled(true);
                                                                         buttonSecond.setText(getString(R.string.sendMessage));
@@ -469,7 +472,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                                                     }
                                                                     //if something goes wrong show message to the user
-                                                                    else{
+                                                                    else {
                                                                         Toast.makeText(OtherUserProfileActivity.this,
                                                                                 task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                                     }
@@ -479,7 +482,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                                             });
                                                 }
                                                 //if something goes wrong show message to the user
-                                                else{
+                                                else {
                                                     Toast.makeText(OtherUserProfileActivity.this,
                                                             task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                                 }
@@ -490,7 +493,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                             }
                             //if something goes wrong show message to the user
-                            else{
+                            else {
                                 Toast.makeText(OtherUserProfileActivity.this,
                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -499,10 +502,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     });
 
 
-
                 }
                 //if something goes wrong show message to the user
-                else{
+                else {
                     Toast.makeText(OtherUserProfileActivity.this,
                             task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -522,7 +524,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
-                        if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
 
 
                             contactsNodeRef.child(contactID).child(currentUserID)
@@ -532,14 +534,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<Void> task) {
 
                                             //here we update the UI in the "all users" page
-                                            if (task.isSuccessful()){
+                                            if (task.isSuccessful()) {
 
                                                 buttonFirst.setEnabled(true);
                                                 current_database_state = "not_friend_yet";
                                                 buttonFirst.setText(getString(R.string.sendChatRequest));
 
                                                 //we delete chat between contacts
-                                                deleteChat(currentUserID, contactID);
+                                                eraseChatRoom(currentUserID, contactID);
 
                                                 //show the user the request has been canceled
                                                 SnackbarHelper.showSnackBarLongRed(coordinatorLayout,
@@ -551,7 +553,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                             }
                                             //if something goes wrong show message to the user
-                                            else{
+                                            else {
                                                 Toast.makeText(OtherUserProfileActivity.this,
                                                         task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                             }
@@ -560,10 +562,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                                     });
 
 
-
                         }
                         //if something goes wrong show message to the user
-                        else{
+                        else {
                             Toast.makeText(OtherUserProfileActivity.this,
                                     task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
@@ -577,7 +578,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     /**
      * intent to take the user from "all users" page to chat room with the contact
      */
-    private void goToChatRoom(){
+    private void goToChatRoom() {
 
         Intent intentChatRoom = new Intent(OtherUserProfileActivity.this, ChatActivity.class);
         intentChatRoom.putExtra(CONTACT_ID, contactID);
@@ -591,11 +592,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     /**
      * this method contains the pop-up message when user wants to remove a contact
      * (standard alert dialog)
+     *
      * @param title
      * @param message
      * @return
      */
-    private AlertDialog alertMessage(String title, String message){
+    private AlertDialog alertMessage(String title, String message) {
 
 
         AlertDialog popUpWindow = new AlertDialog.Builder(this)
@@ -665,46 +667,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         });
 
 
-
     }
 
-    /**
-     * method in charge of deleting chats in fragment chats (called in remove contact)
-     */
-    private void deleteChat(final String currentUserID, final String contactID){
-
-      /* dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-
-                    Messages message = ds.getValue(Messages.class);
-
-                    try {
-
-                        if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(contactID) ||
-                                message.getSenderID().equals(contactID) && message.getReceiverID().equals(currentUserID) ) {
-
-                            eraseChatRoom(currentUserID, contactID);
-                        }
-                    }catch (Exception e){
-                        Log.e(TAG, "onDataChange: error = " + e.getMessage() );
-                    }
-
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
-
-        eraseChatRoom(currentUserID, contactID);
-
-    }
 
     private void eraseChatRoom(final String user1, final String user2) {
 
@@ -712,41 +676,68 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         dbChatListRef.child(user1).child(user2).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    dbChatListRef.child(user2).child(user1).removeValue();
-                    Intent i = new Intent(OtherUserProfileActivity.this, MainActivity.class);
-                    startActivity(i);
-                    finish();
-                }
-            }
-        });
 
+                if (task.isSuccessful()) {
 
+                    dbChatListRef.child(user2).child(user1).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
 
-    }
-
-    private void deleteMessageHistory(final String currentUserID ,final String contactID) {
-
-        dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    Messages message = ds.getValue(Messages.class);
-                    try {
-                        if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(contactID) ||
-                                message.getSenderID().equals(contactID) && message.getReceiverID().equals(currentUserID) ){
-
-                            ds.getRef().removeValue();
+                            deleteChat(user1, user2);
                             Intent i = new Intent(OtherUserProfileActivity.this, MainActivity.class);
                             startActivity(i);
                             finish();
 
                         }
-                    }catch (Exception e){
-                        Log.e(TAG, "onDataChange: " );
-                    }
+                    });
 
                 }
+
+
+            }
+        });
+
+
+    }
+
+    /**
+     * method in charge of deleting chats in fragment chats (called in remove contact)
+     */
+    private void deleteChat(final String currentUserID, final String contactID) {
+
+        Log.d(TAG, "deleteChat: LLAMADOOOOOOOO");
+
+        removeListener =
+        dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                    Messages message = ds.getValue(Messages.class);
+
+                    try {
+
+                        if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(contactID) ||
+                                message.getSenderID().equals(contactID) && message.getReceiverID().equals(currentUserID)) {
+
+                            ds.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    dbChatsNodeRef.removeEventListener(removeListener);
+                                    /*Intent i = new Intent(OtherUserProfileActivity.this, MainActivity.class);
+                                    startActivity(i);
+                                    finish();*/
+                                }
+                            });
+
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "onDataChange: error = " + e.getMessage());
+                    }
+
+
+                }
+
             }
 
             @Override
@@ -754,6 +745,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
 
@@ -771,7 +764,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private void goToImageBigRoom() {
 
         Intent intent = new Intent(this, ImageActivity.class);
-        intent.putExtra("messageContent", imageProfile );
+        intent.putExtra("messageContent", imageProfile);
         startActivity(intent);
     }
 
