@@ -253,7 +253,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
             messageViewHolder.textLeftSide.setTextSize(15);
             //if long pressed over layout
-            messageViewHolder.textLeftSide.setLongClickable(true);
+           /* messageViewHolder.textLeftSide.setLongClickable(true);
             messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -261,7 +261,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
-            });
+            });*/
         }
 
     }
@@ -315,7 +315,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
             });
             //if long pressed over layout
-            messageViewHolder.sendImageLeft.setLongClickable(true);
+          /*  messageViewHolder.sendImageLeft.setLongClickable(true);
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -323,7 +323,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
-            });
+            });*/
         }
     }
 
@@ -397,7 +397,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
             });
             //if long pressed over layout
-            messageViewHolder.sendImageLeft.setLongClickable(true);
+           /* messageViewHolder.sendImageLeft.setLongClickable(true);
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -405,7 +405,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
-            });
+            });*/
 
 
         }
@@ -419,7 +419,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.Delete);
 
-        CharSequence deleteOptions[] = new CharSequence[]{ mContext.getString(R.string.Delete_for_me), mContext.getString(R.string.Delete_for_everyone), mContext.getString(R.string.cancel)};
+        CharSequence deleteOptions[] = new CharSequence[]{  mContext.getString(R.string.Delete_message), mContext.getString(R.string.cancel)};
 
         builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -427,10 +427,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 switch (options) {
                     case 0:
-                        deleteRightSideMessage(position);
-                        Log.i(TAG, "onClick: delete for me option pressed");
-                        break;
-                    case 1:
                         deleteMessageForEveryone(position);
                         Log.i(TAG, "onClick: delete for everyone option pressed");
                         break;
@@ -442,6 +438,92 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         builder.show();
     }
+
+
+    /**
+     * method in charge of deleting message for both sender and receiver.
+     * @param position
+     */
+    private void deleteMessageForEveryone(int position){
+
+        try{
+            final String senderID = messagesList.get(position).getSenderID();
+            final String receiverID = messagesList.get(position).getReceiverID();
+            final String messageID = messagesList.get(position).getMessageID();
+
+            //lets first of all erase from the current user side
+            dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
+                    if (task.isSuccessful()){
+                        //lets first of all erase from the other user side
+                        dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                                if (task.isSuccessful()){
+                                    Log.i(TAG, "onComplete: message deleted for everyone ");
+                                }
+                                else{
+                                    Log.i(TAG, "onComplete: Error, something failed ");
+                                }
+                            }
+                        });
+
+                    } else{
+                        Log.i(TAG, "onComplete: Error, something failed ");
+                    }
+                }
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
+
+
+
+
+
+    }
+
+    /**
+     * method in charge of launching file when clicked by user
+     * @param messageViewHolder
+     * @param position
+     */
+    private void openFile(final MessageViewHolder messageViewHolder, final String messageType, final int position) {
+
+        //here we store the "file" or "image" info to be fetched later on
+        final String message = messagesList.get(position).getMessage();
+
+        if (messageType.equals("image")) {
+            showImageRoom(message, messageViewHolder);
+        }
+        //if it's a "pdf" or "docx" we show option to download file.
+        else {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(message));
+            messageViewHolder.itemView.getContext().startActivity(i);
+        }
+
+    }
+
+
+    /**
+     * methos in charge of taking the user to the Big image room when image message is pressed
+     * @param messageContent
+     * @param messageViewHolder
+     */
+    private void showImageRoom(String messageContent, MessageViewHolder messageViewHolder) {
+        Intent intentImage = new Intent(mContext, ImageActivity.class);
+        intentImage.putExtra("messageContent", messageContent);
+        messageViewHolder.itemView.getContext().startActivity(intentImage);
+
+    }
+
+    //------ THIS ARE FEATURES FOR THE USER TO INTERACT WITH MESSAGES RECEIVED (UNFINISHED)------//
+
 
     /**
      *  method shows pop up window with options to delete message sent by the other user
@@ -459,7 +541,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
                 switch (options) {
                     case 0:
-                        deleteLeftSideMessage(position);
+                        // deleteLeftSideMessage(position);
                         Log.i(TAG, "onClick: delete for me option pressed");
                         break;
                     default:
@@ -525,87 +607,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         });
     }
 
-    /**
-     * method in charge of deleting message for both sender and receiver.
-     * @param position
-     */
-    private void deleteMessageForEveryone(int position){
-
-        try{
-            final String senderID = messagesList.get(position).getSenderID();
-            final String receiverID = messagesList.get(position).getReceiverID();
-            final String messageID = messagesList.get(position).getMessageID();
-
-            //lets first of all erase from the current user side
-            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-
-                    if (task.isSuccessful()){
-                        //lets first of all erase from the other user side
-                        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-
-                                if (task.isSuccessful()){
-                                    Log.i(TAG, "onComplete: message deleted for everyone ");
-                                }
-                                else{
-                                    Log.i(TAG, "onComplete: Error, something failed ");
-                                }
-                            }
-                        });
-
-                    } else{
-                        Log.i(TAG, "onComplete: Error, something failed ");
-                    }
-                }
-            });
-        }catch (NullPointerException e){
-            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
-        }catch (IndexOutOfBoundsException e){
-            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
-        }
-
-
-
-
-
-    }
-
-    /**
-     * method in charge of launching file when clicked by user
-     * @param messageViewHolder
-     * @param position
-     */
-    private void openFile(final MessageViewHolder messageViewHolder, final String messageType, final int position) {
-
-        //here we store the "file" or "image" info to be fetched later on
-        final String message = messagesList.get(position).getMessage();
-
-        if (messageType.equals("image")) {
-            showImageRoom(message, messageViewHolder);
-        }
-        //if it's a "pdf" or "docx" we show option to download file.
-        else {
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(message));
-            messageViewHolder.itemView.getContext().startActivity(i);
-        }
-
-    }
-
-
-    /**
-     * methos in charge of taking the user to the Big image room when image message is pressed
-     * @param messageContent
-     * @param messageViewHolder
-     */
-    private void showImageRoom(String messageContent, MessageViewHolder messageViewHolder) {
-        Intent intentImage = new Intent(mContext, ImageActivity.class);
-        intentImage.putExtra("messageContent", messageContent);
-        messageViewHolder.itemView.getContext().startActivity(intentImage);
-
-    }
+    //--------------------------------------- HERE------------------------------------------//
 
 
     // -------------------------------------------- maps related -------------------------------
@@ -648,7 +650,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
             });
             //if long pressed over layout
-            messageViewHolder.sendMapLeft.setLongClickable(true);
+          /*  messageViewHolder.sendMapLeft.setLongClickable(true);
             messageViewHolder.sendMapLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -656,7 +658,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     Log.i(TAG, "onLongClick: long pressed left side");
                     return true;
                 }
-            });
+            });*/
         }
 
     }
@@ -802,3 +804,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
 }
+
+
+

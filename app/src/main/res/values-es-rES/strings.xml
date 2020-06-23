@@ -137,7 +137,7 @@
     <string name="Word_Document">Documento Word</string>
     <string name="Delete">Borrar</string>
     <string name="Delete_for_me">Borrar solo para mi</string>
-    <string name="Delete_for_everyone">Borrar para todos</string>
+    <string name="Delete_message">Borrar mensaje</string>
     <string name="account">Cuenta</string>
     <string name="maps">Mapa</string>
     <string name="new_status">Nuevo estado</string>

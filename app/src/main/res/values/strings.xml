@@ -135,7 +135,7 @@
     <string name="Word_Document">Word document</string>
     <string name="Delete">Delete</string>
     <string name="Delete_for_me">Delete for me</string>
-    <string name="Delete_for_everyone">Delete for everyone</string>
+    <string name="Delete_message">Delete message</string>
     <string name="account">Account</string>
     <string name="maps">Maps</string>
     <string name="new_status">New status</string>
