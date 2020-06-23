@@ -197,39 +197,43 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                         //we bind the Message node in firebase database with the JAVA model "Messages"
                         Messages message = snapshot.getValue(Messages.class);
 
-                        Log.i(TAG, "onDataChange: sender: " + message.getSenderID());
-                        Log.i(TAG, "onDataChange: receiver: " + message.getReceiverID());
 
-                        if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
-                                message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
+                        try{
+                            if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
+                                    message.getSenderID().equals(otherUserID) && message.getReceiverID().equals(currentUserID)) {
 
-                           holder.smallIcon.setVisibility(View.GONE);
+                                holder.smallIcon.setVisibility(View.GONE);
 
-                            switch (message.getType()) {
-                                case "image":
-                                    holder.smallIcon.setVisibility(View.VISIBLE);
-                                    holder.lastMessageField.setText(R.string.photo);
-                                    break;
-                                case "pdf":
-                                    holder.smallIcon.setVisibility(View.VISIBLE);
-                                    holder.smallIcon.setBackgroundResource(R.drawable.file_icon);
-                                    holder.lastMessageField.setText(R.string.PDF);
-                                    break;
-                                case "docx":
-                                    holder.smallIcon.setVisibility(View.VISIBLE);
-                                    holder.smallIcon.setBackgroundResource(R.drawable.file_icon);
-                                    holder.lastMessageField.setText(R.string.Word_Document);
-                                    break;
-                                default: //"text" is the one by default
-                                    String lastMessage = message.getMessage();
-                                    holder.lastMessageField.setText(lastMessage);
+                                switch (message.getType()) {
+                                    case "image":
+                                        holder.smallIcon.setVisibility(View.VISIBLE);
+                                        holder.lastMessageField.setText(R.string.photo);
+                                        break;
+                                    case "pdf":
+                                        holder.smallIcon.setVisibility(View.VISIBLE);
+                                        holder.smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                        holder.lastMessageField.setText(R.string.PDF);
+                                        break;
+                                    case "docx":
+                                        holder.smallIcon.setVisibility(View.VISIBLE);
+                                        holder.smallIcon.setBackgroundResource(R.drawable.file_icon);
+                                        holder.lastMessageField.setText(R.string.Word_Document);
+                                        break;
+                                    default: //"text" is the one by default
+                                        String lastMessage = message.getMessage();
+                                        holder.lastMessageField.setText(lastMessage);
 
-                                    String lastMessageDate = message.getMessageDate();
-                                    holder.lastMessageDateField.setText(lastMessageDate);
+                                        String lastMessageDate = message.getMessageDate();
+                                        holder.lastMessageDateField.setText(lastMessageDate);
+                                }
+
+
                             }
-
-
+                        }catch (Exception e){
+                            Log.e(TAG, "onDataChange: error" + e.getMessage());
                         }
+
+
 
                     }
 

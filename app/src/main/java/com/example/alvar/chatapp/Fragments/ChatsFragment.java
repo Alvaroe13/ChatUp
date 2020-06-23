@@ -92,15 +92,15 @@ public class ChatsFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 chatListList.clear();
+                if (dataSnapshot.exists()){
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                   final ChatList chatList = snapshot.getValue(ChatList.class);
-                    chatListList.add(chatList);
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        final ChatList chatList = snapshot.getValue(ChatList.class);
+                        chatListList.add(chatList);
+                    }
+
+                    showChatList();
                 }
-
-
-
-                showChatList();
 
             }
 

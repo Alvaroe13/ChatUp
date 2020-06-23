@@ -111,7 +111,7 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef, dbChatList;
     private UploadTask uploadTask;
     private ValueEventListener seenListener;
     //Firestore
@@ -203,6 +203,7 @@ public class ChatActivity extends AppCompatActivity {
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
         dbTokensNodeRef = database.getReference().child("Tokens");
+        dbChatList = database.getReference().child("ChatList");
 
     }
 
@@ -344,7 +345,7 @@ public class ChatActivity extends AppCompatActivity {
                             getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
                 } else {
                     //otherwise we send the message
-
+                    //createChatListDB();
                     uploadMessageToDb(messageText, "text");
                     //we remove any text enter by the user once it's been sent
                     chatEditText.setText("");
@@ -760,16 +761,16 @@ public class ChatActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // here we get the final image URI from storage
                     Uri fileUri = task.getResult();
-                    //we parse it to String type.
                     String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    //this is for notification purposes
                     notify = true;
-                    //send message here
+                    //upload message in db
+                    //createChatListDB();
                     uploadMessageToDb(fileURLInFirebase, messageType );
 
                 } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ChatActivity.this, "Error: " + task.getException().toString() , Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -831,7 +832,7 @@ public class ChatActivity extends AppCompatActivity {
 
         chatProgressBar.setVisibility(View.INVISIBLE);
 
-        createChatListDB();
+        createChatListDB(currentUserID, contactID);
         sendNotification(messageInfo, messageType, messagePushKey);
 
     }
@@ -839,11 +840,24 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * method creates chatroom in db to be retrieved in chatFragment and show as a list.
      */
-    private void createChatListDB() {
+    private void createChatListDB(final String currentUserID, final String contactID) {
 
-        final DatabaseReference dbChatListNodeRef1 = database.getReference().child("ChatList")
-                .child(currentUserID).child(contactID);
+        Log.d(TAG, "createChatListDB: TRIGEREEEEEEEEEEDDDDDDDDD create chat room in db");
 
+        dbChatList.child(currentUserID).child(contactID).child("id")
+                            .setValue(contactID).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+
+                    dbChatList.child(contactID).child(currentUserID).child("id").setValue(currentUserID);
+
+                }
+            }
+        });
+
+
+/*
         dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -862,7 +876,7 @@ public class ChatActivity extends AppCompatActivity {
         final  DatabaseReference dbChatListNodeRef2 = database.getReference().child("ChatList")
                 .child(contactID).child(currentUserID);
 
-        dbChatListNodeRef1.addValueEventListener(new ValueEventListener() {
+        dbChatListNodeRef2.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()){
@@ -874,7 +888,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
     }
 
