@@ -9,6 +9,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.example.alvar.chatapp.Activities.ChatActivity;
+import com.example.alvar.chatapp.Notifications.Data;
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,8 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-
-import java.util.Random;
 
 import androidx.annotation.NonNull;
 
@@ -77,6 +76,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         userIDPrefs = userID.toString();
         return userIDPrefs;
     }
+
     private void initFirebase(){
         //firebase db init
         database = FirebaseDatabase.getInstance();
@@ -107,7 +107,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
      * @param remoteMessage
      */
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
 
         Log.d(TAG, "message received NOTIFICATION RECEIVED");
 
@@ -118,6 +118,38 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
             initFirebase();
             userID2 = userFirebase.getUid();
         }
+
+        if (remoteMessage.getData().get("messageID") != null){
+            chatNotification(remoteMessage);
+        } else{
+            requestNotification(remoteMessage);
+            Log.d(TAG, "onMessageReceived: chat Request notification received");
+        }
+
+
+
+    }
+
+    private void requestNotification(RemoteMessage remoteMessage) {
+
+        String message =  remoteMessage.getData().get("message");
+        String title =  remoteMessage.getData().get("title");
+
+        Log.d(TAG, "requestNotification: incoming message content: " + message);
+        Log.d(TAG, "requestNotification: incoming message title: " + title);
+
+        NotificationHandler handler = new NotificationHandler(this);
+        Notification.Builder builder = handler.createRequestNotification(title, message);
+        handler.getNotificationManager().notify(2 , builder.build() );
+
+
+    }
+
+    /**
+     * method showing notification related to a new unseen message
+     * @param remoteMessage
+     */
+    private void chatNotification(RemoteMessage remoteMessage) {
 
         //params in .get() must match with the vars in our Data model.
         String senderID = remoteMessage.getData().get("senderID");
@@ -138,15 +170,50 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 }
             }
         }
+    }
+
+
+    /**
+     * created this method to check if other user has seen message in order to push notification
+     * if other user has not seen message only.
+     * @param remoteMessage
+     * @param messageID
+     */
+    private void messageSeenState(final RemoteMessage remoteMessage, final String messageID){
+
+        Log.d(TAG, "messageSeenState: enters here");
+
+        DatabaseReference dbChatsRef = database.getReference().child("Chats").child("Messages");
+
+        dbChatsRef.child(messageID).child("seen").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists()){
+                    if (dataSnapshot.getValue().equals(false)){
+                        Log.d(TAG, "messageSeenState: seen false ");
+                        showNotification(remoteMessage);
+                    }else{
+                        Log.d(TAG, "messageSeenState: seen true ");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
     }
+
 
     /**
      * this method is in charge of pushing the pop up notification for an incoming notification ONLY.
      * @param remoteMessage
      */
-    private void sendNotification(RemoteMessage remoteMessage) {
+    private void showNotification(RemoteMessage remoteMessage) {
 
         /*Random random = new Random();
         int notificationID = random.nextInt();*/
@@ -168,52 +235,19 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         intent.putExtra( CONTACT_ID, senderID);
         intent.putExtra( CONTACT_NAME, senderUsername);
         intent.putExtra( CONTACT_IMAGE, senderPhoto);
-        Log.d(TAG, "sendNotification: sender user ID : " + senderID);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationHandler notificationHandler = new NotificationHandler(this);
         Notification.Builder builder = notificationHandler.createNotification(senderUsername, message, pendingIntent, true);
 
         notificationHandler.getNotificationManager().notify(1, builder.build());
-    //    notificationHandler.showGroupNotification(true);
+     // notificationHandler.showGroupNotification(true);
     }
 
 
-    /**
-     * created this method to check if other user has seen message in order to push notification
-     * if other user has not seen message only.
-     * @param remoteMessage
-     * @param messageID
-     */
-    private void messageSeenState(final RemoteMessage remoteMessage, final String messageID){
 
-        Log.d(TAG, "messageSeenState: enters here");
-
-      DatabaseReference dbChatsRef = database.getReference().child("Chats").child("Messages");
-
-      dbChatsRef.child(messageID).child("seen").addValueEventListener(new ValueEventListener() {
-          @Override
-          public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-         
-              if (dataSnapshot.exists()){
-                  if (dataSnapshot.getValue().equals(false)){
-                      Log.d(TAG, "messageSeenState: seen false ");
-                      sendNotification(remoteMessage);
-                  }else{
-                      Log.d(TAG, "messageSeenState: seen true ");
-                  }
-              }
-          }
-
-          @Override
-          public void onCancelled(@NonNull DatabaseError databaseError) {
-
-          }
-      });
-
-
-    }
 }
 
 

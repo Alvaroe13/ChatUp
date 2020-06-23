@@ -23,8 +23,10 @@ public class NotificationHandler extends ContextWrapper {
 
     public static final String CHANNEL_HIGH_NAME = "1";
     public static final String CHANNEL_LOW_NAME = "2";
+    public static final String REQUEST_CHANEL_NAME = "3";
     private final String CHANNEL_HIGH_ID = "HIGH CHANNEL";
     private final String CHANNEL_LOW_ID = "LOW CHANNEL";
+    private final String REQUEST_CHANNEL_ID = "REQUEST CHANNEL";
     public final int GROUP_ID = 100;
     private final String GROUP_NAME = "GROUP NAME";
 
@@ -120,6 +122,26 @@ public class NotificationHandler extends ContextWrapper {
 
     }
 
+    public Notification.Builder createRequestNotification(String title, String message){
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        //Lets create low channel
+        NotificationChannel requestChannel = new NotificationChannel(REQUEST_CHANNEL_ID ,
+                REQUEST_CHANEL_NAME, NotificationManager.IMPORTANCE_LOW);
+
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(requestChannel);
+
+
+            return  new Notification.Builder(getApplicationContext(), REQUEST_CHANNEL_ID)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setSmallIcon(R.drawable.ic_notification_person_add)
+                    .setColor(getColor(R.color.color_blue_light))
+                    .setAutoCancel(true);
+        }
+       return null;
+    }
+
     public void showGroupNotification(boolean highImportance){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
 
@@ -141,4 +163,5 @@ public class NotificationHandler extends ContextWrapper {
         }
 
     }
+
 }

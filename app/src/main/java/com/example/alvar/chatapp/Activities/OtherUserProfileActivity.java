@@ -22,6 +22,7 @@ import com.example.alvar.chatapp.Notifications.ChatRequestNotification;
 import com.example.alvar.chatapp.Notifications.Data;
 import com.example.alvar.chatapp.Notifications.NotificationAPI;
 import com.example.alvar.chatapp.Notifications.PushNotification;
+import com.example.alvar.chatapp.Notifications.RequestNotification;
 import com.example.alvar.chatapp.Notifications.ResponseFCM;
 import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.Notifications.Token;
@@ -601,7 +602,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
         AlertDialog popUpWindow = new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.ic_warning)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
@@ -629,6 +630,8 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         //TODO send push notification when chat request is sent.
 
+        Log.d(TAG, "sendNotification: request notification method called");
+
         dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -637,9 +640,14 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     Token deviceToken = dataSnapshot.getValue(Token.class);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
+                    String title = "Chat Request";
+                    String message = "Someone wants to connect with you";
+
+                    RequestNotification notificationBody = new RequestNotification(title , message);
+
 
                     ChatRequestNotification notification =
-                            new ChatRequestNotification("You have a new chat request", deviceToken.getToken());
+                            new ChatRequestNotification( notificationBody , deviceToken.getToken());
 
                     apiService.requestNotification(notification).enqueue(new Callback<ResponseFCM>() {
                         @Override

@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         AlertDialog popUpWindow = new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.ic_warning)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
