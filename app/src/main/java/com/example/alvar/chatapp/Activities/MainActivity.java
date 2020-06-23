@@ -17,15 +17,12 @@ import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.Fragments.ChatsFragment;
 import com.example.alvar.chatapp.Fragments.GroupsFragment;
 import com.example.alvar.chatapp.Fragments.RequestsFragment;
-import com.example.alvar.chatapp.Notifications.NotificationAPI;
-import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,9 +47,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.alvar.chatapp.Constant.TOKEN_PREFS;
-import static com.example.alvar.chatapp.Constant.USER_ID_PREFS;
-import static com.example.alvar.chatapp.Constant.USER_INFO_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
+import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -308,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         AlertDialog popUpWindow = new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.ic_warning)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {

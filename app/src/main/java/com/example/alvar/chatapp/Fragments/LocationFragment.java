@@ -44,11 +44,11 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_CONTACT_LON;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LAT;
-import static com.example.alvar.chatapp.Constant.LOCATION_USER_LON;
-import static com.example.alvar.chatapp.Constant.MAPVIEW_BUNDLE_KEY;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
+import static com.example.alvar.chatapp.Utils.Constant.MAPVIEW_BUNDLE_KEY;
 
 /**
  * A simple {@link Fragment} subclass.

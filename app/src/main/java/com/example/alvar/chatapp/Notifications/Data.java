@@ -4,17 +4,21 @@ public class Data {
 
     private String recipientUserID;
     private String message;
-    private String title;
+    private String senderUsername;
     private String senderID;
+    private String messageID;
+    private String senderPhoto;
 
     public Data() {
     }
 
-    public Data(String recipientUserID, String message, String title, String senderID)  {
+    public Data(String recipientUserID, String message, String senderUsername, String senderID, String messageID, String senderPhoto)  {
         this.recipientUserID = recipientUserID;
         this.message = message;
-        this.title = title;
+        this.senderUsername = senderUsername;
         this.senderID = senderID;
+        this.messageID = messageID;
+        this.senderPhoto = senderPhoto;
     }
 
     public String getRecipientUserID() {
@@ -33,12 +37,12 @@ public class Data {
         this.message = message;
     }
 
-    public String getTitle() {
-        return title;
+    public String getSenderUsername() {
+        return senderUsername;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setSenderUsername(String senderUsername) {
+        this.senderUsername = senderUsername;
     }
 
     public String getSenderID() {
@@ -49,4 +53,19 @@ public class Data {
         this.senderID = senderID;
     }
 
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
+
+    public String getSenderPhoto() {
+        return senderPhoto;
+    }
+
+    public void setSenderPhoto(String senderPhoto) {
+        this.senderPhoto = senderPhoto;
+    }
 }

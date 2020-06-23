@@ -137,7 +137,7 @@
     <string name="Word_Document">Documento Word</string>
     <string name="Delete">Borrar</string>
     <string name="Delete_for_me">Borrar solo para mi</string>
-    <string name="Delete_for_everyone">Borrar para todos</string>
+    <string name="Delete_message">Borrar mensaje</string>
     <string name="account">Cuenta</string>
     <string name="maps">Mapa</string>
     <string name="new_status">Nuevo estado</string>
@@ -156,6 +156,8 @@
     <string name="open_camera">Cámara</string>
     <string name="place_username">Nombre de usuario</string>
     <string name="dialog_location">Necesitas tener activado el GPS para compartir ubicación ¿Deseas activarlo?</string>
+    <string name="updating_location">Actualizando tu ubicación</string>
+    <string name="working_background">Está funcionando en segundo plano</string>
 
 
 </resources>

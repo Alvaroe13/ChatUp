@@ -77,30 +77,30 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.alvar.chatapp.Constant.CHAT_DOCX_MENU_REQUEST;
-import static com.example.alvar.chatapp.Constant.CHAT_IMAGE_MENU_REQUEST;
-import static com.example.alvar.chatapp.Constant.CHAT_PDF_MENU_REQUEST;
-import static com.example.alvar.chatapp.Constant.CONTACT_ID;
-import static com.example.alvar.chatapp.Constant.CONTACT_IMAGE;
-import static com.example.alvar.chatapp.Constant.CONTACT_NAME;
-import static com.example.alvar.chatapp.Constant.IMAGE_OPTION;
-import static com.example.alvar.chatapp.Constant.PDF_FILE_EXTENSION;
-import static com.example.alvar.chatapp.Constant.PDF_FOLDER_REF;
-import static com.example.alvar.chatapp.Constant.PDF_MESSAGE_TYPE;
-import static com.example.alvar.chatapp.Constant.PDF_OPTION;
-import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
-import static com.example.alvar.chatapp.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
-import static com.example.alvar.chatapp.Constant.PHOTO_FILE_EXTENSION;
-import static com.example.alvar.chatapp.Constant.PHOTO_FOLDER_REF;
-import static com.example.alvar.chatapp.Constant.PHOTO_MESSAGE_TYPE;
-import static com.example.alvar.chatapp.Constant.READ_EXTERNAL_STORAGE_REQUEST_CODE;
-import static com.example.alvar.chatapp.Constant.SELECT_IMAGE;
-import static com.example.alvar.chatapp.Constant.SELECT_PDF;
-import static com.example.alvar.chatapp.Constant.SELECT_WORD_DOCUMENT;
-import static com.example.alvar.chatapp.Constant.WORD_DOCUMENT_OPTION;
-import static com.example.alvar.chatapp.Constant.WORD_DOC_FILE_EXTENSION;
-import static com.example.alvar.chatapp.Constant.WORD_DOC_FOLDER_REF;
-import static com.example.alvar.chatapp.Constant.WORD_DOC_MESSAGE_TYPE;
+import static com.example.alvar.chatapp.Utils.Constant.CHAT_DOCX_MENU_REQUEST;
+import static com.example.alvar.chatapp.Utils.Constant.CHAT_IMAGE_MENU_REQUEST;
+import static com.example.alvar.chatapp.Utils.Constant.CHAT_PDF_MENU_REQUEST;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Utils.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Utils.Constant.PDF_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Utils.Constant.PDF_FOLDER_REF;
+import static com.example.alvar.chatapp.Utils.Constant.PDF_MESSAGE_TYPE;
+import static com.example.alvar.chatapp.Utils.Constant.PDF_OPTION;
+import static com.example.alvar.chatapp.Utils.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
+import static com.example.alvar.chatapp.Utils.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.example.alvar.chatapp.Utils.Constant.PHOTO_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Utils.Constant.PHOTO_FOLDER_REF;
+import static com.example.alvar.chatapp.Utils.Constant.PHOTO_MESSAGE_TYPE;
+import static com.example.alvar.chatapp.Utils.Constant.READ_EXTERNAL_STORAGE_REQUEST_CODE;
+import static com.example.alvar.chatapp.Utils.Constant.SELECT_IMAGE;
+import static com.example.alvar.chatapp.Utils.Constant.SELECT_PDF;
+import static com.example.alvar.chatapp.Utils.Constant.SELECT_WORD_DOCUMENT;
+import static com.example.alvar.chatapp.Utils.Constant.WORD_DOCUMENT_OPTION;
+import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_FILE_EXTENSION;
+import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_FOLDER_REF;
+import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_MESSAGE_TYPE;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -111,8 +111,9 @@ public class ChatActivity extends AppCompatActivity {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef;
+    private DatabaseReference dbChatsNodeRef, messagePushID, dbUsersNodeRef, dbTokensNodeRef, dbChatList;
     private UploadTask uploadTask;
+    private ValueEventListener seenListener;
     //Firestore
     private FirebaseFirestore mDb;
     private DocumentReference userLocationRef, userDocRef;
@@ -147,9 +148,8 @@ public class ChatActivity extends AppCompatActivity {
         initFirebase();
         initFirestore();
         initLocationProvider();
-        getIncomingIntent();
-        //   setToolbar("", true);
         UIElements();
+        getIncomingIntent();
         initRecycleView();
         sendButtonPressed();
         editTextStatus();
@@ -157,13 +157,12 @@ public class ChatActivity extends AppCompatActivity {
         toolbarPressed();
         attachFileButtonPressed();
         retrofit();
+        seenMessage();
+
 
     }
 
 
-    private void retrofit() {
-        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
-    }
 
     private void initLocationProvider() {
         locationProvider = LocationServices.getFusedLocationProviderClient(this);
@@ -174,8 +173,6 @@ public class ChatActivity extends AppCompatActivity {
         buttonSend = findViewById(R.id.buttonChat);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
         chatProgressBar = findViewById(R.id.progressBarChat);
-        toolbarChat = findViewById(R.id.toolbarChat);
-
     }
 
     /**
@@ -188,7 +185,9 @@ public class ChatActivity extends AppCompatActivity {
             contactName = getIntent().getStringExtra(CONTACT_NAME);
             contactImage = getIntent().getStringExtra(CONTACT_IMAGE);
             Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
-            fetchInfoDB(contactID);
+            Log.d(TAG, "getIncomingIntent: contact name: " + contactName);
+            Log.d(TAG, "getIncomingIntent: contact Image: " + contactImage);
+            setToolbar( contactName, contactImage);
         }
 
     }
@@ -204,28 +203,7 @@ public class ChatActivity extends AppCompatActivity {
         dbUsersNodeRef = database.getReference().child(getString(R.string.users_ref));
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
         dbTokensNodeRef = database.getReference().child("Tokens");
-
-    }
-
-    private void fetchInfoDB(String contactID) {
-
-        dbUsersNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    User user = dataSnapshot.getValue(User.class);
-                    String username = user.getName();
-                    String image = user.getImageThumbnail();
-                    setToolbar("", username, image, true);
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        dbChatList = database.getReference().child("ChatList");
 
     }
 
@@ -240,13 +218,13 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Create toolbar and inflate the custom bar chat bar layout
      */
-    private void setToolbar(String title, final String contactUsername, final String contactProfPic, Boolean backOption) {
+    private void setToolbar(final String contactUsername, final String contactProfPic) {
 
+        toolbarChat = findViewById(R.id.toolbarChat);
         setSupportActionBar(toolbarChat);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle(title);
-        actionBar.setDisplayHomeAsUpEnabled(backOption);
+        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowCustomEnabled(true);
 
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -367,7 +345,7 @@ public class ChatActivity extends AppCompatActivity {
                             getString(R.string.noEmptyFieldAllowed), Toast.LENGTH_SHORT).show();
                 } else {
                     //otherwise we send the message
-                    //sendMessage();
+                    //createChatListDB();
                     uploadMessageToDb(messageText, "text");
                     //we remove any text enter by the user once it's been sent
                     chatEditText.setText("");
@@ -398,8 +376,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void retrieveMessages() {
 
-        dbChatsNodeRef.child(currentUserID).child(contactID)
-                .addValueEventListener(new ValueEventListener() {
+        dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -411,7 +388,17 @@ public class ChatActivity extends AppCompatActivity {
 
                                 Messages messages = info.getValue(Messages.class);
 
-                                messagesList.add(messages);
+                                try {
+
+                                    if(messages.getSenderID().equals(currentUserID) && messages.getReceiverID().equals(contactID) ||
+                                            messages.getSenderID().equals(contactID) && messages.getReceiverID().equals(currentUserID) ){
+
+                                        messagesList.add(messages);
+                                    }
+                                }catch (Exception e){
+                                    Log.e(TAG, "onDataChange: error: " + e.getMessage() );
+                                }
+
                                 adapter.notifyDataSetChanged();
                                 recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                             }
@@ -425,12 +412,46 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * method in charge of setting true in seen field when receiver has seen the message.
+     */
+    private void seenMessage() {
+
+        seenListener =  dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        Messages messages = snapshot.getValue(Messages.class);
+                        try {
+                            if (messages.getReceiverID().equals(currentUserID) && messages.getSenderID().equals(contactID)){
+                                HashMap<String, Object> hashMap = new HashMap<>();
+                                hashMap.put("seen", true);
+                                snapshot.getRef().updateChildren(hashMap);
+                            }
+                        }catch (Exception e){
+                            Log.e(TAG, "onDataChange: exception: " + e.getMessage() );
+                        }
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         //in case the other close the chat activity the state changes to "offline"
         updateDateTime(getString(R.string.offline_db));
         typingState((getString(R.string.no_db)));
+        dbChatsNodeRef.removeEventListener(seenListener);
     }
 
     /**
@@ -740,16 +761,16 @@ public class ChatActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // here we get the final image URI from storage
                     Uri fileUri = task.getResult();
-                    //we parse it to String type.
                     String fileURLInFirebase = fileUri.toString();
                     Log.i(TAG, "onComplete: image url: " + fileURLInFirebase);
+                    //this is for notification purposes
                     notify = true;
-                    //send message here
+                    //upload message in db
+                    //createChatListDB();
                     uploadMessageToDb(fileURLInFirebase, messageType );
 
                 } else {
-                    String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ChatActivity.this, "Error: " + task.getException().toString() , Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -766,10 +787,6 @@ public class ChatActivity extends AppCompatActivity {
      * @param messageType
      */
     private void uploadMessageToDb(String messageInfo, String messageType) {
-
-        //first we create a ref for sender and receiver to be later saved in the db
-        String messageSenderRef = currentUserID + "/" + contactID;
-        String messageReceiverRef = contactID + "/" + currentUserID;
 
         String lastMessageTime, lastMessageDate;
         Calendar calendar = Calendar.getInstance();
@@ -798,8 +815,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //this map is for the info shown in the "Messages" node
         Map<String, Object> chatUsersInfo = new HashMap<>();
-        chatUsersInfo.put(messageSenderRef + "/" + messagePushKey, messageDetails);
-        chatUsersInfo.put(messageReceiverRef + "/" + messagePushKey, messageDetails);
+        chatUsersInfo.put(messagePushKey, messageDetails);
 
         dbChatsNodeRef.updateChildren(chatUsersInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -808,7 +824,6 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i(TAG, "onComplete: successfully");
                 } else {
                     String error = task.getException().toString();
-                    Toast.makeText(ChatActivity.this, "error: " + error, Toast.LENGTH_SHORT).show();
                     Log.i(TAG, "onComplete: error: " + error);
                 }
 
@@ -817,10 +832,36 @@ public class ChatActivity extends AppCompatActivity {
 
         chatProgressBar.setVisibility(View.INVISIBLE);
 
-        sendNotification(messageInfo, messageType);
-
+        createChatListDB(currentUserID, contactID);
+        sendNotification(messageInfo, messageType, messagePushKey);
 
     }
+
+    /**
+     * method creates chatroom in db to be retrieved in chatFragment and show as a list.
+     */
+    private void createChatListDB(final String currentUserID, final String contactID) {
+
+        Log.d(TAG, "createChatListDB: TRIGEREEEEEEEEEEDDDDDDDDD create chat room in db");
+
+        dbChatList.child(currentUserID).child(contactID).child("id")
+                            .setValue(contactID).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+
+                    dbChatList.child(contactID).child(currentUserID).child("id").setValue(currentUserID);
+
+                }
+            }
+        });
+
+    }
+
+    private void retrofit() {
+        apiService = RetrofitClient.getRetrofit().create(NotificationAPI.class);
+    }
+
 
     /**
      * method is the one right before pushing the notification to the server
@@ -829,7 +870,7 @@ public class ChatActivity extends AppCompatActivity {
      * @param messageInfo
      * @param messageType
      */
-    private void sendNotification(String messageInfo, String messageType) {
+    private void sendNotification(String messageInfo, String messageType, final String messageID) {
 
         //first we set the text message to be delivered depending on the type of message the user sends
 
@@ -859,7 +900,7 @@ public class ChatActivity extends AppCompatActivity {
                     User user = dataSnapshot.getValue(User.class);
                     if (notify) {
 
-                        pushNotificationToServer(contactID, user.getName(), msg);
+                        pushNotificationToServer(contactID, user.getName(), msg, messageID, user.getImageThumbnail());
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT username " + user.getName());
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT contactID " + contactID);
                         Log.d(TAG, "onDataChange SEND_NOTIFICATION: NOTIFICATION  SENT message " + msg);
@@ -877,7 +918,8 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void pushNotificationToServer(final String contactID, final String name, final String msg) {
+    private void pushNotificationToServer(final String contactID, final String name, final String msg,
+                                            final String messageID, final String senderPhoto) {
 
         dbTokensNodeRef.child(contactID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -887,7 +929,7 @@ public class ChatActivity extends AppCompatActivity {
                     Token deviceToken = dataSnapshot.getValue(Token.class);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: token retrieved from firebase: " + deviceToken.getToken());
 
-                    Data data = new Data(contactID, msg, name, currentUserID);
+                    Data data = new Data(contactID, msg, name, currentUserID, messageID, senderPhoto);
                     Log.d(TAG, "onDataChange PUSH_NOTIFICATION_TO_SERVER: message to be sent: " + data.getMessage());
 
                     PushNotification pushNotification = new PushNotification(data, deviceToken.getToken());
