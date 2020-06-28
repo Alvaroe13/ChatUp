@@ -1,8 +1,6 @@
-package com.example.alvar.chatapp.activities;
+package com.example.alvar.chatapp.Activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;

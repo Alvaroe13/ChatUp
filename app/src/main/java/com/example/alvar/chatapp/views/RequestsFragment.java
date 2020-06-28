@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.alvar.chatapp.activities.AnswerRequestActivity;
+import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;

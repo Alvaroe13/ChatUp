@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.activities;
+package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
 import android.content.DialogInterface;

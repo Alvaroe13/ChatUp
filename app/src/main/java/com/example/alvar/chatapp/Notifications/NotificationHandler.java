@@ -9,7 +9,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Build;
 
-import com.example.alvar.chatapp.activities.MainActivity;
+import com.example.alvar.chatapp.Activities.MainActivity;
 import com.example.alvar.chatapp.R;
 
 

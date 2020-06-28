@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.activities;
+package com.example.alvar.chatapp.Activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;

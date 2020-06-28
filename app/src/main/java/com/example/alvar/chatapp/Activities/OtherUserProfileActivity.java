@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.activities;
+package com.example.alvar.chatapp.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,9 +19,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.ChatRequestNotification;
-import com.example.alvar.chatapp.Notifications.Data;
 import com.example.alvar.chatapp.Notifications.NotificationAPI;
-import com.example.alvar.chatapp.Notifications.PushNotification;
 import com.example.alvar.chatapp.Notifications.RequestNotification;
 import com.example.alvar.chatapp.Notifications.ResponseFCM;
 import com.example.alvar.chatapp.Notifications.RetrofitClient;
