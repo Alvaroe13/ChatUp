@@ -12,8 +12,6 @@ import androidx.lifecycle.ViewModel;
 
 public class ChatListViewModel extends ViewModel {
 
-    private static final String TAG = "ChatListViewModel";
-
     private RepositoryHub repositoryHub;
     private LiveData<List<User>> chats;
 
@@ -28,7 +26,6 @@ public class ChatListViewModel extends ViewModel {
     }
 
     public LiveData<List<User>> getChats(){
-        Log.d(TAG, "getChats: called");
         return  chats;
     }
 

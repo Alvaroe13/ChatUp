@@ -11,7 +11,6 @@ import androidx.lifecycle.LiveData;
 
 public class RepositoryHub {
 
-    private static final String TAG = "RepositoryHub";
 
 
     public static RepositoryHub instance;
@@ -35,7 +34,6 @@ public class RepositoryHub {
     }
 
     public LiveData<List<User>> getChats(){
-        Log.d(TAG, "getChats: called");
         return chats;
     }
 

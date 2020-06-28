@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.Fragments;
 
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,18 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.alvar.chatapp.Adapter.ChatsAdapter;
-import com.example.alvar.chatapp.Model.ChatList;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.viewModels.ChatListViewModel;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -57,22 +49,26 @@ public class ChatsFragment extends Fragment {
 
        View viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        currentUserID = auth.getCurrentUser().getUid();
+
         return viewContacts;
     }
 
+    /**
+     * method call right after the view's been created, is better to init ui elemtns here
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         initRecyclerView(view);
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        currentUserID = auth.getCurrentUser().getUid();
-
         // viewModel stuff
         initViewModel();
         connectionWithViewModel(currentUserID);
         initObserver();
-
 
     }
 
