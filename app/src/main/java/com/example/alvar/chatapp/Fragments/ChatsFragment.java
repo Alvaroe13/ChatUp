@@ -1,7 +1,9 @@
 package com.example.alvar.chatapp.Fragments;
 
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import com.example.alvar.chatapp.Adapter.ChatsAdapter;
 import com.example.alvar.chatapp.Model.ChatList;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.viewModels.ChatListViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,7 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,121 +38,88 @@ public class ChatsFragment extends Fragment {
 
     private static final String TAG = "ChatsFragmentPage";
     //ui elements
-    private View viewContacts;
     private RecyclerView chatRecyclerView;
-    //firebase
-    private DatabaseReference dbUsersNodeRef, dbChatListRef ;
     //vars
     private String currentUserID;
-    private List<ChatList> chatListList;
-    private List<User> userList;
     private ChatsAdapter chatsAdapter;
+    private ChatListViewModel viewModel;
 
 
     public ChatsFragment() {
         // Required empty public constructor
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //bind view with controller
-        viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
-        initFirebase();
-        initRecyclerView();
-        fetchChatLists();
+       View viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
 
         return viewContacts;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-
-    /**
-     * we init firebase services.
-     */
-    private void initFirebase() {
-        //firebase
+        initRecyclerView(view);
         FirebaseAuth auth = FirebaseAuth.getInstance();
         currentUserID = auth.getCurrentUser().getUid();
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        dbUsersNodeRef = database.getReference().child("Users");
-        dbChatListRef = database.getReference().child("ChatList");
+
+        // viewModel stuff
+        initViewModel();
+        connectionWithViewModel(currentUserID);
+        initObserver();
+
+
     }
 
-    private void initRecyclerView() {
-        chatRecyclerView = viewContacts.findViewById(R.id.chatRecyclerView);
+    private void initRecyclerView(View view) {
+        chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager( getContext() ));
         chatRecyclerView.setHasFixedSize(true);
 
     }
 
-    /**
-     * fetch list of all conversation in the "ChatList" node from db
-     */
-    private void fetchChatLists(){
+    //viewModel area
+    private void initViewModel(){
+        Log.d(TAG, "initViewModel: called");
+        viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+    }
 
-        chatListList = new ArrayList<>();
-
-        dbChatListRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                chatListList.clear();
-                if (dataSnapshot.exists()){
-
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                        final ChatList chatList = snapshot.getValue(ChatList.class);
-                        chatListList.add(chatList);
-                    }
-
-                    showChatList();
-                }
-
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+    private void connectionWithViewModel(String userID){
+        Log.d(TAG, "connectionWithViewModel: called");
+        viewModel.connectionWithRepo(userID);
     }
 
     /**
      * show conversations in the fragment
      */
-    private void showChatList() {
+    private void initObserver(){
 
-        userList = new ArrayList<>();
-
-        dbUsersNodeRef.addValueEventListener(new ValueEventListener() {
+        Log.d(TAG, "initObserver: called");
+        viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    User user = snapshot.getValue(User.class);
+            public void onChanged(List<User> users) {
+                if (users != null){
+                    Log.d(TAG, "initObserver onChanged: called");
 
-                    for (ChatList chatList : chatListList){
-                        if (user.getUserID() != null && user.getUserID().equals(chatList.getId())){
-                            userList.add(user);
-                            break;
-                        }
-                    }
-
-                    chatsAdapter = new ChatsAdapter(getContext(), userList);
+                    chatsAdapter = new ChatsAdapter(getContext(), users);
                     chatRecyclerView.setAdapter(chatsAdapter);
+                    chatsAdapter.notifyDataSetChanged();
 
-
+                }else{
+                    Log.d(TAG, "onChanged: null response from db");
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });
-
     }
+
+
 
 
 
