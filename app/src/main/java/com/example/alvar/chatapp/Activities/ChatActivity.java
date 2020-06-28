@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp.activities;
 
 import android.Manifest;
 import android.app.ActivityManager;

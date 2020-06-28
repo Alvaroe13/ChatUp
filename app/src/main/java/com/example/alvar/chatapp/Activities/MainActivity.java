@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,9 +14,9 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
-import com.example.alvar.chatapp.Fragments.ChatsFragment;
-import com.example.alvar.chatapp.Fragments.GroupsFragment;
-import com.example.alvar.chatapp.Fragments.RequestsFragment;
+import com.example.alvar.chatapp.views.ChatsFragment;
+import com.example.alvar.chatapp.views.GroupsFragment;
+import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

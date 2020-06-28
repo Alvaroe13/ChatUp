@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.alvar.chatapp.Activities.OtherUserProfileActivity;
+import com.example.alvar.chatapp.activities.OtherUserProfileActivity;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 
