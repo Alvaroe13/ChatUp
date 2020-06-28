@@ -22,6 +22,7 @@ android {
 
 dependencies {
     def multidex_version = "2.0.1"
+    def lifecycle_version = "2.2.0"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -62,5 +63,10 @@ dependencies {
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.6.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    // ViewModel and LiveData
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
 }
 apply plugin: 'com.google.gms.google-services'

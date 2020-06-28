@@ -87,7 +87,6 @@
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:maxLines="1"
-                    android:text="last message"
                     android:textSize="15sp"
                     android:textStyle="italic" />
 
@@ -103,7 +102,7 @@
                 android:layout_toRightOf="@+id/lastMessage"
                 android:background="@color/color_white"
                 android:src="@drawable/image_icon"
-                android:visibility="visible" />
+                android:visibility="invisible" />
 
         </RelativeLayout>
 
