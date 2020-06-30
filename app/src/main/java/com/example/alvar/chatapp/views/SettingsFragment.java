@@ -1,17 +1,26 @@
-package com.example.alvar.chatapp.Activities;
-
+package com.example.alvar.chatapp.views;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
+
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.R;
@@ -36,17 +45,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import de.hdodenhof.circleimageview.CircleImageView;
-import id.zelory.compressor.Compressor;
-
+import static android.app.Activity.RESULT_OK;
 import static com.example.alvar.chatapp.Utils.Constant.GALLERY_REQUEST_NUMBER;
 import static com.example.alvar.chatapp.Utils.Constant.IMAGE_OPTION;
 
-public class SettingsActivity extends AppCompatActivity {
-
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class SettingsFragment extends Fragment {
 
     private static final String TAG = "SettingsPage";
 
@@ -66,31 +72,42 @@ public class SettingsActivity extends AppCompatActivity {
     private String currentUserID;
     private Bitmap thumbnailImage = null;
 
-
+    public SettingsFragment() {
+        // Required empty public constructor
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
-
-        bindUI();
-        //fab buttons listeners
-        fabButtonClicked();
         initFirebase();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        View layout = inflater.inflate(R.layout.fragment_settings, container, false);
+
+        bindUI(layout);
+        fabButtonClicked();
         retrieveDataFromDb();
         imageClick();
+
+
+        return layout;
     }
+
 
     /**
      * UI elements
      */
-    private void bindUI() {
-        imageProfile = findViewById(R.id.settingImgProfile);
-        textStatus = findViewById(R.id.settingsUserStatus);
-        textUsername = findViewById(R.id.settingsUsername);
-        fabImage = findViewById(R.id.fabImage);
-        fabStatus = findViewById(R.id.fabStatus);
-        progressBar = findViewById(R.id.settingsProgressBar);
+    private void bindUI(View layout) {
+        imageProfile = layout.findViewById(R.id.settingImgProfile);
+        textStatus = layout.findViewById(R.id.settingsUserStatus);
+        textUsername = layout.findViewById(R.id.settingsUsername);
+        fabImage = layout.findViewById(R.id.fabImage);
+        fabStatus = layout.findViewById(R.id.fabStatus);
+        progressBar = layout.findViewById(R.id.settingsProgressBar);
     }
 
     /**
@@ -123,6 +140,15 @@ public class SettingsActivity extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "SELECT IMAGE"), GALLERY_REQUEST_NUMBER);
     }
 
+
+    /**
+     * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
+     */
+    private void showChangeStatusDialog() {
+        AlertDialogStatus dialog = new AlertDialogStatus();
+        dialog.show(getActivity().getSupportFragmentManager(), "showChangeStatus");
+    }
+
     /**
      * method in charge of initialize firebase service
      */
@@ -153,13 +179,10 @@ public class SettingsActivity extends AppCompatActivity {
         dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i(TAG, "onDataChange: data retrieved :" + dataSnapshot);
 
                 if (dataSnapshot.exists()) {
+
                     infoFetched(dataSnapshot);
-                } else {
-                    Toast.makeText(SettingsActivity.this,
-                            "Unable to retrieve info from database", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -178,29 +201,33 @@ public class SettingsActivity extends AppCompatActivity {
 
         //save info retrieved from DB into String vars
         String name = dataSnapshot.child("name").getValue().toString();
-        String email = dataSnapshot.child("email").getValue().toString();
         String status = dataSnapshot.child("status").getValue().toString();
-        String image = dataSnapshot.child("image").getValue().toString();
         String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
         //set values to display
         textUsername.setText(name);
         textStatus.setText(status);
-        //if there is no pic uploaded to database we set default img
-        if (imageThumbnail.equals("imgThumbnail")) {
-            imageProfile.setImageResource(R.drawable.profile_image);
-        } else {
+
+        RequestOptions options = new RequestOptions()
+                .centerCrop()
+                .error(R.drawable.profile_image);
+
+        try {
             //here we set image from database into imageView
-            Glide.with(getApplicationContext())
+            Glide.with(getContext())
+                    .setDefaultRequestOptions(options)
                     .load(imageThumbnail)
                     .into(imageProfile);
 
+        }catch (NullPointerException e){
+            Log.e(TAG, "infoFetched: error loading image" );
         }
+
+
 
     }
 
-
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GALLERY_REQUEST_NUMBER && resultCode == RESULT_OK) {
 
@@ -208,7 +235,7 @@ public class SettingsActivity extends AppCompatActivity {
             // start cropping activity for pre-acquired image saved on the device
             CropImage.activity(imageUri)
                     .setAspectRatio(1, 1)
-                    .start(this);
+                    .start(getActivity());
         }
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
@@ -219,8 +246,6 @@ public class SettingsActivity extends AppCompatActivity {
 
                     changeProfilePic(result);
 
-                } else {
-                    Toast.makeText(this, "Image error", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -230,6 +255,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }
     }
+
 
     /**
      * this method has the logic of saving the image from storage into the database
@@ -247,7 +273,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         try {
             //here we compress file and set it's dimension
-            thumbnailImage = new Compressor(this)
+            thumbnailImage = new Compressor(getContext())
                     .setMaxHeight(200)
                     .setMaxWidth(200)
                     .setQuality(50)
@@ -293,7 +319,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(SettingsActivity.this, getString(R.string.error) + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.error) + error, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -302,6 +328,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     /**
      * this method downloads the info from the image (without resized) to later be save from storage to database
+     *
      * @param task
      */
     private void downloadUrl(Task<Uri> task) {
@@ -374,13 +401,14 @@ public class SettingsActivity extends AppCompatActivity {
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(SettingsActivity.this, getString(R.string.error) + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.error) + error, Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
 
     }
+
 
     /**
      * method in charge of handling event when image has been clicked
@@ -402,16 +430,8 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void showAlertDialogImage() {
         ImageProfileShow imageDialog = new ImageProfileShow();
-        imageDialog.show(getSupportFragmentManager(), "showImageProfile");
+        imageDialog.show(getActivity().getSupportFragmentManager(), "showImageProfile");
     }
 
-
-    /**
-     * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
-     */
-    private void showChangeStatusDialog() {
-        AlertDialogStatus dialog = new AlertDialogStatus();
-        dialog.show(getSupportFragmentManager(), "showChangeStatus");
-    }
 
 }

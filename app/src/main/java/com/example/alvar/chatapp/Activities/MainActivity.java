@@ -18,6 +18,7 @@ import com.example.alvar.chatapp.views.ChatsFragment;
 import com.example.alvar.chatapp.views.GroupsFragment;
 import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.views.SettingsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -44,6 +45,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -204,21 +206,32 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intentContacts);
                 break;
             case R.id.settingsAccount:
-                goToSettingAccount();
-                Log.i(TAG, "onOptionsItemSelected: setting btn pressed");
+                initFragment();
+                closeDrawer();
                 break;
             case R.id.menuAllUsers:
                 goToAllUsers();
-                Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
                 break;
             case R.id.signOut:
                 alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
-                Log.i(TAG, "onOptionsItemSelected: log out button pressed");
                 break;
 
         }
 
 
+    }
+
+    private void closeDrawer(){
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    private void initFragment() {
+
+        SettingsFragment fragment = new SettingsFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, fragment );
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
@@ -277,13 +290,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * this method is in charge of taking the user to settings page
-     */
-    private void goToSettingAccount() {
-        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-        startActivity(intent);
-    }
 
     /**
      * this method is in charge of taking the user to all users page

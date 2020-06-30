@@ -44,7 +44,6 @@
             android:name=".Activities.RegisterActivity"
             android:parentActivityName=".Activities.LoginActivity"
             tools:targetApi="jelly_bean" />
-        <activity android:name=".Activities.SettingsActivity" />
         <activity
             android:name=".Activities.RecoverPasswordActivity"
             android:parentActivityName=".Activities.LoginActivity"
