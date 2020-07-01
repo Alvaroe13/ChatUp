@@ -97,19 +97,44 @@ public class MainActivity extends AppCompatActivity {
         //when image within drawer is clicked by the user
         drawerImagePressed();
         // viewPagerAdapter init
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        drawerOptionsListener();
 
-                drawerOptionsMenu(menuItem);
-
-                return false;
-            }
-        });
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
+    }
+
+
+    /**
+     * this methods handles the action taken in the drawer menu
+     */
+    private void drawerOptionsListener() {
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                switch (menuItem.getItemId()) {
+
+                    case R.id.contacts:
+                        launchFragment(new ContactsFragment());
+                        break;
+                    case R.id.settingsAccount:
+                        launchFragment(new SettingsFragment());
+                        break;
+                    case R.id.menuAllUsers:
+                        launchFragment(new AllUsersFragment());
+                        break;
+                    case R.id.signOut:
+                        alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
+                        break;
+
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -195,32 +220,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
-    /**
-     * this methods handles the action taken in the drawer menu
-     *
-     * @param menuItem
-     */
-    private void drawerOptionsMenu(MenuItem menuItem) {
 
-        switch (menuItem.getItemId()) {
-
-            case R.id.contacts:
-                launchFragment(new ContactsFragment());
-                break;
-            case R.id.settingsAccount:
-                launchFragment(new SettingsFragment());
-                break;
-            case R.id.menuAllUsers:
-                launchFragment(new AllUsersFragment());
-                break;
-            case R.id.signOut:
-                alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
-                break;
-
-        }
-
-
-    }
 
     /**
      * by passing the fragment we want to launch as param it'll inflate the view
