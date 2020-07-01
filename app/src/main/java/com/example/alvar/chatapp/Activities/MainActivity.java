@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
+import com.example.alvar.chatapp.views.AllUsersFragment;
 import com.example.alvar.chatapp.views.ChatsFragment;
 import com.example.alvar.chatapp.views.GroupsFragment;
 import com.example.alvar.chatapp.views.RequestsFragment;
@@ -206,11 +207,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intentContacts);
                 break;
             case R.id.settingsAccount:
-                initFragment();
+                openSettings();
                 closeDrawer();
                 break;
             case R.id.menuAllUsers:
-                goToAllUsers();
+               // goToAllUsers();
+                openAllUsersWindow();
+                closeDrawer();
                 break;
             case R.id.signOut:
                 alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
@@ -221,17 +224,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void closeDrawer(){
-        drawerLayout.closeDrawer(GravityCompat.START);
-    }
 
-    private void initFragment() {
+
+
+
+    private void openSettings() {
 
         SettingsFragment fragment = new SettingsFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, fragment );
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private void closeDrawer(){
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    private void openAllUsersWindow() {
+
+        AllUsersFragment fragment = new AllUsersFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+
     }
 
     @Override
@@ -290,14 +307,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-
-    /**
-     * this method is in charge of taking the user to all users page
-     */
-    private void goToAllUsers() {
-        Intent intentAllUsers = new Intent(MainActivity.this, AllUsersActivity.class);
-        startActivity(intentAllUsers);
-    }
 
     /**
      * this method contains the pop-up message when user clicks log out from menu option

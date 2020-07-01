@@ -100,7 +100,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     /**
      * in this method we receive the unique user Id given by firebase to any user
-     * coming from the "AllUsersActivity".
+     * coming from the "AllUsersFragment".
      *
      * @return
      */
