@@ -53,9 +53,6 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".Activities.OtherUserProfileActivity" />
         <activity
-            android:name=".Activities.ContactsActivity"
-            android:parentActivityName=".Activities.MainActivity" />
-        <activity
             android:name=".Activities.ChatActivity"
             android:parentActivityName=".Activities.MainActivity" />
 

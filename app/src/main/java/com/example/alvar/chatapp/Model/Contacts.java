@@ -2,19 +2,27 @@ package com.example.alvar.chatapp.Model;
 
 public class Contacts {
 
-    private String name, status, image, imageThumbnail;
+    private String name, status, image, imageThumbnail, contactID;
 
     public Contacts(){
 
     }
 
-    public Contacts(String name, String status, String image, String imageThumbnail) {
+    public Contacts(String name, String status, String image, String imageThumbnail, String contactID) {
         this.name = name;
         this.status = status;
         this.image = image;
         this.imageThumbnail = imageThumbnail;
+        this.contactID = contactID;
     }
 
+    public String getContactID() {
+        return contactID;
+    }
+
+    public void setContactID(String contactID) {
+        this.contactID = contactID;
+    }
 
     public String getName() {
         return name;

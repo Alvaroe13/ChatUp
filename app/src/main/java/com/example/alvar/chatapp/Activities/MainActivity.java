@@ -16,6 +16,7 @@ import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.views.AllUsersFragment;
 import com.example.alvar.chatapp.views.ChatsFragment;
+import com.example.alvar.chatapp.views.ContactsFragment;
 import com.example.alvar.chatapp.views.GroupsFragment;
 import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
@@ -46,6 +47,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -203,17 +205,13 @@ public class MainActivity extends AppCompatActivity {
         switch (menuItem.getItemId()) {
 
             case R.id.contacts:
-                Intent intentContacts = new Intent(MainActivity.this, ContactsActivity.class);
-                startActivity(intentContacts);
+                launchFragment(new ContactsFragment());
                 break;
             case R.id.settingsAccount:
-                openSettings();
-                closeDrawer();
+                launchFragment(new SettingsFragment());
                 break;
             case R.id.menuAllUsers:
-               // goToAllUsers();
-                openAllUsersWindow();
-                closeDrawer();
+                launchFragment(new AllUsersFragment());
                 break;
             case R.id.signOut:
                 alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
@@ -224,32 +222,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * by passing the fragment we want to launch as param it'll inflate the view
+     * @param fragment
+     */
+    private void launchFragment(Fragment fragment){
 
-
-
-
-    private void openSettings() {
-
-        SettingsFragment fragment = new SettingsFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, fragment );
         transaction.addToBackStack(null);
         transaction.commit();
-    }
 
-    private void closeDrawer(){
+        //this piece of code is able to close drawer
         drawerLayout.closeDrawer(GravityCompat.START);
-    }
-
-    private void openAllUsersWindow() {
-
-        AllUsersFragment fragment = new AllUsersFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
 
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
