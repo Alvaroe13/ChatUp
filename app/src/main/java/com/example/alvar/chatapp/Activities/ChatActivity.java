@@ -176,7 +176,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * this method receives de bundles from "ContactsActivity"
+     * this method receives de bundles from "ContactsFragment"
      */
     private void getIncomingIntent() {
 

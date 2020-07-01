@@ -21,6 +21,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AnswerRequestActivity extends AppCompatActivity {
 
     private static final String TAG = "AnswerRequestPage";
@@ -139,18 +142,25 @@ public class AnswerRequestActivity extends AppCompatActivity {
             /*at this point since we have accepted the chat request
               we add the new contact in the "Contacts" node
              */
+
+        final Map<String, Object> hash1 = new HashMap<>();
+        hash1.put("contactID" , otherUserID);
+        hash1.put("contact_status", "saved");
+
         dbContactsNodeRef.child(currentUserID).child(otherUserID)
-                .child("contact_status")
-                .setValue("saved")
+                .setValue(hash1)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
                         if (task.isSuccessful()) {
 
+                            final Map<String, Object> hash2 = new HashMap<>();
+                            hash2.put("contactID" , currentUserID);
+                            hash2.put("contact_status", "saved");
+
                             dbContactsNodeRef.child(otherUserID).child(currentUserID)
-                                    .child("contact_status")
-                                    .setValue("saved")
+                                    .setValue(hash2)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
@@ -175,7 +185,7 @@ public class AnswerRequestActivity extends AppCompatActivity {
                                                                                 public void onComplete(@NonNull Task<Void> task) {
                                                                                     if (task.isSuccessful()) {
 
-                                                                                        Toast.makeText(AnswerRequestActivity.this, 
+                                                                                        Toast.makeText(AnswerRequestActivity.this,
                                                                                                 "friend added", Toast.LENGTH_SHORT).show();
                                                                                         finish();
 

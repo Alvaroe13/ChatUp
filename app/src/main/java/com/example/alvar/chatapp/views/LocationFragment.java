@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.Fragments;
+package com.example.alvar.chatapp.views;
 
 import android.Manifest;
 import android.app.AlertDialog;

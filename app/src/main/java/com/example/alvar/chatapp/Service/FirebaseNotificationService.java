@@ -9,7 +9,6 @@ import android.os.Build;
 import android.util.Log;
 
 import com.example.alvar.chatapp.Activities.ChatActivity;
-import com.example.alvar.chatapp.Notifications.Data;
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.google.android.gms.tasks.OnCompleteListener;

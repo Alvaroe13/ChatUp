@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.ImageActivity;
-import com.example.alvar.chatapp.Fragments.LocationFragment;
+import com.example.alvar.chatapp.views.LocationFragment;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.UserLocation;
 import com.example.alvar.chatapp.R;

@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Activities.ContactsActivity">
+    android:background="@color/color_white"
+    tools:context=".views.AllUsersFragment">
 
     <include
-        android:id="@+id/toolbarContacts"
+        android:id="@+id/toolbarUsersFragment"
         layout="@layout/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycleContacts"
+        android:id="@+id/allUsersRecyclerFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarContacts" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbarAllUsers">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 
 </LinearLayout>

@@ -14,10 +14,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
-import com.example.alvar.chatapp.Fragments.ChatsFragment;
-import com.example.alvar.chatapp.Fragments.GroupsFragment;
-import com.example.alvar.chatapp.Fragments.RequestsFragment;
+import com.example.alvar.chatapp.views.AllUsersFragment;
+import com.example.alvar.chatapp.views.ChatsFragment;
+import com.example.alvar.chatapp.views.ContactsFragment;
+import com.example.alvar.chatapp.views.GroupsFragment;
+import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.views.SettingsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -44,6 +47,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -92,19 +97,44 @@ public class MainActivity extends AppCompatActivity {
         //when image within drawer is clicked by the user
         drawerImagePressed();
         // viewPagerAdapter init
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        drawerOptionsListener();
 
-                drawerOptionsMenu(menuItem);
-
-                return false;
-            }
-        });
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
         //we set "no" as typing state in the db as soon as the app is launched
         typingState("no");
+    }
+
+
+    /**
+     * this methods handles the action taken in the drawer menu
+     */
+    private void drawerOptionsListener() {
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                switch (menuItem.getItemId()) {
+
+                    case R.id.contacts:
+                        launchFragment(new ContactsFragment());
+                        break;
+                    case R.id.settingsAccount:
+                        launchFragment(new SettingsFragment());
+                        break;
+                    case R.id.menuAllUsers:
+                        launchFragment(new AllUsersFragment());
+                        break;
+                    case R.id.signOut:
+                        alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
+                        break;
+
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -190,36 +220,24 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
+
+
     /**
-     * this methods handles the action taken in the drawer menu
-     *
-     * @param menuItem
+     * by passing the fragment we want to launch as param it'll inflate the view
+     * @param fragment
      */
-    private void drawerOptionsMenu(MenuItem menuItem) {
+    private void launchFragment(Fragment fragment){
 
-        switch (menuItem.getItemId()) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, fragment );
+        transaction.addToBackStack(null);
+        transaction.commit();
 
-            case R.id.contacts:
-                Intent intentContacts = new Intent(MainActivity.this, ContactsActivity.class);
-                startActivity(intentContacts);
-                break;
-            case R.id.settingsAccount:
-                goToSettingAccount();
-                Log.i(TAG, "onOptionsItemSelected: setting btn pressed");
-                break;
-            case R.id.menuAllUsers:
-                goToAllUsers();
-                Log.i(TAG, "onOptionsItemSelected: all users btn pressed");
-                break;
-            case R.id.signOut:
-                alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
-                Log.i(TAG, "onOptionsItemSelected: log out button pressed");
-                break;
-
-        }
-
+        //this piece of code is able to close drawer
+        drawerLayout.closeDrawer(GravityCompat.START);
 
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -277,21 +295,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * this method is in charge of taking the user to settings page
-     */
-    private void goToSettingAccount() {
-        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-        startActivity(intent);
-    }
-
-    /**
-     * this method is in charge of taking the user to all users page
-     */
-    private void goToAllUsers() {
-        Intent intentAllUsers = new Intent(MainActivity.this, AllUsersActivity.class);
-        startActivity(intentAllUsers);
-    }
 
     /**
      * this method contains the pop-up message when user clicks log out from menu option

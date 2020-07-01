@@ -1,11 +1,24 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp.views;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.example.alvar.chatapp.Adapter.UsersAdapter;
 import com.example.alvar.chatapp.Model.User;
@@ -20,69 +33,76 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-public class AllUsersActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class AllUsersFragment extends Fragment {
 
     //log
-    private static final String TAG = "AllUsersPage";
+    private static final String TAG = "AllUsersFragment";
     //firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersRef;
     //ui elements
-    private Toolbar toolbarAllUsers;
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     //vars
     private String currentUserID;
     private List<User> userList = new ArrayList<>();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_users);
 
+    public AllUsersFragment() {
+        // Required empty public constructor
+
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
         initFirebase();
-        initRecyclerView();
-        setToolbar(getString(R.string.allUsers), true);
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        View layout = inflater.inflate(R.layout.fragment_all_users, container,false);
+
+        initRecyclerView(layout);
+        setToolbar(getString(R.string.allUsers), layout, false);
+        showAllUsers();
+
+        return layout;
     }
 
     private void initFirebase() {
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getUid();
-        //we init firebase database service
         database = FirebaseDatabase.getInstance();
-        //here we init db reference and pointed to "Users" node
         dbUsersRef = database.getReference().child(getString(R.string.users_ref));
     }
 
-    private void initRecyclerView() {
-        recyclerView = findViewById(R.id.contactRecyclerView);
+    private void initRecyclerView(View layout) {
+        recyclerView = layout.findViewById(R.id.allUsersRecyclerFragment);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    private void setToolbar(String title, Boolean backOption) {
-        toolbarAllUsers = findViewById(R.id.toolbarAllUsers);
-        setSupportActionBar(toolbarAllUsers);
-        getSupportActionBar().setTitle(title);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
+    private void setToolbar(String title, View layout, boolean backOption) {
+        Toolbar toolbar = layout.findViewById(R.id.toolbarUsersFragment);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_search_user, menu);
-
         inflateSearchIcon(menu);
-
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     /**
@@ -165,7 +185,7 @@ public class AllUsersActivity extends AppCompatActivity {
                             Log.d(TAG, "onDataChange: userID field empty");
                         }
 
-                        adapter = new UsersAdapter(AllUsersActivity.this, userList);
+                        adapter = new UsersAdapter(getContext(), userList);
                         adapter.notifyDataSetChanged();
                         recyclerView.setAdapter(adapter);
 
@@ -183,17 +203,6 @@ public class AllUsersActivity extends AppCompatActivity {
     }
 
     /**
-     * we're going to use this method to make sure the app fetches the info from the db
-     * once the activity's been executed
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        showAllUsers();
-    }
-
-    /**
      * method retrieves all users in user node
      */
     private void showAllUsers() {
@@ -207,19 +216,19 @@ public class AllUsersActivity extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
                     User user = snapshot.getValue(User.class);
-                    
+
                     if (user.getUserID() != null ){
 
                         //here we fetch every user in userRef in db that except for the user authenticated
                         if ( !currentUserID.equals(user.getUserID()) ){
                             userList.add(user);
                         }
-                        
+
                     } else {
                         Log.d(TAG, "onDataChange: userId field null");
                     }
 
-                    adapter = new UsersAdapter(AllUsersActivity.this, userList);
+                    adapter = new UsersAdapter(getContext(), userList);
                     recyclerView.setAdapter(adapter);
 
                 }
@@ -233,6 +242,8 @@ public class AllUsersActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
 
 }

@@ -19,9 +19,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.ChatRequestNotification;
-import com.example.alvar.chatapp.Notifications.Data;
 import com.example.alvar.chatapp.Notifications.NotificationAPI;
-import com.example.alvar.chatapp.Notifications.PushNotification;
 import com.example.alvar.chatapp.Notifications.RequestNotification;
 import com.example.alvar.chatapp.Notifications.ResponseFCM;
 import com.example.alvar.chatapp.Notifications.RetrofitClient;
@@ -102,7 +100,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
     /**
      * in this method we receive the unique user Id given by firebase to any user
-     * coming from the "AllUsersActivity".
+     * coming from the "AllUsersFragment".
      *
      * @return
      */
