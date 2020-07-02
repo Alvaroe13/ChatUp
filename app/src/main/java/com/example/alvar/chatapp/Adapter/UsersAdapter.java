@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.Adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +9,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Activities.OtherUserProfileActivity;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.views.MainActivityInterface;
 
 import java.util.List;
 
@@ -93,19 +90,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
 
     }
 
-
-    /**
-     * take the user to the chat activity send the other userID with it
-     * @param otherUserId
-     * @param holder
-     */
-    private void goToOtherUserLayout(String otherUserId, UsersViewHolder holder) {
-        Intent intentOtherUserProf = new Intent(context, OtherUserProfileActivity.class);
-        //we send user id through an intent
-        intentOtherUserProf.putExtra("otherUserId", otherUserId);
-        holder.itemView.getContext().startActivity(intentOtherUserProf);
-
-    }
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder{
 
