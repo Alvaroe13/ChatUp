@@ -138,11 +138,17 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
                 .centerCrop()
                 .error(R.drawable.profile_image);
 
-        //here we set image from database into imageView
-        Glide.with(context)
-                .setDefaultRequestOptions(options)
-                .load(image)
-                .into(holder.userPhoto);
+        try{
+            //here we set image from database into imageView
+            Glide.with(context)
+                    .setDefaultRequestOptions(options)
+                    .load(image)
+                    .into(holder.userPhoto);
+        }catch (Exception e){
+            Log.e(TAG, "setUI: error: " + e.getMessage() );
+        }
+
+
     }
 
     /**

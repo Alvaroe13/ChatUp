@@ -20,14 +20,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Activities.ImageActivity;
-import com.example.alvar.chatapp.Activities.MainActivity;
-import com.example.alvar.chatapp.Activities.OtherUserProfileActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.ChatRequestNotification;
 import com.example.alvar.chatapp.Notifications.NotificationAPI;
@@ -667,9 +664,7 @@ public class OtherUserFragment extends Fragment {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             dbChatsNodeRef.removeEventListener(removeListener);
-                                    /*Intent i = new Intent(OtherUserProfileActivity.this, MainActivity.class);
-                                    startActivity(i);
-                                    finish();*/
+
                                         }
                                     });
 
