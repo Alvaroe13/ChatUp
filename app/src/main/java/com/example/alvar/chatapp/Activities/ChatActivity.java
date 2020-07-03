@@ -36,6 +36,7 @@ import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Service.LocationService;
+import com.example.alvar.chatapp.views.OtherUserFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
@@ -70,6 +71,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -250,6 +254,7 @@ public class ChatActivity extends AppCompatActivity {
                 .load(contactProfPic)
                 .into(imageProfile);
 
+        //here we handle toolbar back button action
         toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -516,18 +521,42 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+
+    /**
+     * by passing the fragment we want to launch as param it'll inflate the view
+     * @param fragment
+     */
+    private void launchFragment(Fragment fragment, String contactID){
+
+        if (contactID != null){
+            Bundle bundle = new Bundle();
+            bundle.putString("contactID", contactID);
+            fragment.setArguments(bundle);
+        }
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.layoutFrameID, fragment );
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+
+    }
+
+
     /**
      * method oni charge of taking the user to other user's profile when toolbar pressed in the chat room
      */
     private void toolbarPressed() {
 
+
+
         toolbarChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentOtherUserProf = new Intent(ChatActivity.this, OtherUserProfileActivity.class);
-                //we send user id through an intent
-                intentOtherUserProf.putExtra("otherUserId", contactID);
-                startActivity(intentOtherUserProf);
+
+
+                launchFragment(new OtherUserFragment(), contactID);
+
             }
         });
     }
@@ -1255,6 +1284,8 @@ public class ChatActivity extends AppCompatActivity {
         Log.d(TAG, "isLocationServiceRunning: location service is not running.");
         return false;
     }
+
+
 
 }
 

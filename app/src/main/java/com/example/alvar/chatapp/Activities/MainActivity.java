@@ -18,6 +18,8 @@ import com.example.alvar.chatapp.views.AllUsersFragment;
 import com.example.alvar.chatapp.views.ChatsFragment;
 import com.example.alvar.chatapp.views.ContactsFragment;
 import com.example.alvar.chatapp.views.GroupsFragment;
+import com.example.alvar.chatapp.views.MainActivityInterface;
+import com.example.alvar.chatapp.views.OtherUserFragment;
 import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.views.SettingsFragment;
@@ -56,7 +58,7 @@ import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityInterface {
 
     private static final String TAG = "MainPage";
 
@@ -118,13 +120,13 @@ public class MainActivity extends AppCompatActivity {
                 switch (menuItem.getItemId()) {
 
                     case R.id.contacts:
-                        launchFragment(new ContactsFragment());
+                        launchFragment(new ContactsFragment(), null);
                         break;
                     case R.id.settingsAccount:
-                        launchFragment(new SettingsFragment());
+                        launchFragment(new SettingsFragment(), null);
                         break;
                     case R.id.menuAllUsers:
-                        launchFragment(new AllUsersFragment());
+                        launchFragment(new AllUsersFragment(), null);
                         break;
                     case R.id.signOut:
                         alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
@@ -226,7 +228,13 @@ public class MainActivity extends AppCompatActivity {
      * by passing the fragment we want to launch as param it'll inflate the view
      * @param fragment
      */
-    private void launchFragment(Fragment fragment){
+    private void launchFragment(Fragment fragment, String contactID){
+
+        if (contactID != null){
+            Bundle bundle = new Bundle();
+            bundle.putString("contactID", contactID);
+            fragment.setArguments(bundle);
+        }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, fragment );
@@ -511,4 +519,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void inflateFragment(Fragment fragment, String contactID) {
+
+        launchFragment(fragment, contactID);
+
+    }
 }

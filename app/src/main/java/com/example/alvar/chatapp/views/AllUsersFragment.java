@@ -1,5 +1,6 @@
 package com.example.alvar.chatapp.views;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -50,6 +51,7 @@ public class AllUsersFragment extends Fragment {
     //vars
     private String currentUserID;
     private List<User> userList = new ArrayList<>();
+    private MainActivityInterface clickListener;
 
 
     public AllUsersFragment() {
@@ -89,6 +91,12 @@ public class AllUsersFragment extends Fragment {
         recyclerView = layout.findViewById(R.id.allUsersRecyclerFragment);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
+
+
+
+
+
+
     }
 
     private void setToolbar(String title, View layout, boolean backOption) {
@@ -231,6 +239,21 @@ public class AllUsersFragment extends Fragment {
                     adapter = new UsersAdapter(getContext(), userList);
                     recyclerView.setAdapter(adapter);
 
+                    adapter.clickHandler(new UsersAdapter.OnClickListener() {
+                        @Override
+                        public void onItemClick(int position) {
+
+                            //Here we retrieve the ID of the user shown in the cardView
+                            String contactID = userList.get(position).getUserID();
+
+                            Log.d(TAG, "onItemClick: user pressed ID:  " + contactID );
+
+                            clickListener.inflateFragment(new OtherUserFragment(), contactID);
+                        }
+                    });
+
+
+
                 }
 
 
@@ -243,7 +266,10 @@ public class AllUsersFragment extends Fragment {
         });
     }
 
-
-
-
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        //here we se connection between fragment and Activity.
+        clickListener = (MainActivityInterface) context;
+    }
 }
