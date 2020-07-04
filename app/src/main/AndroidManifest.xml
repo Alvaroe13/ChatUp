@@ -29,8 +29,7 @@
         <activity android:name=".Activities.ImageActivity"></activity>
         <activity android:name=".Activities.PhoneLoginActivity" />
         <activity android:name=".Activities.AnswerRequestActivity" />
-        <activity android:name=".Activities.MainActivity" />
-        <activity android:name=".Activities.LoginActivity"> <!-- Let's make the login activity the
+        <activity android:name=".Activities.MainActivity"> <!-- Let's make the login activity the
                                                                     default one to be open first when app launched -->
 
             <!-- using this -->
@@ -38,6 +37,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+        </activity>
+        <activity android:name=".Activities.LoginActivity">
+
+
 
         </activity>
         <activity

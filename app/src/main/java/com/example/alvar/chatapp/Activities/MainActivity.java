@@ -12,12 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.views.AllUsersFragment;
 import com.example.alvar.chatapp.views.ChatsFragment;
 import com.example.alvar.chatapp.views.ContactsFragment;
 import com.example.alvar.chatapp.views.GroupsFragment;
+import com.example.alvar.chatapp.views.HomeFragment;
+import com.example.alvar.chatapp.views.LoginFragment;
 import com.example.alvar.chatapp.views.MainActivityInterface;
 import com.example.alvar.chatapp.views.OtherUserFragment;
 import com.example.alvar.chatapp.views.RequestsFragment;
@@ -28,6 +31,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
     //Firebase
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef, tokenNodeRef;
     //Firestore
@@ -71,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private DocumentReference userDocRef;
     //UI elements
     private Toolbar toolbarMain;
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private CircleImageView image;
@@ -88,23 +91,27 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        bindUI();
-        setToolbar("ChatUp", true);
         initFirebase();
-        getToken();
 
-        //set image and username from db to toolbar
-        fetchInfoFromDb();
-        //when image within drawer is clicked by the user
-        drawerImagePressed();
-        // viewPagerAdapter init
-        drawerOptionsListener();
+        currentUser = mAuth.getCurrentUser();
 
-        initPageAdapter(viewPager);
-        tabLayout.setupWithViewPager(viewPager);
-        //we set "no" as typing state in the db as soon as the app is launched
-        typingState("no");
+
+        if (currentUser != null){
+            currentUserID = mAuth.getCurrentUser().getUid();
+            launchFragment(new HomeFragment(), null);
+            bindUI();
+            drawerOptionsListener();
+            getToken();
+            //set image and username from db to drawer layout
+            fetchInfoFromDb();
+            //when image within drawer is clicked by the user
+            drawerImagePressed();
+            //we set "no" as typing state in the db as soon as the app is launched
+            typingState("no");
+        } else{
+            launchFragment(new LoginFragment(), null);
+        }
+
     }
 
 
@@ -112,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
      * this methods handles the action taken in the drawer menu
      */
     private void drawerOptionsListener() {
+
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -121,12 +129,15 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
                     case R.id.contacts:
                         launchFragment(new ContactsFragment(), null);
+                        closeDrawer();
                         break;
                     case R.id.settingsAccount:
                         launchFragment(new SettingsFragment(), null);
+                        closeDrawer();
                         break;
                     case R.id.menuAllUsers:
                         launchFragment(new AllUsersFragment(), null);
+                        closeDrawer();
                         break;
                     case R.id.signOut:
                         alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
@@ -143,20 +154,23 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     protected void onResume() {
         super.onResume();
 
+
+        if (currentUser != null){
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
+        }else{
+            launchFragment(new LoginFragment(), null);
+        }
+
 
 
     }
 
     /**
-     * init UI elements
+     * init UI elements drawer layout related
      */
     private void bindUI() {
 
-        viewPager = findViewById(R.id.viewPager);
-        tabLayout = findViewById(R.id.tabLayout);
-        viewPager = findViewById(R.id.viewPager);
         navigationView = findViewById(R.id.navView);
         //drawer layout
         drawerLayout = findViewById(R.id.navigationDrawerLayout);
@@ -241,11 +255,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         transaction.addToBackStack(null);
         transaction.commit();
 
-        //this piece of code is able to close drawer
-        drawerLayout.closeDrawer(GravityCompat.START);
+
 
     }
 
+    private void closeDrawer(){
+        //this piece of code is able to close drawer
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -277,20 +294,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
     }
 
-    /**
-     * this method is in charge of creating the tabs and setting it's title
-     * @param viewPager
-     */
-    private void initPageAdapter(ViewPager viewPager) {
-
-        ViewPagerAdapter Adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
-        Adapter.addFragment(new ChatsFragment(), getString(R.string.chat));
-        Adapter.addFragment(new RequestsFragment(), getString(R.string.requests));
-        viewPager.setAdapter(Adapter);
-        //this line sets the second fragment as default when app is launched.
-        viewPager.setCurrentItem(1);
-    }
 
     /**
      * method in charge of signing out from firebase console
@@ -298,9 +301,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
-        Intent intentSignOut = new Intent(MainActivity.this, LoginActivity.class);
+        launchFragment(new LoginFragment(), null);
+        /*Intent intentSignOut = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intentSignOut);
-        finish();
+        finish();*/
     }
 
 
@@ -334,11 +338,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
     /**
-     * this method is in charge of fetching info from the db and set it into the toolbar
+     * this method is in charge of fetching info from the db and set it into the drawer layout
      */
     private void fetchInfoFromDb() {
-
-        currentUserID = mAuth.getCurrentUser().getUid();
 
         dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -349,18 +351,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                     String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password;
 
 
-                        imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
-                        usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
-                        status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
+                    imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+                    usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+                    status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
 
-                        //these are to populate firestore only
-                        email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
-                        imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
-                        password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
+                    //these are to populate firestore only
+                    email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
+                    imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
+                    password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
 
                     //pass info to firestore db
-                    //User user = new User(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token, currentUserID);
-
                     populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, deviceToken);
                     saveTokenOnPreferences(currentUserID, deviceToken);
 
@@ -369,15 +369,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                     usernameNav.setText(usernameToolbar);
                     statusNav.setText(status);
 
-                    if (imageThumbnailToolbar.equals("imgThumbnail")) {
-                        image.setImageResource(R.drawable.profile_image);
-                    } else {
-                        Log.i(TAG, "onDataChange: image set");
-                        Glide.with(getApplicationContext()).load(imageThumbnailToolbar).into(image);
-                    }
+                    RequestOptions options = new RequestOptions()
+                            .centerCrop()
+                            .error(R.drawable.profile_image);
 
-                } else {
-                    Toast.makeText(MainActivity.this, "Something went wrong with your network", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "onDataChange: image set");
+                    Glide.with(getApplicationContext())
+                            .setDefaultRequestOptions(options)
+                            .load(imageThumbnailToolbar)
+                            .into(image);
+
                 }
             }
 
@@ -425,11 +426,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     @Override
     public void onBackPressed() {
 
-        if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            super.onBackPressed();
+        super.onBackPressed();
+        finish();
+/*
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+
         } else {
             drawerLayout.closeDrawer(GravityCompat.START);
-        }
+        }*/
     }
 
 
@@ -515,7 +519,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     @Override
     protected void onPause() {
         super.onPause();
-        updateDateTime("Offline");
+
+        if (currentUser != null){
+            updateDateTime("Offline");
+        } else {
+            launchFragment(new LoginFragment(), null);
+        }
+
     }
 
 

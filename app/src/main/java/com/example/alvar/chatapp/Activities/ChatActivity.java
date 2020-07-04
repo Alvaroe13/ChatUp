@@ -341,7 +341,7 @@ public class ChatActivity extends AppCompatActivity {
                 notify = true;
 
                 //we get message written by the user
-                messageText = chatEditText.getText().toString();
+                messageText = chatEditText.getText().toString().trim();
 
                 //if field is empty
                 if (messageText.equals("")) {
