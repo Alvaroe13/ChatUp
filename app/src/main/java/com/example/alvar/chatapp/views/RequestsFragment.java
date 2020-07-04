@@ -16,6 +16,7 @@ import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +38,7 @@ public class RequestsFragment extends Fragment {
     //firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
+    private FirebaseUser currentUser;
     private DatabaseReference dbRequestsNodeRef, dbUsersNode, requestTypeRef;
     //ui elements
     private RecyclerView requestsRecycler;
@@ -74,13 +76,11 @@ public class RequestsFragment extends Fragment {
     private void initFirebase(){
         //init firebase auth
         auth = FirebaseAuth.getInstance();
-        //we get currentUser ID
-        currentUserID = auth.getCurrentUser().getUid();
-        //init database
+        if (currentUser != null){
+            currentUserID = currentUser.getUid();
+        }
         database = FirebaseDatabase.getInstance();
-        // we aim to "Contacts" node from db
         dbRequestsNodeRef = database.getReference().child("Chat_Requests");
-        // we aim to "Users" node from db
         dbUsersNode = database.getReference().child("Users");
         dbUsersNode.keepSynced(true);
     }
@@ -89,7 +89,10 @@ public class RequestsFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        initFirebaseAdapter();
+        if (currentUser != null){
+            initFirebaseAdapter();
+        }
+
 
     }
 

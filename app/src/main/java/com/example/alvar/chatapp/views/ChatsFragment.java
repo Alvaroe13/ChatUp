@@ -12,6 +12,7 @@ import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.viewModels.ChatListViewModel;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
@@ -29,6 +30,9 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ChatsFragment extends Fragment {
 
     private static final String TAG = "ChatsFragmentPage";
+    //firebase
+    private FirebaseAuth auth;
+    private FirebaseUser currentUser;
     //ui elements
     private RecyclerView chatRecyclerView;
     //vars
@@ -41,18 +45,17 @@ public class ChatsFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initFirebase();
+    }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-       View viewContacts = inflater.inflate(R.layout.fragment_chats, container, false);
-
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        currentUserID = auth.getCurrentUser().getUid();
-
-        return viewContacts;
+        return  inflater.inflate(R.layout.fragment_chats, container, false);
     }
 
     /**
@@ -71,6 +74,15 @@ public class ChatsFragment extends Fragment {
         initObserver();
 
     }
+
+    private void initFirebase() {
+        auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser();
+        if (currentUser != null){
+            currentUserID = auth.getCurrentUser().getUid();
+        }
+    }
+
 
     private void initRecyclerView(View view) {
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);

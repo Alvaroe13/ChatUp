@@ -2,7 +2,6 @@ package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,22 +11,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
-import com.example.alvar.chatapp.views.AllUsersFragment;
-import com.example.alvar.chatapp.views.ChatsFragment;
-import com.example.alvar.chatapp.views.ContactsFragment;
-import com.example.alvar.chatapp.views.GroupsFragment;
 import com.example.alvar.chatapp.views.MainActivityInterface;
-import com.example.alvar.chatapp.views.OtherUserFragment;
-import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.views.SettingsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,8 +42,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.viewpager.widget.ViewPager;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
@@ -64,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
     //Firebase
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef, tokenNodeRef;
     //Firestore
@@ -71,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private DocumentReference userDocRef;
     //UI elements
     private Toolbar toolbarMain;
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
     private CircleImageView image;
@@ -88,23 +79,40 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        bindUI();
-        setToolbar("ChatUp", true);
         initFirebase();
-        getToken();
 
-        //set image and username from db to toolbar
-        fetchInfoFromDb();
-        //when image within drawer is clicked by the user
-        drawerImagePressed();
-        // viewPagerAdapter init
-        drawerOptionsListener();
+        int destinationID =  Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId();
 
-        initPageAdapter(viewPager);
-        tabLayout.setupWithViewPager(viewPager);
-        //we set "no" as typing state in the db as soon as the app is launched
-        typingState("no");
+        Log.d(TAG, "navigateWithStack: destination ID : " + destinationID);
+
+        currentUser = mAuth.getCurrentUser();
+
+        if (currentUser != null){
+            currentUserID = mAuth.getCurrentUser().getUid();
+            bindUI();
+            drawerOptionsListener();
+            getToken();
+            //set image and username from db to drawer layout
+            fetchInfoFromDb();
+            //when image within drawer is clicked by the user
+            drawerImagePressed();
+            //we set "no" as typing state in the db as soon as the app is launched
+            typingState("no");
+        }
+
+        else{
+            bindUI();
+            drawerLock();
+        }
+
+    }
+
+    private void drawerLock() {
+       drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+    }
+
+    private void drawerUnlocked(){
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
 
@@ -113,50 +121,40 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
      */
     private void drawerOptionsListener() {
 
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
                 switch (menuItem.getItemId()) {
-
                     case R.id.contacts:
-                        launchFragment(new ContactsFragment(), null);
+                        navigateWithStack(R.id.contactsFragment);
+                        closeDrawer();
                         break;
                     case R.id.settingsAccount:
-                        launchFragment(new SettingsFragment(), null);
+                        navigateWithStack(R.id.settingsFragment);
+                        closeDrawer();
                         break;
                     case R.id.menuAllUsers:
-                        launchFragment(new AllUsersFragment(), null);
+                        navigateWithStack(R.id.allUsersFragment);
+                        closeDrawer();
                         break;
                     case R.id.signOut:
                         alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
                         break;
-
                 }
-
                 return false;
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-            //this method will pass "Online" to the database as soon as the user is using the app
-            updateDateTime("Online");
-
 
     }
+
 
     /**
-     * init UI elements
+     * init UI elements drawer layout related
      */
     private void bindUI() {
 
-        viewPager = findViewById(R.id.viewPager);
-        tabLayout = findViewById(R.id.tabLayout);
-        viewPager = findViewById(R.id.viewPager);
         navigationView = findViewById(R.id.navView);
         //drawer layout
         drawerLayout = findViewById(R.id.navigationDrawerLayout);
@@ -230,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
      */
     private void launchFragment(Fragment fragment, String contactID){
 
-        if (contactID != null){
+  /*      if (contactID != null){
             Bundle bundle = new Bundle();
             bundle.putString("contactID", contactID);
             fragment.setArguments(bundle);
@@ -240,12 +238,15 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         transaction.replace(R.id.fragmentContainer, fragment );
         transaction.addToBackStack(null);
         transaction.commit();
+*/
 
-        //this piece of code is able to close drawer
-        drawerLayout.closeDrawer(GravityCompat.START);
 
     }
 
+    private void closeDrawer(){
+        //this piece of code is able to close drawer
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -277,20 +278,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         userDocRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
     }
 
-    /**
-     * this method is in charge of creating the tabs and setting it's title
-     * @param viewPager
-     */
-    private void initPageAdapter(ViewPager viewPager) {
-
-        ViewPagerAdapter Adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        Adapter.addFragment(new GroupsFragment(), getString(R.string.groups));
-        Adapter.addFragment(new ChatsFragment(), getString(R.string.chat));
-        Adapter.addFragment(new RequestsFragment(), getString(R.string.requests));
-        viewPager.setAdapter(Adapter);
-        //this line sets the second fragment as default when app is launched.
-        viewPager.setCurrentItem(1);
-    }
 
     /**
      * method in charge of signing out from firebase console
@@ -298,11 +285,36 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
-        Intent intentSignOut = new Intent(MainActivity.this, LoginActivity.class);
-        startActivity(intentSignOut);
-        finish();
+
+        navigateWithOutStack(R.id.loginFragment);
+
+        closeDrawer();
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
+    /**
+     * navigate using navigation component without the back stack
+     * @param layout
+     */
+    private void navigateWithOutStack(int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(this, R.id.fragment).navigate(layout, null, navOptions);
+
+    }
+
+    /**
+     * navigate using navigation component adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(int layout){
+
+        Navigation.findNavController(this, R.id.fragment).navigate(layout);
+
+    }
 
     /**
      * this method contains the pop-up message when user clicks log out from menu option
@@ -334,11 +346,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
     /**
-     * this method is in charge of fetching info from the db and set it into the toolbar
+     * this method is in charge of fetching info from the db and set it into the drawer layout
      */
     private void fetchInfoFromDb() {
-
-        currentUserID = mAuth.getCurrentUser().getUid();
 
         dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -349,18 +359,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                     String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password;
 
 
-                        imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
-                        usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
-                        status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
+                    imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
+                    usernameToolbar = dataSnapshot.child(getString(R.string.name_db)).getValue().toString();
+                    status = dataSnapshot.child(getString(R.string.status_db)).getValue().toString();
 
-                        //these are to populate firestore only
-                        email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
-                        imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
-                        password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
+                    //these are to populate firestore only
+                    email = dataSnapshot.child(getString(R.string.email_db)).getValue().toString();
+                    imageProfile = dataSnapshot.child(getString(R.string.image_db)).getValue().toString();
+                    password = dataSnapshot.child(getString(R.string.password_db)).getValue().toString();
 
                     //pass info to firestore db
-                    //User user = new User(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, token, currentUserID);
-
                     populateFirestore(usernameToolbar, email, password, status, imageProfile, imageThumbnailToolbar, deviceToken);
                     saveTokenOnPreferences(currentUserID, deviceToken);
 
@@ -369,15 +377,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
                     usernameNav.setText(usernameToolbar);
                     statusNav.setText(status);
 
-                    if (imageThumbnailToolbar.equals("imgThumbnail")) {
-                        image.setImageResource(R.drawable.profile_image);
-                    } else {
-                        Log.i(TAG, "onDataChange: image set");
-                        Glide.with(getApplicationContext()).load(imageThumbnailToolbar).into(image);
-                    }
+                    RequestOptions options = new RequestOptions()
+                            .centerCrop()
+                            .error(R.drawable.profile_image);
 
-                } else {
-                    Toast.makeText(MainActivity.this, "Something went wrong with your network", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "onDataChange: image set");
+                    Glide.with(getApplicationContext())
+                            .setDefaultRequestOptions(options)
+                            .load(imageThumbnailToolbar)
+                            .into(image);
+
                 }
             }
 
@@ -418,22 +427,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         imageDialog.show(getSupportFragmentManager(), "showImageProfile");
 
     }
-
-    /**
-     * this method is in charge of closing the drawer when pressing back button
-     */
-    @Override
-    public void onBackPressed() {
-
-        if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            super.onBackPressed();
-        } else {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        }
-    }
-
-
-
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
@@ -512,17 +505,55 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
 
+
+    /**
+     * this method is in charge of closing the drawer when pressing back button
+     */
+    @Override
+    public void onBackPressed() {
+
+        Log.d(TAG, "onBackPressed: called!!!");
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId() == R.id.homeFragment){
+            finish();
+        } else{
+            super.onBackPressed();
+        }
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "onResume: CALLED!!!");
+
+        if (currentUser != null){
+            //this method will pass "Online" to the database as soon as the user is using the app
+            updateDateTime("Online");
+        }
+
+
+    }
+
+
     @Override
     protected void onPause() {
         super.onPause();
-        updateDateTime("Offline");
+
+        if (currentUser != null) {
+            updateDateTime("Offline");
+        }
+
     }
 
 
     @Override
     public void inflateFragment(Fragment fragment, String contactID) {
 
-        launchFragment(fragment, contactID);
+       // launchFragment(fragment, contactID);
 
     }
 }

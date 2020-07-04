@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorPrimary"
+    tools:layout_editor_absoluteY="25dp"
+    tools:context=".views.LoginFragment">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="285dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        app:srcCompat="@drawable/login_photo" />
+
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <ProgressBar
+                android:id="@+id/loginProgressBar"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center"
+                android:visibility="invisible" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/loginName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/color_white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:hint="@string/email"
+                    android:inputType="text"
+                    android:textColor="@color/color_white"
+                    android:theme="@style/TextLabel"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/loginPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                android:textColorHint="@color/color_white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:hint="@string/password"
+                    android:inputType="textPassword"
+                    android:textColor="@color/color_white"
+                    android:theme="@style/TextLabel"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/txtCreateAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="end"
+                    android:text="@string/signUp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:textColor="@color/color_white"
+                    android:textStyle="bold|italic" />
+
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Login"
+                    android:layout_marginTop="5dp"/>
+
+                <TextView
+                    android:id="@+id/forgotPasswordText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/passwordForgot"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textColor="@color/color_white"
+                    android:gravity="end"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"/>
+
+
+                <TextView
+                    android:id="@+id/btnPhoneLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_gravity="center"
+                    android:textColor="@color/color_white"
+                    android:text="Sign up with phone number"
+                    android:textStyle="bold|italic"
+                    android:clickable="true"
+                    android:drawableStart="@drawable/phone"
+                    android:drawableLeft="@drawable/phone"
+                    android:textSize="12sp"
+                    android:layout_marginTop="12dp"/>
+
+            </LinearLayout>
+
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/coordinatorLayout"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_gravity="bottom">
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        </LinearLayout>
+
+
+    </FrameLayout>
+
+
+</LinearLayout>

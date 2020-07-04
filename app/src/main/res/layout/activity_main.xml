@@ -1,81 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<androidx.drawerlayout.widget.DrawerLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical"
-    tools:openDrawer="start"
-    android:id="@+id/navigationDrawerLayout"
     tools:context=".Activities.MainActivity">
 
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+           <!-- <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-        <LinearLayout
+                    <androidx.appcompat.widget.Toolbar
+                        android:id="@+id/toolbarMain"
+                        android:layout_width="match_parent"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="@color/colorPrimary"
+                        android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="@color/colorPrimary"
+                        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                        app:tabTextColor="@color/color_white">
+
+                        <com.google.android.material.tabs.TabItem
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <com.google.android.material.tabs.TabItem
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <com.google.android.material.tabs.TabItem
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+
+                    </com.google.android.material.tabs.TabLayout>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <androidx.viewpager.widget.ViewPager
+                            android:id="@+id/viewPager"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
+                    </FrameLayout>
+
+            </LinearLayout>-->
+
+
+
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        tools:openDrawer="start"
+        android:id="@+id/navigationDrawerLayout">
+
+        <fragment
+            android:id="@+id/fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
 
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbarMain"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="@color/colorPrimary"
-                    android:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar" />
+<!--
 
-
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tabLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="@color/colorPrimary"
-                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                    app:tabTextColor="@color/color_white">
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <com.google.android.material.tabs.TabItem
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+        <FrameLayout
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+-->
 
 
-                </com.google.android.material.tabs.TabLayout>
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
 
-                    <androidx.viewpager.widget.ViewPager
-                        android:id="@+id/viewPager"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            app:menu="@menu/menu"
+            android:layout_gravity="start">
 
-                </FrameLayout>
+        </com.google.android.material.navigation.NavigationView>
 
-        </LinearLayout>
 
-    </FrameLayout>
+    </androidx.drawerlayout.widget.DrawerLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        app:menu="@menu/menu"
-        android:layout_gravity="start">
-
-    </com.google.android.material.navigation.NavigationView>
-
-</androidx.drawerlayout.widget.DrawerLayout>
-
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
