@@ -23,6 +23,7 @@ android {
 dependencies {
     def multidex_version = "2.0.1"
     def lifecycle_version = "2.2.0"
+    def nav_version = "2.3.0"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -68,5 +69,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     // LiveData
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+    //nav component
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
 }
 apply plugin: 'com.google.gms.google-services'

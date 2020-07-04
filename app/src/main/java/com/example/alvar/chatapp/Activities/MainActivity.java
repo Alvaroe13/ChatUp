@@ -2,7 +2,6 @@ package com.example.alvar.chatapp.Activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,23 +12,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
-import com.example.alvar.chatapp.views.AllUsersFragment;
-import com.example.alvar.chatapp.views.ChatsFragment;
-import com.example.alvar.chatapp.views.ContactsFragment;
-import com.example.alvar.chatapp.views.GroupsFragment;
-import com.example.alvar.chatapp.views.HomeFragment;
-import com.example.alvar.chatapp.views.LoginFragment;
 import com.example.alvar.chatapp.views.MainActivityInterface;
-import com.example.alvar.chatapp.views.OtherUserFragment;
-import com.example.alvar.chatapp.views.RequestsFragment;
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.views.SettingsFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -54,8 +42,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.viewpager.widget.ViewPager;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
@@ -93,12 +81,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
         initFirebase();
 
-        currentUser = mAuth.getCurrentUser();
+        int destinationID =  Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId();
 
+        Log.d(TAG, "navigateWithStack: destination ID : " + destinationID);
+
+        currentUser = mAuth.getCurrentUser();
 
         if (currentUser != null){
             currentUserID = mAuth.getCurrentUser().getUid();
-            launchFragment(new HomeFragment(), null);
             bindUI();
             drawerOptionsListener();
             getToken();
@@ -108,10 +98,21 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             drawerImagePressed();
             //we set "no" as typing state in the db as soon as the app is launched
             typingState("no");
-        } else{
-            launchFragment(new LoginFragment(), null);
         }
 
+        else{
+            bindUI();
+            drawerLock();
+        }
+
+    }
+
+    private void drawerLock() {
+       drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+    }
+
+    private void drawerUnlocked(){
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
 
@@ -126,45 +127,28 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
                 switch (menuItem.getItemId()) {
-
                     case R.id.contacts:
-                        launchFragment(new ContactsFragment(), null);
+                        navigateWithStack(R.id.contactsFragment);
                         closeDrawer();
                         break;
                     case R.id.settingsAccount:
-                        launchFragment(new SettingsFragment(), null);
+                        navigateWithStack(R.id.settingsFragment);
                         closeDrawer();
                         break;
                     case R.id.menuAllUsers:
-                        launchFragment(new AllUsersFragment(), null);
+                        navigateWithStack(R.id.allUsersFragment);
                         closeDrawer();
                         break;
                     case R.id.signOut:
                         alertMessage(getString(R.string.alertDialogTitle), getString(R.string.alertDialogMessage));
                         break;
-
                 }
-
                 return false;
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-
-        if (currentUser != null){
-            //this method will pass "Online" to the database as soon as the user is using the app
-            updateDateTime("Online");
-        }else{
-            launchFragment(new LoginFragment(), null);
-        }
-
-
 
     }
+
 
     /**
      * init UI elements drawer layout related
@@ -244,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
      */
     private void launchFragment(Fragment fragment, String contactID){
 
-        if (contactID != null){
+  /*      if (contactID != null){
             Bundle bundle = new Bundle();
             bundle.putString("contactID", contactID);
             fragment.setArguments(bundle);
@@ -254,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         transaction.replace(R.id.fragmentContainer, fragment );
         transaction.addToBackStack(null);
         transaction.commit();
-
+*/
 
 
     }
@@ -301,12 +285,36 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
-        launchFragment(new LoginFragment(), null);
-        /*Intent intentSignOut = new Intent(MainActivity.this, LoginActivity.class);
-        startActivity(intentSignOut);
-        finish();*/
+
+        navigateWithOutStack(R.id.loginFragment);
+
+        closeDrawer();
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
+    /**
+     * navigate using navigation component without the back stack
+     * @param layout
+     */
+    private void navigateWithOutStack(int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(this, R.id.fragment).navigate(layout, null, navOptions);
+
+    }
+
+    /**
+     * navigate using navigation component adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(int layout){
+
+        Navigation.findNavController(this, R.id.fragment).navigate(layout);
+
+    }
 
     /**
      * this method contains the pop-up message when user clicks log out from menu option
@@ -419,25 +427,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         imageDialog.show(getSupportFragmentManager(), "showImageProfile");
 
     }
-
-    /**
-     * this method is in charge of closing the drawer when pressing back button
-     */
-    @Override
-    public void onBackPressed() {
-
-        super.onBackPressed();
-        finish();
-/*
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-
-        } else {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        }*/
-    }
-
-
-
     /**
      * method in charge of getting the user's current state, time and Date to update in db
      */
@@ -516,14 +505,46 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
 
+
+    /**
+     * this method is in charge of closing the drawer when pressing back button
+     */
+    @Override
+    public void onBackPressed() {
+
+        Log.d(TAG, "onBackPressed: called!!!");
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId() == R.id.homeFragment){
+            finish();
+        } else{
+            super.onBackPressed();
+        }
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "onResume: CALLED!!!");
+
+        if (currentUser != null){
+            //this method will pass "Online" to the database as soon as the user is using the app
+            updateDateTime("Online");
+        }
+
+
+    }
+
+
     @Override
     protected void onPause() {
         super.onPause();
 
-        if (currentUser != null){
+        if (currentUser != null) {
             updateDateTime("Offline");
-        } else {
-            launchFragment(new LoginFragment(), null);
         }
 
     }
@@ -532,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     @Override
     public void inflateFragment(Fragment fragment, String contactID) {
 
-        launchFragment(fragment, contactID);
+       // launchFragment(fragment, contactID);
 
     }
 }

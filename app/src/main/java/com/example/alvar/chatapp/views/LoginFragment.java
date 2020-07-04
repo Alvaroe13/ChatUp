@@ -8,6 +8,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,6 +49,7 @@ public class LoginFragment extends Fragment {
 
     //Firebase
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef;
     //UI elements
@@ -53,6 +58,7 @@ public class LoginFragment extends Fragment {
     private CoordinatorLayout coordinatorLayout;
     private TextView txtCreateAccount, forgotPasswordTxt, btnPhoneLogin;
     private Button btnLogin;
+    private View view;
     //vars
     private String email, password;
 
@@ -67,24 +73,40 @@ public class LoginFragment extends Fragment {
         Log.d(TAG, "onCreate: called!!!");
 
         initFirebase();
-        checkUserStatus();
+        currentUser = mAuth.getCurrentUser();
+
         
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        
-        View view = inflater.inflate(R.layout.fragment_login, container, false);
+
+        view = inflater.inflate(R.layout.fragment_login, container, false);
 
         Log.d(TAG, "onCreateView:  called ");
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Log.d(TAG, "onViewCreated: called as well");
+
         BindUI(view);
         goToRegister();
         buttonsUI();
-        
-        return view;
+        checkUserStatus();
+
     }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
 
 
     /**
@@ -97,11 +119,11 @@ public class LoginFragment extends Fragment {
     }
 
     private void checkUserStatus(){
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+
         //if user is signed in we take the user to the main activity
         if (currentUser != null){
-            goToMain();
-            Log.i(TAG, "onStart: onStart method called");
+            Log.i(TAG, "onStart: user sent to Home_Fragment as is signed in");
+            Navigation.findNavController(view).navigate(R.id.homeFragment);
         }
     }
 
@@ -202,7 +224,12 @@ public class LoginFragment extends Fragment {
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
-                    goToMain();
+                    //goToMain();
+                   NavOptions navOptions = new NavOptions.Builder()
+                            .setPopUpTo(R.id.nav_graph, true)
+                            .build();
+
+                    Navigation.findNavController(view).navigate(R.id.homeFragment, null, navOptions);
                 }
             }
         });

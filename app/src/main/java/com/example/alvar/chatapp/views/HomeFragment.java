@@ -31,6 +31,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,12 +49,13 @@ import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment  {
 
     private static final String TAG = "HomeFragment";
 
     //firebase
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef, tokenNodeRef;
     //Firestore
@@ -77,9 +79,10 @@ public class HomeFragment extends Fragment {
 
         Log.d(TAG, "onCreate: called");
 
-
         initFirebase();
-        currentUserID = mAuth.getCurrentUser().getUid();
+        if (currentUser != null){
+            currentUserID = mAuth.getCurrentUser().getUid();
+        }
         initFirestore();
 
     }
@@ -87,14 +90,8 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         Log.d(TAG, "onCreateView: called ");
-
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-        // Inflate the layout for this fragment
-        
-
-        return view;
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
@@ -102,15 +99,16 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Log.d(TAG, "onViewCreated: called as well!");
-
         setToolbar("ChatUp", view, true);
+        ui(view);
+        
+    }
 
+    private void ui(View view) {
         viewPager = view.findViewById(R.id.viewPager);
         tabLayout = view.findViewById(R.id.tabLayout);
         initPageAdapter(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-        
-        
     }
 
     /**
@@ -119,6 +117,7 @@ public class HomeFragment extends Fragment {
     private void initFirebase() {
         //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         //database init
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
