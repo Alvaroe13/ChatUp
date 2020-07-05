@@ -8,6 +8,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +60,12 @@ public class ImageProfileShow extends DialogFragment {
         return showAlertDialog();
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        imagePressed();
+    }
+
     /**
      * method in charge of init firebase services
      */
@@ -97,9 +106,11 @@ public class ImageProfileShow extends DialogFragment {
             @Override
             public void onClick(View v) {
                 //note that we use "messageContent" as id like in the rest of the app
-                Intent i = new Intent(getActivity(), ImageActivity.class);
+                /*Intent i = new Intent(getActivity(), ImageActivity.class);
                 i.putExtra("messageContent", image);
-                startActivity(i);
+                startActivity(i);*/
+                Log.d(TAG, "onClick: navigate to large image fragment pressed!!!");
+                navigateWithStack(imageProfileView, R.id.imageLargeFragment);
             }
         });
     }
@@ -133,7 +144,7 @@ public class ImageProfileShow extends DialogFragment {
                         Glide.with(getActivity()).load(image).into(imageProfileDialog);
                     }
 
-                    imagePressed();
+
 
                 }
 
@@ -145,6 +156,30 @@ public class ImageProfileShow extends DialogFragment {
             }
         });
     }
+
+
+    /**
+     * navigate adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(View view , int layout){
+        Navigation.findNavController(view).navigate(layout);
+    }
+
+    /**
+     * navigate cleaning the stack
+     * @param layout
+     */
+    private void navigateWithOutStack(View view, int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(view).navigate(layout, null, navOptions);
+
+    }
+
 
 
 }

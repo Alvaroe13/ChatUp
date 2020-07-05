@@ -37,6 +37,9 @@
         <action
             android:id="@+id/action_homeFragment_to_allUsersFragment"
             app:destination="@id/allUsersFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_imageProfileShow"
+            app:destination="@id/imageProfileShow" />
     </fragment>
     <fragment
         android:id="@+id/contactsFragment"
@@ -49,6 +52,9 @@
         android:name="com.example.alvar.chatapp.views.SettingsFragment"
         android:label="SettingsFragment"
         tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_imageLargeFragment"
+            app:destination="@id/imageLargeFragment" />
     </fragment>
     <fragment
         android:id="@+id/allUsersFragment"
@@ -66,6 +72,24 @@
         android:name="com.example.alvar.chatapp.views.RecoverPasswordFragment"
         android:label="fragment_recover_password"
         tools:layout="@layout/fragment_recover_password" />
+    <fragment
+        android:id="@+id/imageProfileShow"
+        android:name="com.example.alvar.chatapp.Dialogs.ImageProfileShow"
+        tools:layout="@layout/profile_dialog"
+        android:label="ImageProfileShow" >
+
+    </fragment>
+    <fragment
+        android:id="@+id/imageLargeFragment"
+        android:name="com.example.alvar.chatapp.views.ImageLargeFragment"
+        android:label="fragment_image_large"
+        tools:layout="@layout/fragment_image_large">
+
+        <argument android:name="photo"
+            android:defaultValue="none"/>
+
+    </fragment>
+
 </navigation>
 
 
