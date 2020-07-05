@@ -94,6 +94,18 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="recoverPasswordFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="-368" />
+                            <option name="y" value="523" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="registerFragment">
                     <value>
                       <LayoutPositions>

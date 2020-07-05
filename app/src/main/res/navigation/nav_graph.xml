@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_recoverPasswordFragment"
+            app:destination="@id/recoverPasswordFragment" />
     </fragment>
     <fragment
         android:id="@+id/homeFragment"
@@ -58,6 +61,11 @@
         android:name="com.example.alvar.chatapp.views.RegisterFragment"
         android:label="fragment_register"
         tools:layout="@layout/fragment_register" />
+    <fragment
+        android:id="@+id/recoverPasswordFragment"
+        android:name="com.example.alvar.chatapp.views.RecoverPasswordFragment"
+        android:label="fragment_recover_password"
+        tools:layout="@layout/fragment_recover_password" />
 </navigation>
 
 

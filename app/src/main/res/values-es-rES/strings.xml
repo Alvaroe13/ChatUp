@@ -158,6 +158,7 @@
     <string name="dialog_location">Necesitas tener activado el GPS para compartir ubicación ¿Deseas activarlo?</string>
     <string name="updating_location">Actualizando tu ubicación</string>
     <string name="working_background">Está funcionando en segundo plano</string>
+    <string name="check_your_inbox">Por favor revisa tu correo electrónico</string>
 
 
 </resources>
