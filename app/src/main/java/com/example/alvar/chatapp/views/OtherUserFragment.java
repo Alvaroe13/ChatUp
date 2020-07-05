@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -63,6 +65,7 @@ public class OtherUserFragment extends Fragment {
     private TextView usernameOtherUser, statusOtherUser;
     private Button buttonFirst, buttonSecond;
     private CoordinatorLayout coordinatorLayout;
+    private View viewLayout;
     //vars
     private String contactID, currentUserID;
     private String current_database_state = "not_friend_yet";
@@ -77,6 +80,7 @@ public class OtherUserFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: called!");
         incomingBundle();
         initFirebase();
     }
@@ -84,16 +88,22 @@ public class OtherUserFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: called");
+        return inflater.inflate(R.layout.fragment_other_user, container, false);
+    }
 
-        View view = inflater.inflate(R.layout.fragment_other_user, container, false);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Log.d(TAG, "onViewCreated: called");
+        viewLayout = view;
 
         bindUI(view);
         retrieveInfo();
         manageChatRequest();
         imageProfilePressed();
         retrofit();
-
-        return view;
     }
 
     private void incomingBundle() {
@@ -742,9 +752,35 @@ public class OtherUserFragment extends Fragment {
 
     private void goToImageBigRoom() {
 
-        Intent intent = new Intent(getContext(), ImageActivity.class);
-        intent.putExtra("messageContent", imageProfile);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putString("messageContent", imageProfile);
+        navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
+
+    }
+
+    //--------------------------------- navigation component related ----------------------------//
+
+
+    /**
+     * navigate adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(View view , int layout, Bundle bundle){
+        Navigation.findNavController(view).navigate(layout, bundle);
+    }
+
+    /**
+     * navigate cleaning the stack
+     * @param layout
+     */
+    private void navigateWithOutStack(View view, int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(view).navigate(layout, null, navOptions);
+
     }
 
 

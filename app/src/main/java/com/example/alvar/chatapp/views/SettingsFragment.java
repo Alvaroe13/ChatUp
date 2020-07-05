@@ -8,6 +8,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
 
@@ -68,8 +70,9 @@ public class SettingsFragment extends Fragment {
     private TextView textStatus, textUsername;
     private ProgressBar progressBar;
     private FloatingActionButton fabImage, fabStatus;
+    private View viewLayout;
     //Vars
-    private String currentUserID;
+    private String currentUserID, image;
     private Bitmap thumbnailImage = null;
 
     public SettingsFragment() {
@@ -85,18 +88,21 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: called");
+        return  inflater.inflate(R.layout.fragment_settings, container, false);
+    }
 
-        View layout = inflater.inflate(R.layout.fragment_settings, container, false);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        bindUI(layout);
+        viewLayout = view;
+
+        bindUI(view);
         fabButtonClicked();
         retrieveDataFromDb();
         imageClick();
-
-
-        return layout;
     }
-
 
     /**
      * UI elements
@@ -202,7 +208,8 @@ public class SettingsFragment extends Fragment {
         //save info retrieved from DB into String vars
         String name = dataSnapshot.child("name").getValue().toString();
         String status = dataSnapshot.child("status").getValue().toString();
-        String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+        final String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+        image = dataSnapshot.child("image").getValue().toString();
         //set values to display
         textUsername.setText(name);
         textStatus.setText(status);
@@ -429,9 +436,41 @@ public class SettingsFragment extends Fragment {
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showAlertDialogImage() {
-        ImageProfileShow imageDialog = new ImageProfileShow();
-        imageDialog.show(getActivity().getSupportFragmentManager(), "showImageProfile");
+        /*ImageProfileShow imageDialog = new ImageProfileShow();
+        imageDialog.show(getActivity().getSupportFragmentManager(), "showImageProfile");*/
+
+        Bundle bundle = new Bundle();
+        bundle.putString("messageContent", image);
+
+        Log.d(TAG, "showAlertDialogImage: image: " + image);
+
+        navigateWithStack(viewLayout , R.id.imageLargeFragment, bundle);
+
+
     }
+
+    /**
+     * navigate adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(View view , int layout, Bundle bundle){
+        Navigation.findNavController(view).navigate(layout, bundle);
+    }
+
+    /**
+     * navigate cleaning the stack
+     * @param layout
+     */
+    private void navigateWithOutStack(View view, int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(view).navigate(layout, null, navOptions);
+
+    }
+
 
 
 }

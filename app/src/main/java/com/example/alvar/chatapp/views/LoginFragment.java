@@ -1,17 +1,13 @@
 package com.example.alvar.chatapp.views;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,11 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.LoginActivity;
-import com.example.alvar.chatapp.Activities.MainActivity;
-import com.example.alvar.chatapp.Activities.PhoneLoginActivity;
-import com.example.alvar.chatapp.Activities.RecoverPasswordActivity;
-import com.example.alvar.chatapp.Activities.RegisterActivity;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
@@ -43,7 +34,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "LoginFragment";
 
@@ -58,7 +49,7 @@ public class LoginFragment extends Fragment {
     private CoordinatorLayout coordinatorLayout;
     private TextView txtCreateAccount, forgotPasswordTxt, btnPhoneLogin;
     private Button btnLogin;
-    private View view;
+    private View viewLayout;
     //vars
     private String email, password;
 
@@ -71,32 +62,26 @@ public class LoginFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Log.d(TAG, "onCreate: called!!!");
-
         initFirebase();
         currentUser = mAuth.getCurrentUser();
-
-        
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        view = inflater.inflate(R.layout.fragment_login, container, false);
-
         Log.d(TAG, "onCreateView:  called ");
-
-        return view;
+        return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d(TAG, "onViewCreated: called as well");
+        //we make the view global to access it from everywhere in the class
+        viewLayout = view;
 
+        Log.d(TAG, "onViewCreated: called as well");
         BindUI(view);
-        goToRegister();
         buttonsUI();
         checkUserStatus();
 
@@ -106,8 +91,6 @@ public class LoginFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
-
-
 
     /**
      * init firebase services
@@ -123,7 +106,7 @@ public class LoginFragment extends Fragment {
         //if user is signed in we take the user to the main activity
         if (currentUser != null){
             Log.i(TAG, "onStart: user sent to Home_Fragment as is signed in");
-            Navigation.findNavController(view).navigate(R.id.homeFragment);
+            Navigation.findNavController(viewLayout).navigate(R.id.homeFragment);
         }
     }
 
@@ -141,44 +124,29 @@ public class LoginFragment extends Fragment {
         forgotPasswordTxt = view.findViewById(R.id.forgotPasswordText);
     }
 
+    private void btnLoginPressed(){
+
+        email = usernameLogin.getEditText().getText().toString().trim();
+        password = passwordLogin.getEditText().getText().toString().trim();
+
+        if (email.equals("") || password.equals("")){
+            Log.i(TAG, "btnLogin clicked, some field is empty");
+            //Show info using snack bar
+            SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.noEmptyField));
+        } else {
+            Log.i(TAG, "btnLogin clicked no filed empty, proceed to call signIn method");
+            ProgressBarHelper.showProgressBar(loginProgressBar);
+            sigIn(email, password);
+        }
+
+    }
+
 
     private void buttonsUI(){
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                email = usernameLogin.getEditText().getText().toString().trim();
-                password = passwordLogin.getEditText().getText().toString().trim();
-
-                if (email.equals("") || password.equals("")){
-                    Log.i(TAG, "btnLogin clicked, some field is empty");
-                    //Show info using snack bar
-                    SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.noEmptyField));
-                } else {
-                    Log.i(TAG, "btnLogin clicked no filed empty, proceed to call signIn method");
-                    ProgressBarHelper.showProgressBar(loginProgressBar);
-                    sigIn(email, password);
-                }
-
-            }
-        });
-
-        forgotPasswordTxt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getContext(), RecoverPasswordActivity.class);
-                startActivity(i);
-            }
-        });
-
-        btnPhoneLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToPhoneLogin();
-            }
-        });
-
+        btnLogin.setOnClickListener(this);
+        txtCreateAccount.setOnClickListener(this);
+        forgotPasswordTxt.setOnClickListener(this);
+        btnPhoneLogin.setOnClickListener(this);
     }
 
     /**
@@ -188,25 +156,32 @@ public class LoginFragment extends Fragment {
      */
     private void sigIn(String email, String password){
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.i(TAG, "signInWithEmail:success" );
-                            getDeviceToken();
+        try {
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.i(TAG, "signInWithEmail:success" );
+                                getDeviceToken();
 
-                        } else {
-                            // If sign in fails, display a message to the user. 
-                            Log.i(TAG, "signInWithEmail:failure : " + task.getException().getMessage() );
-                            Toast.makeText(getActivity(), task.getException().getMessage() , Toast.LENGTH_LONG).show();
-                            //dismiss progressBar
-                            ProgressBarHelper.hideProgressBar(loginProgressBar);
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.i(TAG, "signInWithEmail:failure : " + task.getException().getMessage() );
+                                Toast.makeText(getActivity(), task.getException().getMessage() , Toast.LENGTH_LONG).show();
+                                //dismiss progressBar
+                                ProgressBarHelper.hideProgressBar(loginProgressBar);
+                            }
+
                         }
+                    });
 
-                    }
-                });
+        }catch (Exception e){
+            Log.e(TAG, "sigIn: error: " + e.getMessage() );
+        }
+
+
     }
 
     /**
@@ -224,44 +199,55 @@ public class LoginFragment extends Fragment {
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
-                    //goToMain();
-                   NavOptions navOptions = new NavOptions.Builder()
-                            .setPopUpTo(R.id.nav_graph, true)
-                            .build();
-
-                    Navigation.findNavController(view).navigate(R.id.homeFragment, null, navOptions);
+                    navigateWithOutStack(viewLayout , R.id.homeFragment);
                 }
             }
         });
     }
 
+
     /**
-     * takes the user to register
+     * navigate adding to the back stack
+     * @param layout
      */
-    private void goToRegister(){
-        txtCreateAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent registerIntent = new Intent(getContext(), RegisterActivity.class);
-                startActivity(registerIntent);
-            }
-        });
+    private void navigateWithStack(View view , int layout){
+        Navigation.findNavController(view).navigate(layout);
     }
 
     /**
-     * takes the user to the main page
+     * navigate cleaning the stack
+     * @param layout
      */
-    private void goToMain(){
-        Intent intentToMain = new Intent (getContext(), MainActivity.class);
-        startActivity(intentToMain);
+    private void navigateWithOutStack(View view, int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(view).navigate(layout, null, navOptions);
+
     }
 
 
-    private void goToPhoneLogin() {
-        Intent phoneIntent = new Intent(getContext(), PhoneLoginActivity.class );
-        startActivity(phoneIntent);
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+            case R.id.btnLogin:
+                btnLoginPressed();
+                break;
+            case R.id.btnPhoneLogin:
+                Log.d(TAG, "onClick: phone login button pressed");
+                break;
+            case R.id.forgotPasswordText:
+                Log.d(TAG, "onClick: forgot password button pressed");
+                navigateWithStack(viewLayout, R.id.recoverPasswordFragment);
+                break;
+            case R.id.txtCreateAccount:
+                navigateWithStack(viewLayout, R.id.registerFragment);
+                break;
+
+        }
+
     }
-
-
-
 }

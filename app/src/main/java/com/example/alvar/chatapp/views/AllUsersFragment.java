@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,6 +50,7 @@ public class AllUsersFragment extends Fragment {
     //ui elements
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
+    private View viewLayout;
     //vars
     private String currentUserID;
     private List<User> userList = new ArrayList<>();
@@ -64,6 +67,7 @@ public class AllUsersFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: called");
         initFirebase();
     }
 
@@ -71,13 +75,20 @@ public class AllUsersFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View layout = inflater.inflate(R.layout.fragment_all_users, container,false);
+        Log.d(TAG, "onCreateView: called!");
+        return inflater.inflate(R.layout.fragment_all_users, container,false);
+    }
 
-        initRecyclerView(layout);
-        setToolbar(getString(R.string.allUsers), layout, false);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: called");
+
+        viewLayout = view;
+
+        initRecyclerView(view);
+        setToolbar(getString(R.string.allUsers), view, false);
         showAllUsers();
-
-        return layout;
     }
 
     private void initFirebase() {
@@ -91,12 +102,6 @@ public class AllUsersFragment extends Fragment {
         recyclerView = layout.findViewById(R.id.allUsersRecyclerFragment);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-
-
-
-
-
-
     }
 
     private void setToolbar(String title, View layout, boolean backOption) {
@@ -232,23 +237,23 @@ public class AllUsersFragment extends Fragment {
                             userList.add(user);
                         }
 
-                    } else {
-                        Log.d(TAG, "onDataChange: userId field null");
                     }
 
                     adapter = new UsersAdapter(getContext(), userList);
                     recyclerView.setAdapter(adapter);
 
+                    //here we user our customer method to handle click events from the fragment rather
+                    // than inside of the adapter class
                     adapter.clickHandler(new UsersAdapter.OnClickListener() {
                         @Override
                         public void onItemClick(int position) {
 
                             //Here we retrieve the ID of the user shown in the cardView
                             String contactID = userList.get(position).getUserID();
-
                             Log.d(TAG, "onItemClick: user pressed ID:  " + contactID );
 
-                            clickListener.inflateFragment(new OtherUserFragment(), contactID);
+                            goToOtherUserProfile(contactID);
+
                         }
                     });
 
@@ -266,10 +271,45 @@ public class AllUsersFragment extends Fragment {
         });
     }
 
+    private void goToOtherUserProfile(String contactID) {
+
+        Bundle bundle =new Bundle();
+        bundle.putString("contactID", contactID);
+        navigateWithStack(viewLayout, R.id.otherUserFragment, bundle);
+
+    }
+
+
+    /**
+     * navigate adding to the back stack
+     * @param layout
+     */
+    private void navigateWithStack(View view , int layout, Bundle bundle){
+        Navigation.findNavController(view).navigate(layout, bundle);
+    }
+
+    /**
+     * navigate cleaning the stack
+     * @param layout
+     */
+    private void navigateWithOutStack(View view, int layout){
+
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build();
+
+        Navigation.findNavController(view).navigate(layout, null, navOptions);
+
+    }
+
+
+/*
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         //here we se connection between fragment and Activity.
         clickListener = (MainActivityInterface) context;
-    }
+    }*/
+
+
 }

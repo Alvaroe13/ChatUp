@@ -39,19 +39,6 @@
             </intent-filter>
 
         </activity>
-        <activity android:name=".Activities.LoginActivity">
-
-
-
-        </activity>
-        <activity
-            android:name=".Activities.RegisterActivity"
-            android:parentActivityName=".Activities.LoginActivity"
-            tools:targetApi="jelly_bean" />
-        <activity
-            android:name=".Activities.RecoverPasswordActivity"
-            android:parentActivityName=".Activities.LoginActivity"
-            tools:targetApi="jelly_bean" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
