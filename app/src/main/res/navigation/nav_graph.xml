@@ -46,6 +46,9 @@
         android:name="com.example.alvar.chatapp.views.ContactsFragment"
         android:label="ContactsFragment"
         tools:layout="@layout/fragment_contacts">
+        <action
+            android:id="@+id/action_contactsFragment_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -61,12 +64,19 @@
         android:name="com.example.alvar.chatapp.views.AllUsersFragment"
         android:label="fragment_all_users"
         tools:layout="@layout/fragment_all_users" >
+        <action
+            android:id="@+id/action_allUsersFragment_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
     </fragment>
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.alvar.chatapp.views.RegisterFragment"
         android:label="fragment_register"
-        tools:layout="@layout/fragment_register" />
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_registerFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
     <fragment
         android:id="@+id/recoverPasswordFragment"
         android:name="com.example.alvar.chatapp.views.RecoverPasswordFragment"
@@ -88,6 +98,18 @@
         <argument android:name="photo"
             android:defaultValue="none"/>
 
+    </fragment>
+    <fragment
+        android:id="@+id/otherUserFragment"
+        android:name="com.example.alvar.chatapp.views.OtherUserFragment"
+        android:label="fragment_other_user"
+        tools:layout="@layout/fragment_other_user" >
+        <action
+            android:id="@+id/action_otherUserFragment_to_imageLargeFragment"
+            app:destination="@id/imageLargeFragment" />
+
+        <argument android:name="contactID"
+            android:defaultValue="none"/>
     </fragment>
 
 </navigation>
