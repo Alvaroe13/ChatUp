@@ -82,13 +82,13 @@
         android:name="com.example.alvar.chatapp.views.RecoverPasswordFragment"
         android:label="fragment_recover_password"
         tools:layout="@layout/fragment_recover_password" />
-    <fragment
+    <dialog
         android:id="@+id/imageProfileShow"
         android:name="com.example.alvar.chatapp.Dialogs.ImageProfileShow"
         tools:layout="@layout/profile_dialog"
         android:label="ImageProfileShow" >
 
-    </fragment>
+    </dialog>
     <fragment
         android:id="@+id/imageLargeFragment"
         android:name="com.example.alvar.chatapp.views.ImageLargeFragment"

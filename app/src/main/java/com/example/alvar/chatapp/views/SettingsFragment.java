@@ -4,15 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.NavOptions;
-import androidx.navigation.Navigation;
-import de.hdodenhof.circleimageview.CircleImageView;
-import id.zelory.compressor.Compressor;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +15,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
-import com.example.alvar.chatapp.Dialogs.ImageProfileShow;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.google.android.gms.tasks.Continuation;
@@ -47,14 +37,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
+
 import static android.app.Activity.RESULT_OK;
 import static com.example.alvar.chatapp.Utils.Constant.GALLERY_REQUEST_NUMBER;
 import static com.example.alvar.chatapp.Utils.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "SettingsPage";
 
@@ -89,7 +86,7 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: called");
-        return  inflater.inflate(R.layout.fragment_settings, container, false);
+        return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
     @Override
@@ -99,9 +96,12 @@ public class SettingsFragment extends Fragment {
         viewLayout = view;
 
         bindUI(view);
-        fabButtonClicked();
         retrieveDataFromDb();
-        imageClick();
+
+        fabImage.setOnClickListener(this);
+        fabStatus.setOnClickListener(this);
+        imageProfile.setEnabled(true);
+        imageProfile.setOnClickListener(this);
     }
 
     /**
@@ -114,26 +114,8 @@ public class SettingsFragment extends Fragment {
         fabImage = layout.findViewById(R.id.fabImage);
         fabStatus = layout.findViewById(R.id.fabStatus);
         progressBar = layout.findViewById(R.id.settingsProgressBar);
-    }
 
-    /**
-     * Method in charge of event when fab buttons are clicked
-     */
-    private void fabButtonClicked() {
 
-        //first we set fab background color
-        fabImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openGallery();
-            }
-        });
-        fabStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showChangeStatusDialog();
-            }
-        });
     }
 
     /**
@@ -205,12 +187,12 @@ public class SettingsFragment extends Fragment {
      */
     private void infoFetched(DataSnapshot dataSnapshot) {
 
-        //save info retrieved from DB into String vars
         String name = dataSnapshot.child("name").getValue().toString();
         String status = dataSnapshot.child("status").getValue().toString();
         final String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
+        //this image is global to be able to send it as a bundle
         image = dataSnapshot.child("image").getValue().toString();
-        //set values to display
+
         textUsername.setText(name);
         textStatus.setText(status);
 
@@ -225,10 +207,9 @@ public class SettingsFragment extends Fragment {
                     .load(imageThumbnail)
                     .into(imageProfile);
 
-        }catch (NullPointerException e){
-            Log.e(TAG, "infoFetched: error loading image" );
+        } catch (NullPointerException e) {
+            Log.e(TAG, "infoFetched: error loading image");
         }
-
 
 
     }
@@ -418,21 +399,6 @@ public class SettingsFragment extends Fragment {
 
 
     /**
-     * method in charge of handling event when image has been clicked
-     */
-    private void imageClick() {
-
-        imageProfile.setEnabled(true);
-        imageProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlertDialogImage();
-            }
-        });
-
-    }
-
-    /**
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showAlertDialogImage() {
@@ -441,36 +407,25 @@ public class SettingsFragment extends Fragment {
 
         Bundle bundle = new Bundle();
         bundle.putString("messageContent", image);
-
         Log.d(TAG, "showAlertDialogImage: image: " + image);
-
-        navigateWithStack(viewLayout , R.id.imageLargeFragment, bundle);
-
-
-    }
-
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout, Bundle bundle){
-        Navigation.findNavController(view).navigate(layout, bundle);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
+        navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
 
     }
 
 
+    @Override
+    public void onClick(View v) {
 
+        switch (v.getId()) {
+            case R.id.fabImage:
+                openGallery();
+                break;
+            case R.id.fabStatus:
+                showChangeStatusDialog();
+                break;
+            case R.id.settingImgProfile:
+                showAlertDialogImage();
+                break;
+        }
+    }
 }

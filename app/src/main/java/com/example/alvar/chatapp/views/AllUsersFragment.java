@@ -36,6 +36,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -54,7 +56,6 @@ public class AllUsersFragment extends Fragment {
     //vars
     private String currentUserID;
     private List<User> userList = new ArrayList<>();
-    private MainActivityInterface clickListener;
 
 
     public AllUsersFragment() {
@@ -280,36 +281,6 @@ public class AllUsersFragment extends Fragment {
     }
 
 
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout, Bundle bundle){
-        Navigation.findNavController(view).navigate(layout, bundle);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
-
-    }
-
-
-/*
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        //here we se connection between fragment and Activity.
-        clickListener = (MainActivityInterface) context;
-    }*/
 
 
 }

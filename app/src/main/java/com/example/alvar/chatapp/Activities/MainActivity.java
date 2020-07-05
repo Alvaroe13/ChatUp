@@ -49,8 +49,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStackActivity;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStackActivity;
 
-public class MainActivity extends AppCompatActivity implements MainActivityInterface {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainPage";
 
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private View navViewHeader;
     private ActionBarDrawerToggle burgerIcon;
     //vars
-    private String currentUserID;
+    private String currentUserID, imageProfile;
     private String deviceToken;
 
     @Override
@@ -80,10 +82,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         setContentView(R.layout.activity_main);
 
         initFirebase();
-
-        int destinationID =  Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId();
-
-        Log.d(TAG, "navigateWithStack: destination ID : " + destinationID);
 
         currentUser = mAuth.getCurrentUser();
 
@@ -95,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
             //set image and username from db to drawer layout
             fetchInfoFromDb();
             //when image within drawer is clicked by the user
-            drawerImagePressed();
+            image.setOnClickListener(this);
             //we set "no" as typing state in the db as soon as the app is launched
             typingState("no");
         }
@@ -129,15 +127,15 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
                 switch (menuItem.getItemId()) {
                     case R.id.contacts:
-                        navigateWithStack(R.id.contactsFragment);
+                        navigateWithStackActivity(MainActivity.this,R.id.contactsFragment,null);
                         closeDrawer();
                         break;
                     case R.id.settingsAccount:
-                        navigateWithStack(R.id.settingsFragment);
+                        navigateWithStackActivity(MainActivity.this,R.id.settingsFragment,null);
                         closeDrawer();
                         break;
                     case R.id.menuAllUsers:
-                        navigateWithStack(R.id.allUsersFragment);
+                        navigateWithStackActivity(MainActivity.this,R.id.allUsersFragment,null);
                         closeDrawer();
                         break;
                     case R.id.signOut:
@@ -223,26 +221,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
 
 
-    /**
-     * by passing the fragment we want to launch as param it'll inflate the view
-     * @param fragment
-     */
-    private void launchFragment(Fragment fragment, String contactID){
 
-  /*      if (contactID != null){
-            Bundle bundle = new Bundle();
-            bundle.putString("contactID", contactID);
-            fragment.setArguments(bundle);
-        }
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, fragment );
-        transaction.addToBackStack(null);
-        transaction.commit();
-*/
-
-
-    }
 
     private void closeDrawer(){
         //this piece of code is able to close drawer
@@ -286,37 +265,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
-        navigateWithOutStack(R.id.loginFragment);
+        navigateWithOutStackActivity(this, R.id.loginFragment, null);
         closeDrawer();
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
     /**
-     * navigate using navigation component without the back stack
-     * @param layout
-     */
-    private void navigateWithOutStack(int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(this, R.id.fragment).navigate(layout, null, navOptions);
-
-    }
-
-    /**
-     * navigate using navigation component adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(int layout){
-        Navigation.findNavController(this, R.id.fragment).navigate(layout);
-    }
-
-    /**
      * this method contains the pop-up message when user clicks log out from menu option
      * (standard alert dialog)
-     *
      * @param title
      * @param message
      * @return
@@ -353,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
 
                 if (dataSnapshot.exists()) {
 
-                    String imageThumbnailToolbar, usernameToolbar, status, email, imageProfile, password;
+                    String imageThumbnailToolbar, usernameToolbar, status, email, password;
 
 
                     imageThumbnailToolbar = dataSnapshot.child(getString(R.string.imageThumbnail_db)).getValue().toString();
@@ -400,28 +356,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     }
 
     /**
-     * method handle events when toolbar has been clicked
-     */
-    private void drawerImagePressed() {
-
-        image.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                showAlertDialog();
-                Log.i(TAG, "onClick: toolbarMain pressed!!!!");
-
-            }
-        });
-    }
-
-    /**
      * method in charge of init "ImageProfileShow" dialog class
      */
     private void showAlertDialog() {
 
-        ImageProfileShow imageDialog = new ImageProfileShow();
-        imageDialog.show(getSupportFragmentManager(), "showImageProfile");
+        Bundle bundle = new Bundle();
+        bundle.putString("image", imageProfile);
+
+        navigateWithStackActivity(MainActivity.this, R.id.imageProfileShow, bundle);
+        /*ImageProfileShow imageDialog = new ImageProfileShow();
+        imageDialog.show(getSupportFragmentManager(), "showImageProfile");*/
 
     }
     /**
@@ -526,13 +470,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         super.onResume();
 
         Log.d(TAG, "onResume: CALLED!!!");
-
         if (currentUser != null){
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
         }
-
-
     }
 
 
@@ -543,14 +484,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         if (currentUser != null) {
             updateDateTime("Offline");
         }
-
     }
 
 
     @Override
-    public void inflateFragment(Fragment fragment, String contactID) {
-
-       // launchFragment(fragment, contactID);
-
+    public void onClick(View v) {
+        if (v.getId() == R.id.imageNavDrawer ){
+            Log.d(TAG, "onClick: button pressed");
+            showAlertDialog();
+        }
     }
 }

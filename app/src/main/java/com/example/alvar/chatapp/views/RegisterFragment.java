@@ -35,6 +35,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_IMAGE;
 import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_STATUS;
 import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_THUMBNAIL;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
 
 
 /**
@@ -206,7 +207,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
                 //if everything goes well
                 if (task.isSuccessful()) {
                     //show welcome message to user
-                    navigateWithOutStack(viewLayout, R.id.homeFragment);
+                    navigateWithOutStack(viewLayout, R.id.homeFragment, null);
                 } else {
                     Log.i(TAG, "onComplete: error" + task.getException()); 
                     SnackbarHelper.showSnackBarLong(coordinatorLayout, getString(R.string.server_error)); 
@@ -219,19 +220,6 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
     
     }
 
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
-
-    }
 
 
     @Override

@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,36 +48,25 @@ public class ImageProfileShow extends DialogFragment {
     private AlertDialog.Builder builder;
     private ImageView imageProfileDialog;
     //vars
-    private String currentUserID, image;
+    private String currentUserID;
 
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
-        //init firebase method
+        Log.d(TAG, "onCreateDialog: called");
         initFirebase();
-
         return showAlertDialog();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        imagePressed();
     }
 
     /**
      * method in charge of init firebase services
      */
     private void initFirebase() {
-        //Firebase auth init
         mAuth = FirebaseAuth.getInstance();
-        //database init
         database = FirebaseDatabase.getInstance();
-        //database ref init
         dbUsersRef = database.getReference().child("Users");
-        //we store current user ID
         currentUserID = mAuth.getCurrentUser().getUid();
     }
 
@@ -92,94 +82,39 @@ public class ImageProfileShow extends DialogFragment {
         imageProfileView = viewInflater.inflate(R.layout.profile_dialog, null);
         imageProfileDialog = imageProfileView.findViewById(R.id.imageProfileDialog);
         builder.setView(imageProfileView);
-        //lets fetch info from db
-        fetchInfoFromDB(imageProfileDialog);
+
+        getIncomingBundle();
 
         return builder.create();
     }
 
-    /**
-     * method is in charge of sending the photo information to the Image room if photo pressed
-     */
-    private void imagePressed() {
-        imageProfileView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //note that we use "messageContent" as id like in the rest of the app
-                /*Intent i = new Intent(getActivity(), ImageActivity.class);
-                i.putExtra("messageContent", image);
-                startActivity(i);*/
-                Log.d(TAG, "onClick: navigate to large image fragment pressed!!!");
-                navigateWithStack(imageProfileView, R.id.imageLargeFragment);
-            }
-        });
-    }
-
-    /**
-     * this one fetches the info from db
-     * @param imageProfileDialog
-     */
-    private void fetchInfoFromDB(final ImageView imageProfileDialog) {
-
-        //down here we fetch the info (image) from the db to be shown later on the Alert dialog
-        dbUsersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.exists()){
-
-                    //we store the image from the db into String var
-                    image = dataSnapshot.child("image").getValue().toString();
-
-                    if (getActivity() == null) {
-                        Log.i(TAG, "onDataChange: error with context: ");
-                        return ;
-                    }
-
-                    //set image from firebase database to UI
-                    if ( image.equals("image")){
-                        imageProfileDialog.setImageResource(R.drawable.profile_image);
-                    }
-                    else{
-                        Glide.with(getActivity()).load(image).into(imageProfileDialog);
-                    }
-
-
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout){
-        Navigation.findNavController(view).navigate(layout);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
+    private void getIncomingBundle() {
+        if (getArguments() != null){
+            String profilePic = getArguments().getString("image");
+            Log.d(TAG, "getIncomingBundle: image : " + profilePic);
+            setPhoto(profilePic);
+        }
 
     }
 
+    private void setPhoto(String profilePic) {
+
+        RequestOptions options = new RequestOptions()
+                .centerCrop()
+                .error(R.drawable.profile_image);
+
+        try {
+            //here we set image from database into imageView
+            Glide.with(getContext())
+                    .setDefaultRequestOptions(options)
+                    .load(profilePic)
+                    .into(imageProfileDialog);
+
+        } catch (NullPointerException e) {
+            Log.e(TAG, "infoFetched: error loading image");
+        }
+
+    }
 
 
 }

@@ -48,6 +48,7 @@ import com.google.firebase.database.ValueEventListener;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -755,31 +756,6 @@ public class OtherUserFragment extends Fragment {
         Bundle bundle = new Bundle();
         bundle.putString("messageContent", imageProfile);
         navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
-
-    }
-
-    //--------------------------------- navigation component related ----------------------------//
-
-
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout, Bundle bundle){
-        Navigation.findNavController(view).navigate(layout, bundle);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
 
     }
 
