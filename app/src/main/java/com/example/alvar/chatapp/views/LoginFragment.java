@@ -1,17 +1,13 @@
 package com.example.alvar.chatapp.views;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,11 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.LoginActivity;
-import com.example.alvar.chatapp.Activities.MainActivity;
-import com.example.alvar.chatapp.Activities.PhoneLoginActivity;
-import com.example.alvar.chatapp.Activities.RecoverPasswordActivity;
-import com.example.alvar.chatapp.Activities.RegisterActivity;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;

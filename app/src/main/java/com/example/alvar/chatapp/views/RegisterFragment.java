@@ -19,7 +19,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.RegisterActivity;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;

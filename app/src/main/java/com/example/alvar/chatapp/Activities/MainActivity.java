@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
         }
 
         else{
+            //by doing this we make sure user can't open drawer in login screen
             bindUI();
             drawerLock();
         }
@@ -285,9 +286,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
-
         navigateWithOutStack(R.id.loginFragment);
-
         closeDrawer();
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
@@ -311,9 +310,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityInter
      * @param layout
      */
     private void navigateWithStack(int layout){
-
         Navigation.findNavController(this, R.id.fragment).navigate(layout);
-
     }
 
     /**
