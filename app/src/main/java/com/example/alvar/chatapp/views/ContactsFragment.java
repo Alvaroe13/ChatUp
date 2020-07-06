@@ -39,7 +39,7 @@ import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Utils.Constant.DOCUMENT_ID;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
-public class ContactsFragment extends Fragment {
+public class ContactsFragment extends Fragment implements ContactsAdapter.OnClickListener {
 
     private static final String TAG = "ContactsFragment";
 
@@ -139,21 +139,8 @@ public class ContactsFragment extends Fragment {
 
                 }
 
-                adapter = new ContactsAdapter(getContext(), contactsList);
+                adapter = new ContactsAdapter(getContext(), contactsList, ContactsFragment.this);
                 recyclerViewContacts.setAdapter(adapter);
-                //here we handle click event
-                adapter.clickHandler(new ContactsAdapter.OnClickListener() {
-                    @Override
-                    public void onItemClick(int position) {
-
-                        Log.d(TAG, "onItemClick: cardview pressed in contacts");
-                        String contactID = contactsList.get(position).getContactID();
-                        goToChatRoom(contactID);
-
-                    }
-                });
-
-
             }
 
             @Override
@@ -226,5 +213,11 @@ public class ContactsFragment extends Fragment {
 
     }
 
-
+    //here we handle click event
+    @Override
+    public void onItemClick(int position) {
+        Log.d(TAG, "onItemClick: cardview pressed in contacts");
+        String contactID = contactsList.get(position).getContactID();
+        goToChatRoom(contactID);
+    }
 }

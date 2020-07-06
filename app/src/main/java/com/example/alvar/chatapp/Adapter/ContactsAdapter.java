@@ -35,9 +35,10 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
     private OnClickListener clickListener;
 
     //We get currentUserId as param to be later sent to the chatActivity when cardView is pressed
-    public ContactsAdapter(Context context, List<Contacts> contactsList) {
+    public ContactsAdapter(Context context, List<Contacts> contactsList, OnClickListener clickListener) {
         this.context = context;
         this.contactsList = contactsList;
+        this.clickListener = clickListener;
     }
 
 
@@ -116,50 +117,43 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
 
     }
 
-    /**
-     * this method will handle the click event in this adapter (Android best practices)
-     * @param listener
-     */
-    public void clickHandler(OnClickListener listener){
-        clickListener = listener;
-    }
-
-
-
-    public static class ContactsViewHolder extends RecyclerView.ViewHolder {
+    public static class ContactsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
 
         public CardView cardView;
         public CircleImageView userPhoto;
         public TextView username, userStatus;
+        public OnClickListener clickListener;
 
 
         public ContactsViewHolder(@NonNull View itemView, final OnClickListener clickListener) {
             super(itemView);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (clickListener != null){
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION){
-                            clickListener.onItemClick(position); //onItemClick is coming from within the interface
-                            Log.d(TAG, "onClick: contactID " );
-                        }
-                    }
 
-                }
-            });
+            this.clickListener = clickListener;
 
             cardView = itemView.findViewById(R.id.cardViewContact);
             userPhoto = itemView.findViewById(R.id.imageContactUsers);
             username = itemView.findViewById(R.id.usernameContactUsers);
             userStatus = itemView.findViewById(R.id.statusContactUsers);
+
+            itemView.setOnClickListener(this);
         }
 
+        //here we handle what happens when the cardView is clicked
+        @Override
+        public void onClick(View v) {
 
-
+            if (clickListener != null){
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION){
+                    clickListener.onItemClick(position); //onItemClick is coming from within the interface
+                    Log.d(TAG, "onClick: contactID " );
+                }
+            }
+        }
     }
 
+    //this interface will make possible to handle click event from ContactsFragment
     public interface OnClickListener{
         void onItemClick(int position);
     }

@@ -28,9 +28,10 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     private OnClickListener clickListener;
     private String contactID;
 
-    public UsersAdapter(Context context, List<User> userList) {
+    public UsersAdapter(Context context, List<User> userList,  OnClickListener clickListener) {
         this.context = context;
         this.userList = userList;
+        this.clickListener = clickListener;
     }
 
     @NonNull
@@ -58,16 +59,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     }
 
     /**
-     * this method will handle the click event in this adapter (Android best practices)
-     * @param listener
-     */
-    public void clickHandler(OnClickListener listener){
-        clickListener = listener;
-    }
-
-
-
-    /**
      * mehotd retrieves info form db and set it in the UI
      * @param holder
      * @param user
@@ -91,36 +82,38 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     }
 
 
-    public static class UsersViewHolder extends RecyclerView.ViewHolder{
+    public static class UsersViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public CardView cardView;
         public CircleImageView userPhoto;
         public TextView username, userStatus;
+        public OnClickListener clickListener;
 
 
 
         public UsersViewHolder(@NonNull View itemView, final OnClickListener clickListener) {
             super(itemView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (clickListener != null){
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION){
-                            clickListener.onItemClick(position); //onItemClick is coming from within the interface
-                            Log.d(TAG, "onClick: contactID " );
-                        }
-                    }
-
-                }
-            });
+            this.clickListener = clickListener;
 
             cardView = itemView.findViewById(R.id.cardViewAllUsers);
             userPhoto = itemView.findViewById(R.id.imageAllUsers);
             username =  itemView.findViewById(R.id.usernameAllUsers);
             userStatus = itemView.findViewById(R.id.statusAllUsers);
 
+            itemView.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (clickListener != null){
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION){
+                    clickListener.onItemClick(position); //onItemClick is coming from within the interface
+                    Log.d(TAG, "onClick: contactID " );
+                }
+            }
         }
     }
 
