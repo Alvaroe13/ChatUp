@@ -59,15 +59,10 @@ public class AlertDialogStatus extends DialogFragment {
      method in charge of initialize firebase service
      */
     private void initFirebase(){
-        //init Firebase auth
         mAuth = FirebaseAuth.getInstance();
-        //we get current user logged in
         currentUser = mAuth.getCurrentUser();
-        //save unique UID from user logged-in to a var type String named "userID"
         currentUserID = currentUser.getUid();
-        //init Firebase database
         database = FirebaseDatabase.getInstance();
-        //init database reference and we aim to the users data by passing "userID" as child.
         dbUsersNodeRef = database.getReference(getString(R.string.users_ref)).child(currentUserID);
     }
 

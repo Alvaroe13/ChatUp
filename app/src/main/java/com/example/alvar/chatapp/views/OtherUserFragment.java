@@ -45,9 +45,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -291,6 +295,8 @@ public class OtherUserFragment extends Fragment {
                             buttonFirst.setText(getActivity().getString(R.string.acceptChatRequest));
                             buttonFirst.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
                             buttonSecond.setVisibility(View.VISIBLE);
+                            buttonSecond.setText(getString(R.string.rejectRequest));
+                            buttonSecond.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -477,18 +483,26 @@ public class OtherUserFragment extends Fragment {
      */
     private void acceptRequest() {
 
+        final Map<String, Object> hash1 = new HashMap<>();
+        hash1.put("contactID" , contactID);
+        hash1.put("contact_status", "saved");
+
 
         //here we create the "contacts" node for the user sending the request
         contactsNodeRef.child(currentUserID).child(contactID)
-                .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                .setValue(hash1).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()) {
 
+                    final Map<String, Object> hash2 = new HashMap<>();
+                    hash2.put("contactID" , currentUserID);
+                    hash2.put("contact_status", "saved");
+
                     //here we create the "contacts" node for the user receiving the request
                     contactsNodeRef.child(contactID).child(currentUserID)
-                            .child("contact_status").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                            .setValue(hash2).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
 
@@ -755,31 +769,6 @@ public class OtherUserFragment extends Fragment {
         Bundle bundle = new Bundle();
         bundle.putString("messageContent", imageProfile);
         navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
-
-    }
-
-    //--------------------------------- navigation component related ----------------------------//
-
-
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout, Bundle bundle){
-        Navigation.findNavController(view).navigate(layout, bundle);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
 
     }
 

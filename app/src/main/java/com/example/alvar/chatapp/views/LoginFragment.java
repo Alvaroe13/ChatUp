@@ -31,6 +31,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -199,34 +202,12 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
-                    navigateWithOutStack(viewLayout , R.id.homeFragment);
+                    navigateWithOutStack(viewLayout , R.id.homeFragment, null);
                 }
             }
         });
     }
 
-
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout){
-        Navigation.findNavController(view).navigate(layout);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
-
-    }
 
 
     @Override
@@ -241,10 +222,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.forgotPasswordText:
                 Log.d(TAG, "onClick: forgot password button pressed");
-                navigateWithStack(viewLayout, R.id.recoverPasswordFragment);
+                navigateWithStack(viewLayout, R.id.recoverPasswordFragment, null);
                 break;
             case R.id.txtCreateAccount:
-                navigateWithStack(viewLayout, R.id.registerFragment);
+                navigateWithStack(viewLayout, R.id.registerFragment, null);
                 break;
 
         }

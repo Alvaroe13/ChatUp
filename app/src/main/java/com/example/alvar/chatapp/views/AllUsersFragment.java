@@ -36,10 +36,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AllUsersFragment extends Fragment {
+public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickListener {
 
     //log
     private static final String TAG = "AllUsersFragment";
@@ -54,12 +56,10 @@ public class AllUsersFragment extends Fragment {
     //vars
     private String currentUserID;
     private List<User> userList = new ArrayList<>();
-    private MainActivityInterface clickListener;
 
 
     public AllUsersFragment() {
         // Required empty public constructor
-
     }
 
 
@@ -74,7 +74,6 @@ public class AllUsersFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         Log.d(TAG, "onCreateView: called!");
         return inflater.inflate(R.layout.fragment_all_users, container,false);
     }
@@ -198,7 +197,7 @@ public class AllUsersFragment extends Fragment {
                             Log.d(TAG, "onDataChange: userID field empty");
                         }
 
-                        adapter = new UsersAdapter(getContext(), userList);
+                        adapter = new UsersAdapter(getContext(), userList, AllUsersFragment.this);
                         adapter.notifyDataSetChanged();
                         recyclerView.setAdapter(adapter);
 
@@ -239,25 +238,8 @@ public class AllUsersFragment extends Fragment {
 
                     }
 
-                    adapter = new UsersAdapter(getContext(), userList);
+                    adapter = new UsersAdapter(getContext(), userList, AllUsersFragment.this);
                     recyclerView.setAdapter(adapter);
-
-                    //here we user our customer method to handle click events from the fragment rather
-                    // than inside of the adapter class
-                    adapter.clickHandler(new UsersAdapter.OnClickListener() {
-                        @Override
-                        public void onItemClick(int position) {
-
-                            //Here we retrieve the ID of the user shown in the cardView
-                            String contactID = userList.get(position).getUserID();
-                            Log.d(TAG, "onItemClick: user pressed ID:  " + contactID );
-
-                            goToOtherUserProfile(contactID);
-
-                        }
-                    });
-
-
 
                 }
 
@@ -280,36 +262,14 @@ public class AllUsersFragment extends Fragment {
     }
 
 
-    /**
-     * navigate adding to the back stack
-     * @param layout
-     */
-    private void navigateWithStack(View view , int layout, Bundle bundle){
-        Navigation.findNavController(view).navigate(layout, bundle);
-    }
-
-    /**
-     * navigate cleaning the stack
-     * @param layout
-     */
-    private void navigateWithOutStack(View view, int layout){
-
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build();
-
-        Navigation.findNavController(view).navigate(layout, null, navOptions);
-
-    }
-
-
-/*
+    //here we user our customer method to handle click events from the fragment rather
+    // than inside of the adapter class
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        //here we se connection between fragment and Activity.
-        clickListener = (MainActivityInterface) context;
-    }*/
+    public void onItemClick(int position) {
+        //Here we retrieve the ID of the user shown in the cardView
+        String contactID = userList.get(position).getUserID();
+        Log.d(TAG, "onItemClick: user pressed ID:  " + contactID );
 
-
+        goToOtherUserProfile(contactID);
+    }
 }
