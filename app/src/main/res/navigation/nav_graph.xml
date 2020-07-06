@@ -58,6 +58,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_imageLargeFragment"
             app:destination="@id/imageLargeFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_alertDialogStatus"
+            app:destination="@id/alertDialogStatus" />
     </fragment>
     <fragment
         android:id="@+id/allUsersFragment"
@@ -111,6 +114,11 @@
         <argument android:name="contactID"
             android:defaultValue="none"/>
     </fragment>
+    <dialog
+        android:id="@+id/alertDialogStatus"
+        android:name="com.example.alvar.chatapp.Dialogs.AlertDialogStatus"
+        android:label="AlertDialogStatus"
+        tools:layout="@layout/status_change_layout"/>
 
 </navigation>
 

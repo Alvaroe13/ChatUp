@@ -133,8 +133,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showChangeStatusDialog() {
-        AlertDialogStatus dialog = new AlertDialogStatus();
-        dialog.show(getActivity().getSupportFragmentManager(), "showChangeStatus");
+        Log.d(TAG, "showChangeStatusDialog: called");
+        navigateWithStack(viewLayout, R.id.alertDialogStatus, null);
     }
 
     /**
@@ -402,8 +402,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
      * method in charge of init "ImageProfileShow" dialog class saved in "Dialogs" folder
      */
     private void showAlertDialogImage() {
-        /*ImageProfileShow imageDialog = new ImageProfileShow();
-        imageDialog.show(getActivity().getSupportFragmentManager(), "showImageProfile");*/
 
         Bundle bundle = new Bundle();
         bundle.putString("messageContent", image);
