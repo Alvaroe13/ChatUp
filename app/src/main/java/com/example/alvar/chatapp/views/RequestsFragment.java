@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
@@ -24,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -51,16 +53,23 @@ public class RequestsFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initFirebase();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // bind view with controller
-        View requestsView =  inflater.inflate(R.layout.fragment_requests, container, false);
         Log.i(TAG, "onCreateView: view init correctly with its methods");
+        return inflater.inflate(R.layout.fragment_requests, container, false);
+    }
 
-        initFirebase();
-        initRecycler(requestsView);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initRecycler(view);
 
-        return requestsView;
     }
 
     /**
@@ -76,6 +85,7 @@ public class RequestsFragment extends Fragment {
     private void initFirebase(){
         //init firebase auth
         auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser();
         if (currentUser != null){
             currentUserID = currentUser.getUid();
         }
@@ -130,7 +140,6 @@ public class RequestsFragment extends Fragment {
                                      if (dataSnapshot.exists()){
 
                                          String requestTypeFetched = dataSnapshot.getValue().toString();
-
                                          Log.i(TAG, "onDataChange: other user ID: " + list_user_id);
 
                                          //we show every request with state "received"
@@ -152,17 +161,21 @@ public class RequestsFragment extends Fragment {
 
 
                                                          holder.userName.setText(name);
-                                                         if ( image.equals("imgThumbnail")){
-                                                             holder.imageRequest.setImageResource(R.drawable.profile_image);
-                                                         } else{
+
+                                                         RequestOptions options = new RequestOptions()
+                                                                 .centerCrop()
+                                                                 .error(R.drawable.profile_image);
+
                                                              try{
-                                                                 Glide.with(getContext()).load(image).into(holder.imageRequest);
+                                                                 Glide.with(getContext())
+                                                                         .setDefaultRequestOptions(options)
+                                                                         .load(image)
+                                                                         .into(holder.imageRequest);
                                                              } catch (NullPointerException e) {
-                                                                 String exception = e.getMessage();
-                                                                 Log.i(TAG, "onDataChange: exception: " + exception);
+                                                                 Log.i(TAG, "onDataChange: exception: " + e.getMessage());
                                                              }
 
-                                                         }
+
 
                                                          //here we take the user from request fragment to "AnswerRequestActivity"
                                                          holder.cardViewRequest.setOnClickListener(new View.OnClickListener() {
