@@ -41,13 +41,25 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="answerRequestActivity">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="376" />
+                            <option name="y" value="951" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="chatActivity">
                     <value>
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="639" />
-                            <option name="y" value="301" />
+                            <option name="x" value="680" />
+                            <option name="y" value="376" />
                           </Point>
                         </option>
                       </LayoutPositions>
@@ -106,6 +118,11 @@
                               </value>
                             </entry>
                             <entry key="action_homeFragment_to_loginFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                            <entry key="action_homeFragment_to_requestsFragment">
                               <value>
                                 <LayoutPositions />
                               </value>
@@ -225,6 +242,27 @@
                         <option name="myPositions">
                           <map>
                             <entry key="action_registerFragment_to_homeFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="requestsFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="25" />
+                            <option name="y" value="956" />
+                          </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_requestsFragment_to_answerRequestActivity">
                               <value>
                                 <LayoutPositions />
                               </value>
