@@ -101,8 +101,8 @@
     <string name="alertDialogMessage">Estas seguro que quieres cerrar sesion?</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
-    <string name="sendChatRequest">Enviar solicitud de chat</string>
-    <string name="cancelChatRequest">Cancelar solicitud de chat</string>
+    <string name="sendChatRequest">Enviar solicitud de amistad</string>
+    <string name="cancelChatRequest">Cancelar solicitud de amistad</string>
     <string name="chatRequestSent">Solicitud enviada</string>
     <string name="canceledChatRequest">Solicitud cancelada</string>
     <string name="editProfile">Editar perfil</string>

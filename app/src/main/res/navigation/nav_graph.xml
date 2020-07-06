@@ -49,6 +49,9 @@
         <action
             android:id="@+id/action_contactsFragment_to_otherUserFragment"
             app:destination="@id/otherUserFragment" />
+        <action
+            android:id="@+id/action_contactsFragment_to_chatActivity"
+            app:destination="@id/chatActivity" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -113,12 +116,25 @@
 
         <argument android:name="contactID"
             android:defaultValue="none"/>
+        <action
+            android:id="@+id/action_otherUserFragment_to_chatActivity"
+            app:destination="@id/chatActivity" />
     </fragment>
     <dialog
         android:id="@+id/alertDialogStatus"
         android:name="com.example.alvar.chatapp.Dialogs.AlertDialogStatus"
         android:label="AlertDialogStatus"
         tools:layout="@layout/status_change_layout"/>
+    <activity
+        android:id="@+id/chatActivity"
+        android:name="com.example.alvar.chatapp.Activities.ChatActivity"
+        android:label="activity_chat"
+        tools:layout="@layout/activity_chat">
+
+        <argument android:name="bundle"
+            android:defaultValue="none"/>
+
+    </activity>
 
 </navigation>
 

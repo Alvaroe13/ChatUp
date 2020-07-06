@@ -203,26 +203,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    /**
-     * this method sets toolbar and it's details
-     *
-     * @param title
-     */
-    private void setToolbar(String title, Boolean backOption) {
-        //create toolbar
-        toolbarMain = findViewById(R.id.toolbarMain);
-        //we set the toolbar
-        setSupportActionBar(toolbarMain);
-        //we pass the title
-        getSupportActionBar().setTitle(title);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
-    }
-
-
-
-
-
     private void closeDrawer(){
         //this piece of code is able to close drawer
         drawerLayout.closeDrawer(GravityCompat.START);
