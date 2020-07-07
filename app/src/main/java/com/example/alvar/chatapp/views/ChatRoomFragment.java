@@ -1,10 +1,12 @@
 package com.example.alvar.chatapp.views;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -28,6 +30,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -42,6 +45,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
@@ -53,7 +57,9 @@ import com.example.alvar.chatapp.Notifications.ResponseFCM;
 import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Service.LocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -64,7 +70,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -77,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.ACTIVITY_SERVICE;
 import static com.example.alvar.chatapp.Utils.Constant.CHAT_DOCX_MENU_REQUEST;
 import static com.example.alvar.chatapp.Utils.Constant.CHAT_IMAGE_MENU_REQUEST;
 import static com.example.alvar.chatapp.Utils.Constant.CHAT_PDF_MENU_REQUEST;
@@ -89,6 +98,7 @@ import static com.example.alvar.chatapp.Utils.Constant.PDF_FOLDER_REF;
 import static com.example.alvar.chatapp.Utils.Constant.PDF_MESSAGE_TYPE;
 import static com.example.alvar.chatapp.Utils.Constant.PDF_OPTION;
 import static com.example.alvar.chatapp.Utils.Constant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
+import static com.example.alvar.chatapp.Utils.Constant.PERMISSIONS_REQUEST_ENABLE_GPS;
 import static com.example.alvar.chatapp.Utils.Constant.PHOTO_FILE_EXTENSION;
 import static com.example.alvar.chatapp.Utils.Constant.PHOTO_FOLDER_REF;
 import static com.example.alvar.chatapp.Utils.Constant.PHOTO_MESSAGE_TYPE;
@@ -178,8 +188,18 @@ public class ChatRoomFragment extends Fragment {
         initRecycleView(viewLayout);
         editTextStatus();
         sendButtonPressed();
+        initLocationProvider();
         attachFileButtonPressed();
         seenMessage();
+    }
+
+    private void initLocationProvider() {
+        try {
+            locationProvider = LocationServices.getFusedLocationProviderClient(getContext());
+        }catch (Exception e){
+            Log.e(TAG, "initLocationProvider: " + e.getMessage() );
+        }
+
     }
 
     /**
@@ -370,28 +390,34 @@ public class ChatRoomFragment extends Fragment {
 
                 if (dataSnapshot.exists()) {
 
-                    //here we get the other user's current state and we store it in each var
-                    String saveLastSeenDate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.date_db)).getValue().toString();
-                    String saveLastSeenTime = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.time_db)).getValue().toString();
-                    String saveSate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.state_db)).getValue().toString();
-                    //retrieving other user's typing state
-                    String typingState = dataSnapshot.child(getString(R.string.user_state_db)).child((getString(R.string.typing_db))).getValue().toString();
+                    try {
+                        //here we get the other user's current state and we store it in each var
+                        String saveLastSeenDate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.date_db)).getValue().toString();
+                        String saveLastSeenTime = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.time_db)).getValue().toString();
+                        String saveSate = dataSnapshot.child(getString(R.string.user_state_db)).child(getString(R.string.state_db)).getValue().toString();
+                        //retrieving other user's typing state
+                        String typingState = dataSnapshot.child(getString(R.string.user_state_db)).child((getString(R.string.typing_db))).getValue().toString();
 
-                    //if typing state in db is yes we should in toolbar that other user is typing
-                    if (typingState.equals(getString(R.string.yes_db))) {
-                        lastSeenToolbarChat.setText(R.string.typing);
-                    } else {
-                        //if user is online but not typing we show online on the toolbar
-                        if (saveSate.equals(getString(R.string.online_db))) {
-                            lastSeenToolbarChat.setText(R.string.activeNow);
-                            onlineIcon.setVisibility(View.VISIBLE);
+                        //if typing state in db is yes we should in toolbar that other user is typing
+                        if (typingState.equals(getString(R.string.yes_db))) {
+                            lastSeenToolbarChat.setText(R.string.typing);
+                        } else {
+                            //if user is online but not typing we show online on the toolbar
+                            if (saveSate.equals(getString(R.string.online_db))) {
+                                lastSeenToolbarChat.setText(R.string.activeNow);
+                                onlineIcon.setVisibility(View.VISIBLE);
 
-                            //if user is not typing nor "online" we show "offline" on the toolbar.
-                        } else if (saveSate.equals(getString(R.string.offline_db))) {
-                            lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " + saveLastSeenDate + " " + saveLastSeenTime);
-                            onlineIcon.setVisibility(View.INVISIBLE);
+                                //if user is not typing nor "online" we show "offline" on the toolbar.
+                            } else if (saveSate.equals(getString(R.string.offline_db))) {
+                                lastSeenToolbarChat.setText(getString(R.string.lastSeen) + " " + saveLastSeenDate + " " + saveLastSeenTime);
+                                onlineIcon.setVisibility(View.INVISIBLE);
+                            }
                         }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
+
+
                 }
             }
 
@@ -650,9 +676,9 @@ public class ChatRoomFragment extends Fragment {
                         break;
                     case 3:
                         Log.d(TAG, "onClick: share location option pressed");
-                      /*  if (getLocationPermission()) {
+                       if (getLocationPermission()) {
                             shareLocationPressed();
-                        }*/
+                        }
                         break;
                     case 4:
                         Log.d(TAG, "onClick: take photo option selected");
@@ -1009,6 +1035,246 @@ public class ChatRoomFragment extends Fragment {
         });
 
     }
+
+
+    // ---------------------------------------------- Maps related ------------------------------  //
+
+    /**
+     * if GPS is enabled as soon as we open the chat room we call method getUsers()
+     * IMPORTANT NOTE :this method contains getUserLastKnowLocation() which will check if
+     * location permission for the app is granted, if not app wont get the user's
+     * location as soon as we open the chat room, if location permission for the app is granted
+     * the app will fetch the user's location as soon as we open the chat room.
+     */
+    private void checkLocationStatus() {
+
+        Log.d(TAG, "checkLocationStatus: called as soon as the chat room is open");
+        if (isGPSEnabled()) {
+            Log.d(TAG, "checkLocationStatus: get details as soon as chat room is open");
+            getUserDetails();
+        }
+
+    }
+
+    private void shareLocationPressed() {
+        Log.d(TAG, "shareLocationPressed: called when share location pressed in alert dialog");
+        if (!isGPSEnabled()) {
+            buildAlertMessageNoGps();
+        } else if (locationPermissionGranted) {
+            Log.d(TAG, "onClick: both GPS is enabled and location permission for the app granted ");
+            chatProgressBar.setVisibility(View.INVISIBLE);
+            notify = true;
+            getUserDetails();
+            uploadMessageToDb(getString(R.string.sharing_location), "map");
+
+        } else {
+            //if the app doesn't have the user permission we ask for it
+            getLocationPermission();
+        }
+
+    }
+
+
+    /**
+     * method checks if gps is enabled on the device only
+     *
+     * @return
+     */
+    private boolean isGPSEnabled() {
+
+        try {
+            int gpsSignal = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
+            if (gpsSignal == 0) {
+                Log.i(TAG, "openMapsOption: gps is OFF1");
+                return false;
+            } else {
+                Log.i(TAG, "openMapsOption: gps is ON");
+                return true;
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+            Log.i(TAG, "openMapsOption: gps is OFF2");
+            return false;
+        }
+
+    }
+
+    /**
+     * method pops up option to take the user to settings to turn gps on and off
+     */
+    private void buildAlertMessageNoGps() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        builder.setMessage(getString(R.string.dialog_location))
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        Intent enableGpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivityForResult(enableGpsIntent, PERMISSIONS_REQUEST_ENABLE_GPS);
+                    }
+                });
+        final android.app.AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
+
+    /**
+     * location permission for the app
+     */
+    private boolean getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true;
+            Log.d(TAG, "getLocationPermission: apps location permission granted");
+            getUserDetails();
+            return true;
+        } else {
+            Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+        return false;
+    }
+
+    /**
+     * here we pass information from the user's document to the user's location document (firestore)
+     */
+    private void getUserDetails() {
+
+        if (userLocation == null) {
+            userLocation = new UserLocation();
+
+            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+
+                        User user = task.getResult().toObject(User.class);
+                        Log.d(TAG, "onComplete: user: " + user.getName());
+                        userLocation.setUser(user);
+                        getUserLastKnownLocation();
+
+                    }
+                }
+            });
+        } else {
+            getUserLastKnownLocation();
+        }
+    }
+
+
+    /**
+     * method in charge of fetching user location (lat/long coordinates) using GPS on phone device
+     * to later be saved in Firestore db.
+     */
+    private void getUserLastKnownLocation() {
+
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
+            return;
+        }
+
+        Log.i(TAG, "getUserLastKnowLocation: called");
+
+        locationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    Location location = task.getResult();
+                    Log.d(TAG, "onComplete: location retrieved: " + location);
+                    if (location != null) {
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        Log.i(TAG, "onComplete: saving in db latitude: " + location.getLatitude());
+                        Log.i(TAG, "onComplete: saving in db  longitude: " + location.getLongitude());
+                        userLocation.setGeo_point(geoPoint);
+                        userLocation.setTimeStamp(null);
+                        saveUserLocation();
+                        startLocationService();
+
+                    } else {
+                        //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onComplete: db retrieving null again");
+                    }
+                }
+
+            }
+        });
+
+
+    }
+
+    /**
+     * here we save user's coordinates in firestore db.
+     */
+    private void saveUserLocation() {
+
+        Log.i(TAG, "saveUserLocation: saveUserLocation called.");
+        if (userLocation != null) {
+
+            userLocationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+
+                        Log.d(TAG, "onComplete: done successfully");
+                    }
+
+                }
+            });
+        }
+
+    }
+
+
+    //  -------------------- init Location Service ----------------------------
+
+    private void startLocationService() {
+        if (!isLocationServiceRunning()) {
+            Intent serviceIntent = new Intent(getContext(), LocationService.class);
+//        this.startService(serviceIntent);
+
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+                    getActivity().startForegroundService(serviceIntent);
+                } else {
+                    getActivity().startService(serviceIntent);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+        }
+    }
+
+    private boolean isLocationServiceRunning() {
+        try {
+            ActivityManager manager = (ActivityManager) getActivity().getSystemService(ACTIVITY_SERVICE);
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if ("com.example.alvar.chatapp.Service.LocationService".equals(service.service.getClassName())) {
+                    Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                    return true;
+                }
+            }
+            Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+            return false;
+        }catch (Exception e){
+            Log.e(TAG, "isLocationServiceRunning: " + e.getMessage() );
+        }
+
+        return false;
+
+    }
+
 
 
     @Override
