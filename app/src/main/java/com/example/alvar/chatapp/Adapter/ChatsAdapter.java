@@ -32,20 +32,21 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHolder> {
 
-    private static final String TAG = "ChatsAdapter";
-    //firebase
-
-    private  DatabaseReference dbUsersNodeRef, dbChatsNodeRef;
-
-     Context context;
-     List<User> userList;
+     private static final String TAG = "ChatsAdapter";
+     //firebase
+     private  DatabaseReference dbUsersNodeRef, dbChatsNodeRef;
+     //ui
+     private Context context;
+     private List<User> userList;
      private String currentUserID;
+     private OnClickListener clickListener;
 
 
 
-    public ChatsAdapter(Context context, List<User> userList) {
+    public ChatsAdapter(Context context, List<User> userList, OnClickListener clickListener) {
         this.context = context;
         this.userList = userList;
+        this.clickListener = clickListener;
     }
 
 
@@ -57,7 +58,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
         initFirebase();
 
-        return new ChatsAdapter.ChatsViewHolder(view);
+        return new ChatsAdapter.ChatsViewHolder(view, clickListener);
     }
 
 
@@ -68,16 +69,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
         setUI(user, holder);
         fetchInfoDB(user.getUserID(), holder);
-
-        holder.chatLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToChatRoom(user.getUserID(), user.getName(), user.getImageThumbnail(), holder);
-            }
-        });
-
-
-
     }
 
     @Override
@@ -280,31 +271,19 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     }
 
 
-    /**
-     * method in charge of taking the user to the chat room sending the info specified
-     *
-     * @param otherUserID
-     * @param name
-     * @param image
-     */
-    private void goToChatRoom(String otherUserID, String name, String image,ChatsViewHolder holder ) {
-        Intent intentChatRoom = new Intent(context, ChatActivity.class);
-        intentChatRoom.putExtra("contactID", otherUserID);
-        intentChatRoom.putExtra("contactName", name);
-        intentChatRoom.putExtra("contactImage", image);
-        holder.itemView.getContext().startActivity(intentChatRoom);
-    }
-
-    public class ChatsViewHolder extends RecyclerView.ViewHolder{
+    public static class ChatsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         CardView chatLayout;
         CircleImageView chatImageContact, onlineIcon;
         TextView username, lastMessageField, lastMessageDateField;
         ImageButton smallIcon;
+        OnClickListener clickListener;
 
 
-        public ChatsViewHolder(@NonNull View layout) {
+        public ChatsViewHolder(@NonNull View layout,  final OnClickListener clickListener) {
             super(layout);
+
+            this.clickListener = clickListener;
             chatLayout = layout.findViewById(R.id.cardViewAllUsers);
             chatImageContact = layout.findViewById(R.id.imageChat);
             username = layout.findViewById(R.id.usernameChat);
@@ -312,8 +291,25 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
             lastMessageDateField = layout.findViewById(R.id.lastMessageDate);
             onlineIcon = layout.findViewById(R.id.onlineIcon);
             smallIcon = layout.findViewById(R.id.smallIcon);
+
+            itemView.setOnClickListener(this);
         }
 
+        @Override
+        public void onClick(View v) {
+            if (clickListener != null){
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION){
+                    clickListener.onItemClick(position); //onItemClick is coming from within the interface
+                    Log.d(TAG, "onClick: contactID " );
+                }
+            }
+        }
+    }
+
+
+    public interface OnClickListener{
+        void onItemClick(int position);
     }
 
 

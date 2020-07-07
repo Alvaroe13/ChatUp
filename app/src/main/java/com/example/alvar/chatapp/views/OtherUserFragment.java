@@ -2,6 +2,7 @@ package com.example.alvar.chatapp.views;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.icu.text.RelativeDateTimeFormatter;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,7 @@ import java.util.Map;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
@@ -745,12 +747,20 @@ public class OtherUserFragment extends Fragment {
      */
     private void goToChatRoom() {
 
-        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
+/*        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
         intentChatRoom.putExtra(CONTACT_ID, contactID);
         intentChatRoom.putExtra(CONTACT_NAME, username);
         intentChatRoom.putExtra(CONTACT_IMAGE, imageThumbnail);
         intentChatRoom.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intentChatRoom);
+        startActivity(intentChatRoom);*/
+        Log.d(TAG, "goToChatRoom: called!!!!");
+        Bundle bundle = new Bundle();
+        bundle.putString(CONTACT_ID, contactID);
+        bundle.putString(CONTACT_NAME, username);
+        bundle.putString(CONTACT_IMAGE, imageThumbnail);
+        
+        
+        navigateWithOutStack(viewLayout, R.id.chatActivity, bundle);
     }
 
     private void imageProfilePressed() {

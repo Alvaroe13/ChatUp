@@ -43,6 +43,9 @@
         <action
             android:id="@+id/action_homeFragment_to_requestsFragment"
             app:destination="@id/requestsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_chatsFragment"
+            app:destination="@id/chatsFragment" />
     </fragment>
     <fragment
         android:id="@+id/contactsFragment"
@@ -152,6 +155,11 @@
         android:name="com.example.alvar.chatapp.Activities.AnswerRequestActivity"
         android:label="activity_answer_request"
         tools:layout="@layout/activity_answer_request" />
+    <fragment
+        android:id="@+id/chatsFragment"
+        android:name="com.example.alvar.chatapp.views.ChatsFragment"
+        android:label="fragment_chats"
+        tools:layout="@layout/fragment_chats" />
 
 </navigation>
 
