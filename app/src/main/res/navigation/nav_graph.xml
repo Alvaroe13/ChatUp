@@ -56,8 +56,9 @@
             android:id="@+id/action_contactsFragment_to_otherUserFragment"
             app:destination="@id/otherUserFragment" />
         <action
-            android:id="@+id/action_contactsFragment_to_chatActivity"
-            app:destination="@id/chatActivity" />
+            android:id="@+id/action_contactsFragment_to_chatRoomFragment"
+            app:destination="@id/chatRoomFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -123,24 +124,15 @@
         <argument android:name="contactID"
             android:defaultValue="none"/>
         <action
-            android:id="@+id/action_otherUserFragment_to_chatActivity"
-            app:destination="@id/chatActivity" />
+            android:id="@+id/action_otherUserFragment_to_chatRoomFragment"
+            app:destination="@id/chatRoomFragment" />
+
     </fragment>
     <dialog
         android:id="@+id/alertDialogStatus"
         android:name="com.example.alvar.chatapp.Dialogs.AlertDialogStatus"
         android:label="AlertDialogStatus"
         tools:layout="@layout/status_change_layout"/>
-    <activity
-        android:id="@+id/chatActivity"
-        android:name="com.example.alvar.chatapp.Activities.ChatActivity"
-        android:label="activity_chat"
-        tools:layout="@layout/activity_chat">
-
-        <argument android:name="bundle"
-            android:defaultValue="none"/>
-
-    </activity>
     <fragment
         android:id="@+id/requestsFragment"
         android:name="com.example.alvar.chatapp.views.RequestsFragment"
@@ -160,6 +152,17 @@
         android:name="com.example.alvar.chatapp.views.ChatsFragment"
         android:label="fragment_chats"
         tools:layout="@layout/fragment_chats" />
+    <fragment
+        android:id="@+id/chatRoomFragment"
+        android:name="com.example.alvar.chatapp.views.ChatRoomFragment"
+        android:label="fragment_chat_room"
+        tools:layout="@layout/fragment_chat_room">
+
+        <argument android:name="bundleInfo"
+            android:defaultValue="none"/>
+
+
+    </fragment>
 
 </navigation>
 

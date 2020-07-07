@@ -148,12 +148,12 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
      * */
     private void goToChatRoom(String contactID, String image, String name  ) {
         Log.d(TAG, "goToChatRoom: called!!");
-       /* Bundle bundle = new Bundle();
+        Bundle bundle = new Bundle();
         bundle.putString(CONTACT_ID, contactID);
         bundle.putString(CONTACT_NAME, name);
         bundle.putString(CONTACT_IMAGE, image);
 
-        navigateWithStack(viewLayout, R.id.chatActivity, bundle);*/
+        navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
        
        //it throws an error.
     }

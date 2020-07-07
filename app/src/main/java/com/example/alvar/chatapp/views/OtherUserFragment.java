@@ -671,7 +671,7 @@ public class OtherUserFragment extends Fragment {
      */
     private void deleteChat(final String currentUserID, final String contactID) {
 
-        Log.d(TAG, "deleteChat: LLAMADOOOOOOOO");
+        Log.d(TAG, "deleteChat: called");
 
         removeListener =
                 dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
@@ -747,12 +747,6 @@ public class OtherUserFragment extends Fragment {
      */
     private void goToChatRoom() {
 
-/*        Intent intentChatRoom = new Intent(getContext(), ChatActivity.class);
-        intentChatRoom.putExtra(CONTACT_ID, contactID);
-        intentChatRoom.putExtra(CONTACT_NAME, username);
-        intentChatRoom.putExtra(CONTACT_IMAGE, imageThumbnail);
-        intentChatRoom.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intentChatRoom);*/
         Log.d(TAG, "goToChatRoom: called!!!!");
         Bundle bundle = new Bundle();
         bundle.putString(CONTACT_ID, contactID);
@@ -760,7 +754,7 @@ public class OtherUserFragment extends Fragment {
         bundle.putString(CONTACT_IMAGE, imageThumbnail);
         
         
-        navigateWithOutStack(viewLayout, R.id.chatActivity, bundle);
+        navigateWithOutStack(viewLayout, R.id.chatsFragment, bundle);
     }
 
     private void imageProfilePressed() {

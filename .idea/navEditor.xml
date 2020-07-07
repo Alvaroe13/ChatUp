@@ -58,8 +58,20 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="738" />
-                            <option name="y" value="321" />
+                            <option name="x" value="826" />
+                            <option name="y" value="-654" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="chatRoomFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="769" />
+                            <option name="y" value="387" />
                           </Point>
                         </option>
                       </LayoutPositions>
@@ -88,11 +100,6 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_contactsFragment_to_chatActivity">
-                              <value>
-                                <LayoutPositions />
-                              </value>
-                            </entry>
                             <entry key="action_contactsFragment_to_otherUserFragment">
                               <value>
                                 <LayoutPositions />
@@ -220,11 +227,6 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_otherUserFragment_to_chatActivity">
-                              <value>
-                                <LayoutPositions />
-                              </value>
-                            </entry>
                             <entry key="action_otherUserFragment_to_imageLargeFragment">
                               <value>
                                 <LayoutPositions />
