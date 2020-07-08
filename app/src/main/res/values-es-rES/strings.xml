@@ -161,6 +161,7 @@
     <string name="check_your_inbox">Por favor revisa tu correo electrónico</string>
     <string name="insert_phone_number">Numero de telefono con codigo país </string>
     <string name="name">Nombre</string>
+    <string name="you">Tu</string>
 
 
 </resources>

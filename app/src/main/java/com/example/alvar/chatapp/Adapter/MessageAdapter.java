@@ -42,6 +42,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
@@ -62,23 +64,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private String currentUserID;
     private Context mContext;
     private String contactID;
+    private String contactName;
+    private OnClickListener clickListener;
 
-    public MessageAdapter(Context mContext, List<Messages> messagesList) {
+    public MessageAdapter(Context mContext, List<Messages> messagesList, OnClickListener clickListener, String contactName) {
         this.messagesList = messagesList;
         this.mContext = mContext;
+        this.clickListener = clickListener;
+        this.contactName = contactName;
     }
 
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         // we bind the layout with this controller and the sub class "MessageViewHolder"
-
         View viewChat = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.chat_layout, viewGroup, false);
-
         //init firebase services as soon as we inflate the view
         initFirebase();
         initFirestore();
-        return new MessageViewHolder(viewChat);
+        return new MessageViewHolder(viewChat, clickListener);
     }
 
     /**
@@ -128,7 +132,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             //get the size of the List is is not null
             return messagesList.size();
         }
-        return 0;
+        return -1;
     }
 
     private void initFirebase() {
@@ -612,20 +616,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     // -------------------------------------------- maps related -------------------------------
 
-    private void showMapLayout(String messageSenderID, String messageInfo, MessageViewHolder messageViewHolder , final int position) {
+    private void showMapLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder , final int position) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
             messageViewHolder.sendMapRight.setVisibility(View.VISIBLE);
             messageViewHolder.sendMapRight.setClickable(true);
-            messageViewHolder.sendMapRight.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "onClick: map right side clicked");
-                    retrieveUsersLocationFromDB( v, contactID );
-
-                }
-            });
             //if long pressed over layout
             messageViewHolder.sendMapRight.setLongClickable(true);
             messageViewHolder.sendMapRight.setOnLongClickListener(new View.OnLongClickListener() {
@@ -665,19 +661,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private void deployAlertDialog(final View v) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle(mContext.getString(R.string.open_location));
-            builder.setIcon(R.drawable.ic_location);
-            //options to be shown in the Alert Dialog
-           builder.setMessage(mContext.getString(R.string.open_location_message));
-           builder.setNegativeButton(mContext.getString(R.string.no), null);
-           builder.setPositiveButton(mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
-               @Override
-               public void onClick(DialogInterface dialog, int which) {
-                   retrieveUsersLocationFromDB( v , contactID );
-               }
-           });
-            builder.show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(mContext.getString(R.string.open_location));
+        builder.setIcon(R.drawable.ic_location);
+        //options to be shown in the Alert Dialog
+        builder.setMessage(mContext.getString(R.string.open_location_message));
+        builder.setNegativeButton(mContext.getString(R.string.no), null);
+        builder.setPositiveButton(mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                retrieveUsersLocationFromDB( v , contactID );
+            }
+        });
+        builder.show();
     }
 
     private void initFirestore() {
@@ -760,7 +756,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         data.putDouble(LOCATION_USER_LON, lon1 );
         data.putDouble(LOCATION_CONTACT_LAT, lat2 );
         data.putDouble(LOCATION_CONTACT_LON, lon2 );
-        data.putString("contactID", contactID);
+        data.putString(CONTACT_ID, contactID);
+        data.putString(CONTACT_NAME, contactName);
         fragment.setArguments(data);
 
         AppCompatActivity activity = (AppCompatActivity) v.getContext();
@@ -775,19 +772,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
-    /**
-     * This is the viewHolder Class. The one in charge of finding the UI elements within each
-     * item shown in the recyclerView
-     */
-    public class MessageViewHolder extends RecyclerView.ViewHolder {
+    public static class MessageViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
 
         //UI elements
         TextView textRightSide, textLeftSide;
         CircleImageView imageContact;
         ImageView sendImageLeft, sendImageRight, sendMapLeft, sendMapRight;
+        OnClickListener clickListener;
 
-        public MessageViewHolder(@NonNull View itemView) {
+        public MessageViewHolder(@NonNull View itemView, OnClickListener clickListener) {
             super(itemView);
+            this.clickListener = clickListener;
 
             textLeftSide = itemView.findViewById(R.id.textLeft);
             textRightSide = itemView.findViewById(R.id.textRight);
@@ -797,9 +792,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             sendMapLeft = itemView.findViewById(R.id.mapLeft);
             sendMapRight = itemView.findViewById(R.id.mapRight);
 
+            sendMapRight.setOnClickListener(this);
+
         }
 
 
+        @Override
+        public void onClick(View v) {
+            if (clickListener != null){
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION){
+                    clickListener.onItemClick(position); //onItemClick is coming from within the interface
+                    Log.d(TAG, "onClick: contactID " );
+                }
+            }
+        }
+    }
+
+
+    //this interface will make possible to handle click event from ContactsFragment
+    public interface OnClickListener{
+        void onItemClick(int position);
     }
 
 

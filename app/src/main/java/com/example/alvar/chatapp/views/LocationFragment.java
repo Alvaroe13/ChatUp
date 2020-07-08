@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
@@ -46,6 +47,8 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
+import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
@@ -55,7 +58,7 @@ import static com.example.alvar.chatapp.Utils.Constant.MAPVIEW_BUNDLE_KEY;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LocationFragment extends Fragment implements OnMapReadyCallback {
+public class LocationFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
 
     private static final String TAG = "LocationFragment";
     //firebase
@@ -68,8 +71,11 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     //ui
     private MapView mMapView;
     private ImageButton closeMapBtn;
+    private TextView user1, user2;
+    private View viewLayout;
+    private ViewGroup viewGroup;
     //vars
-    private String currentUserID, contactID ;
+    private String currentUserID, contactID, contactName;
     private double lat1, lon1, lat2, lon2;
     private GoogleMap gMaps;
     private LatLng userCoordinates, contactCoordinates;
@@ -85,12 +91,16 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.d(TAG, "onCreate: called");
+
+
         if (getArguments() != null){
             lat1 = getArguments().getDouble(LOCATION_USER_LAT);
             lon1 = getArguments().getDouble(LOCATION_USER_LON);
             lat2 = getArguments().getDouble(LOCATION_CONTACT_LAT);
             lon2 = getArguments().getDouble(LOCATION_CONTACT_LON);
-            contactID = getArguments().getString("contactID");
+            contactID = getArguments().getString(CONTACT_ID);
+            contactName = getArguments().getString(CONTACT_NAME);
             Log.d(TAG, "onCreate: location user: " + lat1 + " , " + lon1);
             Log.d(TAG, "onCreate: location contact: " + lat2 + " , " + lon2);
             Log.d(TAG, "onCreateView: contactID: " + contactID);
@@ -98,30 +108,36 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             Toast.makeText(getActivity(), "info null", Toast.LENGTH_LONG).show();
         }
 
+        initFirebase();
+        initFirestore();
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: called");
+        viewGroup = container;
+         return  inflater.inflate(R.layout.fragment_location, container, false);
+    }
 
-        final View layout = inflater.inflate(R.layout.fragment_location, container, false);
-        mMapView = layout.findViewById(R.id.user_list_map);
-        closeMapBtn = layout.findViewById(R.id.btn_close_map);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: called");
 
-        closeMapBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: phone button pressed");
-                deployAlertDialog( v, container, layout);
-
-            }
-        });
-
+        viewLayout = view;
+        UI(view);
+        user2.setText(contactName);
+        closeMapBtn.setOnClickListener(this);
         initGoogleMap(savedInstanceState);
-        initFirebase();
-        initFirestore();
         locationState("On");
+    }
 
-         return layout;
+    private void UI(View view) {
+        mMapView = view.findViewById(R.id.user_list_map);
+        closeMapBtn = view.findViewById(R.id.btn_close_map);
+        user1 = view.findViewById(R.id.text1);
+        user2 = view.findViewById(R.id.text2);
     }
 
     private void initFirebase(){
@@ -339,11 +355,10 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
 
     /**
      * alert notifies user is about to stop sharing location when bin image is pressed in mapView
-     * @param v
      * @param container
      * @param layout
      */
-    private void deployAlertDialog(final View v,  final ViewGroup container , final View layout) {
+    private void deployAlertDialog(final ViewGroup container , final View layout) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(getContext().getString(R.string.close_location));
@@ -362,7 +377,14 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
+    @Override
+    public void onClick(View v) {
+
+        if (v.getId() == R.id.btn_close_map){
+            Log.d(TAG, "onClick: close window button pressed");
+            deployAlertDialog( viewGroup, viewLayout);
+        }
 
 
-
+    }
 }

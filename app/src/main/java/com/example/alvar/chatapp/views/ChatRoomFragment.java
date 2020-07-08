@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -62,6 +63,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -93,6 +95,10 @@ import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_NAME;
 import static com.example.alvar.chatapp.Utils.Constant.IMAGE_OPTION;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
+import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Utils.Constant.PDF_FILE_EXTENSION;
 import static com.example.alvar.chatapp.Utils.Constant.PDF_FOLDER_REF;
 import static com.example.alvar.chatapp.Utils.Constant.PDF_MESSAGE_TYPE;
@@ -115,7 +121,7 @@ import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChatRoomFragment extends Fragment {
+public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClickListener  {
 
     private static final String TAG = "ChatRoomFragment";
     private static final int OPEN_CAMERA_REQUEST_CODE = 55;
@@ -332,7 +338,7 @@ public class ChatRoomFragment extends Fragment {
         linearLayoutManager.setStackFromEnd(true);
         recyclerViewChat.setLayoutManager(linearLayoutManager);
 
-        adapter = new MessageAdapter(getContext(), messagesList);
+        adapter = new MessageAdapter(getContext(), messagesList, ChatRoomFragment.this, contactName);
         recyclerViewChat.setAdapter(adapter);
 
     }
@@ -1254,7 +1260,7 @@ public class ChatRoomFragment extends Fragment {
     }
 
 
-    //  -------------------- init Location Service ----------------------------
+    //  -------------------- init Location Service ----------------------------//
 
     private void startLocationService() {
         Log.d(TAG, "startLocationService: method called");
@@ -1298,10 +1304,119 @@ public class ChatRoomFragment extends Fragment {
     }
 
 
+    // MessageAdapter click event handler related -------------------------------------//
+
+
+    //this method is for when user clicks on a message sent by it's contact, for the time being this
+    //is handled in the messageAdapter, thats why this method is here but unused
+    private void deployAlertDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(getContext().getString(R.string.open_location));
+        builder.setIcon(R.drawable.ic_location);
+        //options to be shown in the Alert Dialog
+        builder.setMessage(getContext().getString(R.string.open_location_message));
+        builder.setNegativeButton(getContext().getString(R.string.no), null);
+        builder.setPositiveButton(getContext().getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                retrieveUsersLocationFromDB( contactID );
+            }
+        });
+        builder.show();
+    }
+
+
+    /**
+     * method will be the one fetching users location fro the DB
+     * @param contactID
+     */
+    private void retrieveUsersLocationFromDB(final String contactID) {
+
+
+        final DocumentReference locationRefUser1 = mDb.collection(getContext().getString(R.string.collection_user_location))
+                .document(currentUserID);
+
+        locationRefUser1.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                if (documentSnapshot.exists()){
+
+                    final  UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat1 = locationUser1.getGeo_point().getLatitude();
+                    double lon1 = locationUser1.getGeo_point().getLongitude();
+
+                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1 );
+                    retrieveOtherUserLocation( lat1, lon1 , contactID);
+                }
+                else {
+                    Log.d(TAG, "onSuccess: user1 location is not in db");
+                }
+            }
+
+        });
+    }
+
+    /**
+     * this methos retrieves contact's location
+     */
+    private void retrieveOtherUserLocation(final double lat1, final double lon1 , final String contactID) {
+
+        DocumentReference locationRefUser2 = mDb.collection(getContext().getString(R.string.collection_user_location))
+                .document(contactID);
+
+        locationRefUser2.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()){
+
+                    final  UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
+
+                    double lat2 = locationUser2.getGeo_point().getLatitude();
+                    double lon2 = locationUser2.getGeo_point().getLongitude();
+                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2 );
+
+
+                    inflateLocationFragment(lat1, lon1, lat2, lon2 );
+
+                } else {
+                    Log.d(TAG, "onSuccess: user2 location is not in db");
+                    Toast.makeText(getContext(), " Your contact " +
+                            "has not provided current location", Toast.LENGTH_SHORT).show();
+                    //chatProgresBar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+    }
+
+    private void inflateLocationFragment(double lat1, double lon1 , double lat2, double lon2 ) {
+        // double lat1, double lon1 , double lat2, double lon2
+
+        Log.d(TAG, "inflateLocationFragment: called");
+
+        Bundle bundle = new Bundle();
+        bundle.putDouble(LOCATION_USER_LAT, lat1);
+        bundle.putDouble(LOCATION_USER_LON, lon1 );
+        bundle.putDouble(LOCATION_CONTACT_LAT, lat2 );
+        bundle.putDouble(LOCATION_CONTACT_LON, lon2 );
+        bundle.putString(CONTACT_ID, contactID);
+        bundle.putString(CONTACT_NAME,contactName);
+
+        navigateWithStack(viewLayout, R.id.locationFragment, bundle);
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         dbChatsNodeRef.removeEventListener(seenListener);
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        Log.d(TAG, "onItemClick: clicked!");
+        retrieveUsersLocationFromDB( contactID );
+        
     }
 }
