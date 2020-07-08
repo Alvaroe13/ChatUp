@@ -189,6 +189,7 @@ public class ChatRoomFragment extends Fragment {
         editTextStatus();
         sendButtonPressed();
         initLocationProvider();
+        checkLocationStatus();
         attachFileButtonPressed();
         seenMessage();
     }
@@ -1127,20 +1128,28 @@ public class ChatRoomFragment extends Fragment {
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            locationPermissionGranted = true;
-            Log.d(TAG, "getLocationPermission: apps location permission granted");
-            getUserDetails();
-            return true;
-        } else {
-            Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        try{
+            if (ContextCompat.checkSelfPermission(getActivity(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                locationPermissionGranted = true;
+                Log.d(TAG, "getLocationPermission: apps location permission granted");
+                getUserDetails();
+                return true;
+            } else {
+                Log.d(TAG, "getLocationPermission: gps permission for app pops pup ");
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            }
+            return false;
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
         return false;
+
+
     }
 
     /**
@@ -1156,10 +1165,16 @@ public class ChatRoomFragment extends Fragment {
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
 
-                        User user = task.getResult().toObject(User.class);
-                        Log.d(TAG, "onComplete: user: " + user.getName());
-                        userLocation.setUser(user);
-                        getUserLastKnownLocation();
+                        try {
+                            User user = task.getResult().toObject(User.class);
+                            Log.d(TAG, "onComplete: user: " + user.getName());
+                            userLocation.setUser(user);
+                            getUserLastKnownLocation();
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+
 
                     }
                 }
@@ -1176,11 +1191,16 @@ public class ChatRoomFragment extends Fragment {
      */
     private void getUserLastKnownLocation() {
 
-        if (ActivityCompat.checkSelfPermission(getContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
-            return;
+        try {
+            if (ActivityCompat.checkSelfPermission(getContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
+                return;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
+
 
         Log.i(TAG, "getUserLastKnowLocation: called");
 
@@ -1237,15 +1257,17 @@ public class ChatRoomFragment extends Fragment {
     //  -------------------- init Location Service ----------------------------
 
     private void startLocationService() {
+        Log.d(TAG, "startLocationService: method called");
         if (!isLocationServiceRunning()) {
             Intent serviceIntent = new Intent(getContext(), LocationService.class);
 //        this.startService(serviceIntent);
 
             try {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-
-                    getActivity().startForegroundService(serviceIntent);
+                    Log.d(TAG, "startLocationService: service called ");
+                    getActivity().startForegroundService(serviceIntent);                    
                 } else {
+                    Log.d(TAG, "startLocationService: service called ");
                     getActivity().startService(serviceIntent);
                 }
             }catch (Exception e){

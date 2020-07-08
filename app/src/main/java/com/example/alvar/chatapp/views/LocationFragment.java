@@ -36,7 +36,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -221,7 +223,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         gMaps.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
 
         showMarkersOnMap();
-      //gMaps.addMarker(markerUser());
+        gMaps.addMarker(markerUser());
       //gMaps.addMarker(markerContact());
 
     }
@@ -230,6 +232,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
      * method in charge of showing other user marker when using location fragment only
      */
     private void showMarkersOnMap() {
+
 
         dbUsersNodeRef.child(contactID).child((getString(R.string.user_state_db)))
                 .child("location").addValueEventListener(new ValueEventListener() {
@@ -297,10 +300,10 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             userCoordinates = new LatLng(lat1, lon1);
             markerUser = new MarkerOptions();
             markerUser.position(userCoordinates);
-            markerUser.title("this is you");
+            markerUser.title("This is you");
             markerUser.draggable(false);
             markerUser.snippet("");
-            markerUser.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_mylocation));
+            markerUser.icon(BitmapDescriptorFactory.fromResource(R.mipmap.location_icon1));
 
         return markerUser;
     }
@@ -316,7 +319,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         markerContact.position(contactCoordinates);
         markerContact.title("Contact");
         markerContact.draggable(false);
-        markerContact.snippet("Set route to contact?");
+        markerContact.snippet("Set route?");
         markerContact.icon(BitmapDescriptorFactory.fromResource(R.mipmap.location_icon2));
 
         return markerContact;
