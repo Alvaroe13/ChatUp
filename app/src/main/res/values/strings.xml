@@ -156,9 +156,8 @@
     <string name="dialog_location">This application requires GPS to work properly, do you want to enable it?</string>
     <string name="updating_location">Updating your current location</string>
     <string name="working_background">It\'s running in the background</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="check_your_inbox">Please verify your email</string>
+    <string name="insert_phone_number">Phone number including country code</string>
+    <string name="name">Name</string>
 
 </resources>

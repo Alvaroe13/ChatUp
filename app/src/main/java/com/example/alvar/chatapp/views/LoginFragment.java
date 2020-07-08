@@ -219,6 +219,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnPhoneLogin:
                 Log.d(TAG, "onClick: phone login button pressed");
+                navigateWithStack(viewLayout, R.id.phoneRegisterFragment, null);
                 break;
             case R.id.forgotPasswordText:
                 Log.d(TAG, "onClick: forgot password button pressed");

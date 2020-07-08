@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_loginFragment_to_recoverPasswordFragment"
             app:destination="@id/recoverPasswordFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_phoneRegisterFragment"
+            app:destination="@id/phoneRegisterFragment" />
     </fragment>
     <fragment
         android:id="@+id/homeFragment"
@@ -171,6 +174,15 @@
         android:name="com.example.alvar.chatapp.views.LocationFragment"
         android:label="LocationFragment"
         tools:layout="@layout/fragment_location"/>
+    <fragment
+        android:id="@+id/phoneRegisterFragment"
+        android:name="com.example.alvar.chatapp.views.PhoneRegisterFragment"
+        android:label="fragment_phone_register"
+        tools:layout="@layout/fragment_phone_register" >
+        <action
+            android:id="@+id/action_phoneRegisterFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
 
 </navigation>
 

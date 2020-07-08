@@ -1,21 +1,25 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp.views;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,11 +37,15 @@ import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_PASSWORD;
 import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_STATUS;
 import static com.example.alvar.chatapp.Utils.Constant.DEFAULT_THUMBNAIL;
 
-public class PhoneLoginActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class PhoneRegisterFragment extends Fragment {
 
-    private static final String TAG = "PhoneLoginActivity";
+    private static final String TAG = "PhoneRegisterFragment";
+
     //UI
-    private EditText nameField, textPhoneNumber, textCode;
+    private TextInputEditText nameField, textPhoneNumber, textCode;
     private Button btnVerifyCode, btnSendCode;
     private ProgressDialog popUp;
     //Firebase elements
@@ -49,37 +57,42 @@ public class PhoneLoginActivity extends AppCompatActivity {
     //vars
     private String name, phoneNumber, mVerificationId;
 
+    public PhoneRegisterFragment() {
+        // Required empty public constructor
+    }
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_phone_login);
-
-        bindUI();
-        popUpInit();
+        Log.d(TAG, "onCreate: called");
         firebaseInit();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: ");
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_phone_register, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: called");
+        popUpInit();
+        bindUI(view);
         callBacksMethod();
         sendCodeButton();
         loginButton();
-
-    }
-
-    /**
-     * UI elements
-     */
-    private void bindUI(){
-        nameField = findViewById(R.id.loginPhoneNumberNameTxt);
-        textPhoneNumber = findViewById(R.id.loginPhoneNumberTxt);
-        textCode = findViewById(R.id.loginCodeTxt);
-        btnSendCode = findViewById(R.id.btnSendCode);
-        btnVerifyCode = findViewById(R.id.btnLoginCode);
     }
 
     /**
      * init pop up ProgressDialog
      */
     private void popUpInit() {
-        popUp = new ProgressDialog(PhoneLoginActivity.this);
+        popUp = new ProgressDialog(getContext());
     }
 
     /**
@@ -94,6 +107,17 @@ public class PhoneLoginActivity extends AppCompatActivity {
         //create database Tree with name "Users" and child is the user ID
         dbUsersNodeRef = database.getReference("Users");
 
+    }
+
+    /**
+     * UI elements
+     */
+    private void bindUI(View view){
+        nameField = view.findViewById(R.id.loginPhoneNumberNameTxt);
+        textPhoneNumber = view.findViewById(R.id.loginPhoneNumberTxt);
+        textCode = view.findViewById(R.id.loginCodeTxt);
+        btnSendCode = view.findViewById(R.id.btnSendCode);
+        btnVerifyCode = view.findViewById(R.id.btnLoginCode);
     }
 
 
@@ -111,7 +135,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 popUp.dismiss();
 
                 signInWithPhoneAuthCredential(credential);
-                Toast.makeText(PhoneLoginActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Welcome!", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -119,7 +143,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 //Something failed
                 popUp.dismiss();
 
-                Toast.makeText(PhoneLoginActivity.this, "Please insert a valid phone number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please insert a valid phone number", Toast.LENGTH_SHORT).show();
 
                 textPhoneNumber.setVisibility(View.VISIBLE);
                 btnSendCode.setVisibility(View.VISIBLE);
@@ -138,7 +162,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 mVerificationId = verificationId;
                 mResendToken = token;
 
-                Toast.makeText(PhoneLoginActivity.this, "Code sent successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Code sent successfully", Toast.LENGTH_SHORT).show();
 
                 //when send code button is pressed let's remove these fields
                 textPhoneNumber.setVisibility(View.INVISIBLE);
@@ -170,7 +194,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(phoneNumber) || TextUtils.isEmpty(name) ) {
                     Log.i(TAG, "onClick: field empty");
-                    Toast.makeText(PhoneLoginActivity.this, "You must insert a phone number and name.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "You must insert a phone number and name.", Toast.LENGTH_SHORT).show();
 
                 } else{
 
@@ -199,7 +223,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 phoneNumber,        // Phone number to verify
                 60,              // Timeout duration
                 TimeUnit.SECONDS,   // Unit of timeout
-                PhoneLoginActivity.this,        // Activity (for callback binding)
+                getActivity(),        // Activity (for callback binding)
                 callbacks           // OnVerificationStateChangedCallbacks
         );
 
@@ -217,10 +241,10 @@ public class PhoneLoginActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-              String verificationCode = textCode.getText().toString();
+                String verificationCode = textCode.getText().toString();
 
                 if (TextUtils.isEmpty(verificationCode) ){
-                    Toast.makeText(PhoneLoginActivity.this, "Please insert code.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Please insert code.", Toast.LENGTH_SHORT).show();
                 } else{
 
                     popUp.setTitle("Verifying code");
@@ -244,21 +268,21 @@ public class PhoneLoginActivity extends AppCompatActivity {
      */
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            
+
                             popUp.dismiss();
-                            Toast.makeText(PhoneLoginActivity.this, "Done!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Done!", Toast.LENGTH_SHORT).show();
 
                             saveInfoInDB();
 
                         } else {
-                                //let's get the error in a var
+                            //let's get the error in a var
                             String error = task.getException().toString();
-                                //show error to the user
-                            Toast.makeText(PhoneLoginActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                            //show error to the user
+                            Toast.makeText(getContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -281,14 +305,14 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 //if everything goes well
                 if (task.isSuccessful()) {
                     //show welcome message to user
-                    Toast.makeText(PhoneLoginActivity.this, getString(R.string.welcome), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.welcome), Toast.LENGTH_SHORT).show();
                     //we take user to main page
-                    goToMain();
+                  //  goToMain(); replace with nav component controller
                     //if there is a problem with the server
                 } else {
                     Log.i(TAG, "onComplete: error" + task.getException());
                     String error = task.getException().toString();
-                    Toast.makeText(PhoneLoginActivity.this, "Something went wrong: " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Something went wrong: " + error, Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -296,17 +320,4 @@ public class PhoneLoginActivity extends AppCompatActivity {
 
 
     }
-
-    /**
-     * we send the user to the main activity
-     */
-    private void goToMain() {
-
-        Intent intent   = new Intent(PhoneLoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
-
-    }
-
-
 }
