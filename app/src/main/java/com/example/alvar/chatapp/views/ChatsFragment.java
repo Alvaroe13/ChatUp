@@ -5,16 +5,27 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Adapter.ChatsAdapter;
+import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.viewModels.ChatListViewModel;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,17 +46,19 @@ import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListener  {
+public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
     private static final String TAG = "ChatsFragmentPage";
     //firebase
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
+    private DatabaseReference dbChatListRef, dbChatsNodeRef;
+    private ValueEventListener removeListener;
     //ui elements
     private RecyclerView chatRecyclerView;
     private View viewLayout;
     //vars
-    private String currentUserID;
+    private String currentUserID, contactID;
     private ChatsAdapter chatsAdapter;
     private ChatListViewModel viewModel;
     private List<User> userList = new ArrayList<>();
@@ -65,11 +78,12 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return  inflater.inflate(R.layout.fragment_chats, container, false);
+        return inflater.inflate(R.layout.fragment_chats, container, false);
     }
 
     /**
      * method call right after the view's been created, is better to init ui elemtns here
+     *
      * @param view
      * @param savedInstanceState
      */
@@ -90,26 +104,28 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
-        if (currentUser != null){
+        if (currentUser != null) {
             currentUserID = auth.getCurrentUser().getUid();
         }
+        dbChatListRef = FirebaseDatabase.getInstance().getReference().child("ChatList");
+        dbChatsNodeRef = FirebaseDatabase.getInstance().getReference().child("Chats").child("Messages");
     }
 
 
     private void initRecyclerView(View view) {
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
-        chatRecyclerView.setLayoutManager(new LinearLayoutManager( getContext() ));
+        chatRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         chatRecyclerView.setHasFixedSize(true);
 
     }
 
     //viewModel area
-    private void initViewModel(){
+    private void initViewModel() {
         Log.d(TAG, "initViewModel: called");
         viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
     }
 
-    private void connectionWithViewModel(String userID){
+    private void connectionWithViewModel(String userID) {
         Log.d(TAG, "connectionWithViewModel: called");
         viewModel.connectionWithRepo(userID);
     }
@@ -117,24 +133,35 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
     /**
      * show conversations in the fragment
      */
-    private void initObserver(){
+    private void initObserver() {
 
         Log.d(TAG, "initObserver: called");
         viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
-            public void onChanged(List<User> users) {
-                if (users != null){
+            public void onChanged(final List<User> users) {
+                if (users != null) {
+                    userList = users;
+
                     Log.d(TAG, "initObserver onChanged: called");
 
                     chatsAdapter = new ChatsAdapter(getContext(), users, ChatsFragment.this);
                     chatRecyclerView.setAdapter(chatsAdapter);
                     chatsAdapter.notifyDataSetChanged();
+                    chatsAdapter.onLongClickHandler(new ChatsAdapter.OnLongClick() {
+                        @Override
+                        public void onLongItemClick(int position, View view) {
+                            Log.d(TAG, "onLongItemClick: long click done again");
+                            contactID = users.get(position).getUserID();
+                            showPopUp(view);
+                        }
+                    });
 
-                    userList = users;
+                }
 
-
-                }else{
-                    Log.d(TAG, "onChanged: null response from db");
+                else if (chatsAdapter.getItemCount() == -1){
+                    Log.d(TAG, "onChanged: enter this area");
+                    deleteChatRoom(currentUserID, contactID );
+                    chatsAdapter.notifyDataSetChanged();
                 }
 
 
@@ -143,10 +170,18 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
     }
 
 
+    private void showPopUp(View view) {
+        PopupMenu popupMenu = new PopupMenu(getContext(), view);
+        popupMenu.setOnMenuItemClickListener(ChatsFragment.this);
+        popupMenu.inflate(R.menu.menu_pop_up);
+        popupMenu.show();
+    }
+
+
     /**
      * method in charge of taking the user to the chat room sending the info specified
-     * */
-    private void goToChatRoom(String contactID, String image, String name  ) {
+     */
+    private void goToChatRoom(String contactID, String image, String name) {
         Log.d(TAG, "goToChatRoom: called!!");
         Bundle bundle = new Bundle();
         bundle.putString(CONTACT_ID, contactID);
@@ -154,8 +189,8 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         bundle.putString(CONTACT_IMAGE, image);
 
         navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
-       
-       //it throws an error.
+
+        //it throws an error.
     }
 
     @Override
@@ -171,4 +206,78 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
 
     }
 
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        if (item.getItemId() == R.id.deleteChat) {
+            Log.d(TAG, "onMenuItemClick: delete chat clicked");
+            deleteChatRoom(currentUserID, contactID);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * delete chatroom to make go away the chat from the chatList
+     */
+    private void deleteChatRoom(final String currentUserID, final String contactID) {
+
+        Log.d(TAG, "deleteChatRoom: called");
+
+        dbChatListRef.child(currentUserID).child(contactID).removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+                            dbChatListRef.child(contactID).child(currentUserID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        deleteChat(currentUserID, contactID);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+    }
+
+    /**
+     * method in charge of deleting chats in fragment chats (called in remove contact)
+     */
+    private void deleteChat(final String currentUserID, final String contactID) {
+
+        Log.d(TAG, "deleteChat: called");
+
+        removeListener =
+                dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                            Messages message = ds.getValue(Messages.class);
+                            try {
+                                if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(contactID) ||
+                                        message.getSenderID().equals(contactID) && message.getReceiverID().equals(currentUserID)) {
+
+                                    ds.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            dbChatsNodeRef.removeEventListener(removeListener);
+                                        }
+                                    });
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "onDataChange: error = " + e.getMessage());
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
+
+    }
 }

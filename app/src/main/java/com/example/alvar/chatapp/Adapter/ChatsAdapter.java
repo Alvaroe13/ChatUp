@@ -38,6 +38,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
      private List<User> userList;
      private String currentUserID;
      private OnClickListener clickListener;
+     private OnLongClick onLongClickListener;
 
 
 
@@ -56,7 +57,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
         initFirebase();
 
-        return new ChatsAdapter.ChatsViewHolder(view, clickListener);
+        return new ChatsAdapter.ChatsViewHolder(view, clickListener, onLongClickListener);
     }
 
 
@@ -77,6 +78,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
         }
         return -1;
     }
+
 
     /**
      * we init firebase services.
@@ -272,20 +274,27 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
         }
     }
 
+    public void onLongClickHandler( OnLongClick listener){
+        onLongClickListener = listener;
+    }
 
-    public static class ChatsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+    public static class ChatsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         CardView chatLayout;
         CircleImageView chatImageContact, onlineIcon;
         TextView username, lastMessageField, lastMessageDateField;
         ImageButton smallIcon;
         OnClickListener clickListener;
+        OnLongClick onLongClickListener;
 
 
-        public ChatsViewHolder(@NonNull View layout,  final OnClickListener clickListener) {
+        public ChatsViewHolder(@NonNull View layout,  final OnClickListener clickListener, final OnLongClick onLongClickListener) {
             super(layout);
 
             this.clickListener = clickListener;
+            this.onLongClickListener = onLongClickListener;
+
             chatLayout = layout.findViewById(R.id.cardViewAllUsers);
             chatImageContact = layout.findViewById(R.id.imageChat);
             username = layout.findViewById(R.id.usernameChat);
@@ -295,6 +304,20 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
             smallIcon = layout.findViewById(R.id.smallIcon);
 
             itemView.setOnClickListener(this);
+            itemView.setLongClickable(true);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (onLongClickListener != null){
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            onLongClickListener.onLongItemClick(position, v); //onItemClick is coming from within the interface
+                            Log.d(TAG, "onClick: contactID " );
+                        }
+                    }
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -307,12 +330,29 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                 }
             }
         }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (onLongClickListener != null){
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION){
+                    onLongClickListener.onLongItemClick(position, v); //onItemClick is coming from within the interface
+                    Log.d(TAG, "onLongClick: called");
+                }
+            }
+            return false;
+        }
     }
 
 
     public interface OnClickListener{
         void onItemClick(int position);
     }
+
+    public interface OnLongClick{
+        void onLongItemClick(int position, View view);
+    }
+
 
 
 }

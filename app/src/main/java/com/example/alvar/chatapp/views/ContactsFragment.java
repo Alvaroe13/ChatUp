@@ -182,18 +182,24 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnClic
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()){
 
-                                String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-                                String name = dataSnapshot.child("name").getValue().toString();
+                                try {
 
-                                Bundle bundle = new Bundle();
-                                bundle.putString(CONTACT_ID, contactID);
-                                bundle.putString(CONTACT_NAME, name);
-                                bundle.putString(CONTACT_IMAGE, image);
-                                bundle.putString(CHATROOM_ID, collectionID);
-                                bundle.putString(DOCUMENT_ID, documentID);
+                                    String image = dataSnapshot.child("imageThumbnail").getValue().toString();
+                                    String name = dataSnapshot.child("name").getValue().toString();
 
-                                Log.d(TAG, "onDataChange: called");
-                                navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString(CONTACT_ID, contactID);
+                                    bundle.putString(CONTACT_NAME, name);
+                                    bundle.putString(CONTACT_IMAGE, image);
+                                    bundle.putString(CHATROOM_ID, collectionID);
+                                    bundle.putString(DOCUMENT_ID, documentID);
+
+                                    Log.d(TAG, "onDataChange: called");
+                                    navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
 
 
                             }
