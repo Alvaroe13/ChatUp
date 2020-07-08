@@ -193,7 +193,7 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnClic
                                 bundle.putString(DOCUMENT_ID, documentID);
 
                                 Log.d(TAG, "onDataChange: called");
-                                navigateWithStack(viewLayout, R.id.chatActivity, bundle);
+                                navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
 
 
                             }

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
@@ -24,11 +25,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 
 public class RequestsFragment extends Fragment {
@@ -43,40 +47,51 @@ public class RequestsFragment extends Fragment {
     //ui elements
     private RecyclerView requestsRecycler;
     private LinearLayoutManager linearLayoutManager;
+    private View viewLayout;
     //vars
     private String currentUserID;
 
 
-    public RequestsFragment(){
+    public RequestsFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initFirebase();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // bind view with controller
-        View requestsView =  inflater.inflate(R.layout.fragment_requests, container, false);
         Log.i(TAG, "onCreateView: view init correctly with its methods");
+        return inflater.inflate(R.layout.fragment_requests, container, false);
+    }
 
-        initFirebase();
-        initRecycler(requestsView);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewLayout = view;
+        initRecycler(view);
 
-        return requestsView;
     }
 
     /**
      * we init recyclerView
+     *
      * @param view
      */
-    private void initRecycler(View view){
+    private void initRecycler(View view) {
         requestsRecycler = view.findViewById(R.id.requestsRecyclerView);
         linearLayoutManager = new LinearLayoutManager(getContext());
         requestsRecycler.setLayoutManager(linearLayoutManager);
     }
 
-    private void initFirebase(){
+    private void initFirebase() {
         //init firebase auth
         auth = FirebaseAuth.getInstance();
-        if (currentUser != null){
+        currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
             currentUserID = currentUser.getUid();
         }
         database = FirebaseDatabase.getInstance();
@@ -89,7 +104,7 @@ public class RequestsFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (currentUser != null){
+        if (currentUser != null) {
             initFirebaseAdapter();
         }
 
@@ -110,138 +125,133 @@ public class RequestsFragment extends Fragment {
         /*this is the adapter, the one in charge of populating the recyclerView with the info from the db
            using the query created above*/
         FirebaseRecyclerAdapter<Contacts, RequestsViewHolder> adapterFirebase =
-                        new FirebaseRecyclerAdapter<Contacts, RequestsViewHolder>(requests) {
+                new FirebaseRecyclerAdapter<Contacts, RequestsViewHolder>(requests) {
+                    @Override
+                    protected void onBindViewHolder(@NonNull final RequestsViewHolder holder, int position, @NonNull Contacts model) {
+
+                        //here we get the user id of every request made in the "Chat_Requests" node
+                        // and save it into a constant.
+                        final String list_user_id = getRef(position).getKey();
+
+                        Log.i(TAG, "onBindViewHolder: user id: " + list_user_id);
+
+                        requestTypeRef = getRef(position).child("request_type").getRef();
+
+                        requestTypeRef.addValueEventListener(new ValueEventListener() {
                             @Override
-                            protected void onBindViewHolder(@NonNull final RequestsViewHolder holder, int position, @NonNull Contacts model) {
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
 
-                             //here we get the user id of every request made in the "Chat_Requests" node
-                             // and save it into a constant.
-                            final String list_user_id = getRef(position).getKey();
+                                    String requestTypeFetched = dataSnapshot.getValue().toString();
+                                    Log.i(TAG, "onDataChange: other user ID: " + list_user_id);
 
-                             Log.i(TAG, "onBindViewHolder: user id: " + list_user_id);
+                                    //we show every request with state "received"
+                                    if (requestTypeFetched.equals("received")) {
 
-                             requestTypeRef = getRef(position).child("request_type").getRef();
+                                        //we point to "Users" node to retrieve image and username
+                                        dbUsersNode.child(list_user_id).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                //we fetch info from the "Users" node and set it into the UI
+                                                if (dataSnapshot.exists()) {
 
-                                requestTypeRef.addValueEventListener(new ValueEventListener() {
-                                 @Override
-                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    String name = dataSnapshot.child("name").getValue().toString();
+                                                    String image = dataSnapshot.child("imageThumbnail").getValue().toString();
 
+                                                    holder.userName.setText(name);
 
-                                     if (dataSnapshot.exists()){
+                                                    RequestOptions options = new RequestOptions()
+                                                            .centerCrop()
+                                                            .error(R.drawable.profile_image);
 
-                                         String requestTypeFetched = dataSnapshot.getValue().toString();
-
-                                         Log.i(TAG, "onDataChange: other user ID: " + list_user_id);
-
-                                         //we show every request with state "received"
-                                         if (requestTypeFetched.equals("received")){
-
-                                             //we point to "Users" node to retrieve image and username
-                                             dbUsersNode.child(list_user_id).addValueEventListener(new ValueEventListener() {
-                                                 @Override
-                                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                                     //we fetch info from the "Users" node and set it into the UI
-
-                                                     if (dataSnapshot.exists()){
-
-                                                         String name = dataSnapshot.child("name").getValue().toString();
-                                                         String image = dataSnapshot.child("imageThumbnail").getValue().toString();
-
-                                                         Log.i(TAG, "onDataChange: name: " + name);
+                                                    try {
+                                                        Glide.with(getContext())
+                                                                .setDefaultRequestOptions(options)
+                                                                .load(image)
+                                                                .into(holder.imageRequest);
+                                                    } catch (NullPointerException e) {
+                                                        Log.e(TAG, "onDataChange: exception: " + e.getMessage());
+                                                    }
 
 
-                                                         holder.userName.setText(name);
-                                                         if ( image.equals("imgThumbnail")){
-                                                             holder.imageRequest.setImageResource(R.drawable.profile_image);
-                                                         } else{
-                                                             try{
-                                                                 Glide.with(getContext()).load(image).into(holder.imageRequest);
-                                                             } catch (NullPointerException e) {
-                                                                 String exception = e.getMessage();
-                                                                 Log.i(TAG, "onDataChange: exception: " + exception);
-                                                             }
+                                                    //here we take the user from request fragment to "AnswerRequestActivity"
+                                                    holder.cardViewRequest.setOnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
 
-                                                         }
+                                                            requestAnswer(list_user_id);
 
-                                                         //here we take the user from request fragment to "AnswerRequestActivity"
-                                                         holder.cardViewRequest.setOnClickListener(new View.OnClickListener() {
-                                                             @Override
-                                                             public void onClick(View v) {
+                                                        }
+                                                    });
 
-                                                                requestAnswer(list_user_id);
-
-                                                             }
-                                                         });
-
-                                                     }
+                                                }
 
 
+                                            }
 
-                                                 }
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                 @Override
-                                                 public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            }
+                                        });
 
-                                                 }
-                                             });
-
-                                         } else if (requestTypeFetched.equals("sent")){
+                                    } else if (requestTypeFetched.equals("sent")) {
                                              /* in case we have sent a request message we make sure not to
                                                 show any request in our request fragment, we need to hide only the CardView
                                                 as it is the container of the rest of the element*/
 
-                                             holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.GONE);
-                                             holder.itemView.findViewById(R.id.cardViewRequest).setLayoutParams( new RecyclerView.LayoutParams(0,0));
+                                        holder.itemView.findViewById(R.id.cardViewRequest).setVisibility(View.GONE);
+                                        holder.itemView.findViewById(R.id.cardViewRequest).setLayoutParams(new RecyclerView.LayoutParams(0, 0));
 
 
-                                         }
+                                    }
 
 
-                                     }
-                                 }
-
-                                 @Override
-                                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                 }
-                             });
-
+                                }
                             }
 
-                            @NonNull
                             @Override
-                            public RequestsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                                //we bind the "request_individual_layout" to it's controller
-                                View requestIndividualView = LayoutInflater.from(viewGroup.getContext())
-                                        .inflate(R.layout.request_individual_layout, viewGroup, false);
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                RequestsViewHolder viewHolder = new RequestsViewHolder(requestIndividualView);
-                                return viewHolder;
                             }
-                        };
+                        });
+
+                    }
+
+                    @NonNull
+                    @Override
+                    public RequestsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                        //we bind the "request_individual_layout" to it's controller
+                        View requestIndividualView = LayoutInflater.from(viewGroup.getContext())
+                                .inflate(R.layout.request_individual_layout, viewGroup, false);
+
+                        RequestsViewHolder viewHolder = new RequestsViewHolder(requestIndividualView);
+                        return viewHolder;
+                    }
+                };
 
         requestsRecycler.setAdapter(adapterFirebase);
         adapterFirebase.startListening();
 
     }
 
+    /**
+     * method takes the user to AnswerRequestActivity
+     * @param contactID
+     */
+    private void requestAnswer(String contactID) {
+        Bundle bundle = new Bundle();
+        bundle.putString("otherUserID", contactID);
 
-    private void requestAnswer(String list_user_id) {
-
-        Intent intentRequestAnswer = new Intent(getActivity(), AnswerRequestActivity.class);
-        intentRequestAnswer.putExtra("otherUserID", list_user_id);
-        Log.i(TAG, "onClick:  other user id: " + list_user_id);
-        startActivity(intentRequestAnswer);
+        navigateWithStack(viewLayout, R.id.answerRequestActivity, bundle);
     }
 
 
-
     //here we bind and init elements from the UI in the individual request layout
-    public class RequestsViewHolder extends RecyclerView.ViewHolder{
+    public static class RequestsViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView imageRequest;
-        TextView userName ;
+        TextView userName;
         CardView cardViewRequest;
 
         public RequestsViewHolder(@NonNull View itemView) {
@@ -254,8 +264,6 @@ public class RequestsFragment extends Fragment {
         }
 
     }
-
-
 
 
 }

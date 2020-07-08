@@ -7,15 +7,15 @@
     android:layout_height="match_parent"
     android:background="@color/color_grey"
     android:orientation="horizontal"
+    android:gravity="center"
     tools:context=".Activities.ImageActivity">
 
     <ImageView
         android:id="@+id/imageBig"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="380dp"
+        android:layout_height="380dp"
         android:background="@color/color_white"
-        android:foregroundGravity="center"
-        app:srcCompat="@drawable/profile_image"
-        android:layout_gravity="center"/>
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/profile_image" />
 
 </LinearLayout>
