@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.Adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
@@ -73,7 +71,11 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
     @Override
     public int getItemCount() {
-        return userList.size();
+        if (userList != null ){
+            //get the size of the List is is not null
+            return userList.size();
+        }
+        return -1;
     }
 
     /**

@@ -148,6 +148,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+/*
 
         initFirebase();
         initFirestore();
@@ -162,6 +163,7 @@ public class ChatActivity extends AppCompatActivity {
         attachFileButtonPressed();
         retrofit();
         seenMessage();
+*/
 
 
     }
@@ -325,7 +327,7 @@ public class ChatActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true);
         recyclerViewChat.setLayoutManager(linearLayoutManager);
 
-        adapter = new MessageAdapter(ChatActivity.this, messagesList);
+    //    adapter = new MessageAdapter(ChatActivity.this, messagesList);
         recyclerViewChat.setAdapter(adapter);
 
     }
