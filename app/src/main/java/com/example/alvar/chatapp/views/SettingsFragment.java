@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Dialogs.AlertDialogStatus;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -97,6 +98,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
         bindUI(view);
         retrieveDataFromDb();
+        drawerMode();
 
         fabImage.setOnClickListener(this);
         fabStatus.setOnClickListener(this);
@@ -409,6 +411,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
 
     }
+
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), false);
+    }
+
 
 
     @Override

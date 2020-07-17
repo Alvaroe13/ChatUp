@@ -36,6 +36,7 @@ import com.example.alvar.chatapp.Notifications.ResponseFCM;
 import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -110,6 +111,11 @@ public class OtherUserFragment extends Fragment {
         manageChatRequest();
         imageProfilePressed();
         retrofit();
+        drawerMode();
+    }
+
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
 
     private void incomingBundle() {

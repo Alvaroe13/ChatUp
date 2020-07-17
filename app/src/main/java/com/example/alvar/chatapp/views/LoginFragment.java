@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -87,7 +88,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         BindUI(view);
         buttonsUI();
         checkUserStatus();
-
     }
 
     @Override

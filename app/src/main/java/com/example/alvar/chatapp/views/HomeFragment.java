@@ -26,6 +26,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.Activities.MainActivity;
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -101,6 +102,7 @@ public class HomeFragment extends Fragment  {
         Log.d(TAG, "onViewCreated: called as well!");
         setToolbar("ChatUp", view, true);
         ui(view);
+        drawerMode();
         
     }
 
@@ -165,6 +167,9 @@ public class HomeFragment extends Fragment  {
         viewPager.setCurrentItem(1);
     }
 
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), true);
+    }
 
 
 

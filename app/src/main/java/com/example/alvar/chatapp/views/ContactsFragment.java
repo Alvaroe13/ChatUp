@@ -10,6 +10,9 @@ import com.example.alvar.chatapp.Adapter.ContactsAdapter;
 import com.example.alvar.chatapp.Model.Chatroom;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerLocker;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
+import com.example.alvar.chatapp.Utils.NavHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -85,7 +88,10 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnClic
         initRecyclerView(view);
         setToolbar(getString(R.string.contacts),view, false);
         showContacts();
+        drawerMode();
     }
+
+
 
     private void initFirebase(){
         auth = FirebaseAuth.getInstance();
@@ -225,5 +231,9 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnClic
         Log.d(TAG, "onItemClick: cardview pressed in contacts");
         String contactID = contactsList.get(position).getContactID();
         goToChatRoom(contactID);
+    }
+
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
 }

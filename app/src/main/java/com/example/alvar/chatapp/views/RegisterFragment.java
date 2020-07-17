@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -91,12 +92,10 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
      */
 
     private void initFirebase() {
-
         //init firebase auth
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference("Users");
-
     }
 
 
@@ -219,7 +218,6 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
     
     
     }
-
 
 
     @Override
