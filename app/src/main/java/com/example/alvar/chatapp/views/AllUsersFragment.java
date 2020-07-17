@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import com.example.alvar.chatapp.Adapter.UsersAdapter;
 import com.example.alvar.chatapp.Model.User;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -75,6 +76,7 @@ public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: called!");
+
         return inflater.inflate(R.layout.fragment_all_users, container,false);
     }
 
@@ -88,6 +90,8 @@ public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickLi
         initRecyclerView(view);
         setToolbar(getString(R.string.allUsers), view, false);
         showAllUsers();
+        drawerMode();
+
     }
 
     private void initFirebase() {
@@ -259,6 +263,10 @@ public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickLi
         bundle.putString("contactID", contactID);
         navigateWithStack(viewLayout, R.id.otherUserFragment, bundle);
 
+    }
+
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
 
 

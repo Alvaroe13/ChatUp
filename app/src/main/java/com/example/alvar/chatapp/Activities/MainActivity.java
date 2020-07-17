@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerLocker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -48,7 +49,7 @@ import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStackActivity;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStackActivity;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DrawerLocker {
 
     private static final String TAG = "MainPage";
 
@@ -78,23 +79,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         initFirebase();
-
         currentUser = mAuth.getCurrentUser();
 
+
         if (currentUser != null){
+            Log.d(TAG, "onCreate: user logged in");
             currentUserID = mAuth.getCurrentUser().getUid();
             bindUI();
             drawerOptionsListener();
+            drawerUnlocked();
             getToken();
-            //set image and username from db to drawer layout
             fetchInfoFromDb();
             //when image within drawer is clicked by the user
             image.setOnClickListener(this);
             //we set "no" as typing state in the db as soon as the app is launched
             typingState("no");
+
         }
 
         else{
+            Log.d(TAG, "onCreate: user NOT logged in");
             //by doing this we make sure user can't open drawer in login screen
             bindUI();
             drawerLock();
@@ -241,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void signOut() {
         //sign out from firebase service and app
         FirebaseAuth.getInstance().signOut();
+        currentUser = null;
         navigateWithOutStackActivity(this, R.id.loginFragment, null);
         closeDrawer();
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
@@ -429,12 +434,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
 
-        Log.d(TAG, "onBackPressed: called!!!");
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else if (Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId() == R.id.homeFragment){
             finish();
+        } else if (currentUser != null){
+            Log.d(TAG, "onBackPressed: currentUser =! null");
+            super.onBackPressed();
+            drawerUnlocked();
         } else{
+            Log.d(TAG, "onBackPressed: ");
             super.onBackPressed();
         }
 
@@ -449,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (currentUser != null){
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
+            drawerUnlocked();
         }
     }
 
@@ -469,5 +479,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.d(TAG, "onClick: button pressed");
             showAlertDialog();
         }
+    }
+
+    @Override
+    public void setDrawerLocker(boolean enabled) {
+
+        int lockMode = enabled ? DrawerLayout.LOCK_MODE_UNLOCKED : DrawerLayout.LOCK_MODE_LOCKED_CLOSED;
+        drawerLayout.setDrawerLockMode(lockMode);
     }
 }

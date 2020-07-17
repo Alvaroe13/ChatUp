@@ -59,6 +59,7 @@ import com.example.alvar.chatapp.Notifications.RetrofitClient;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Service.LocationService;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Continuation;
@@ -191,6 +192,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         otherUserState();
         UIElements(viewLayout);
         toolbarPressed();
+        drawerMode();
         initRecycleView(viewLayout);
         editTextStatus();
         sendButtonPressed();
@@ -268,39 +270,39 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
      */
     private void setToolbar(final String contactUsername, final String contactProfPic, final View viewLayout) {
 
-        toolbarChat = viewLayout.findViewById(R.id.toolbarChat);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarChat);
+        try {
+            toolbarChat = viewLayout.findViewById(R.id.toolbarChat);
+            ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarChat);
 
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowCustomEnabled(true);
+            ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.setDisplayShowCustomEnabled(true);
 
-        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View viewCustomBar = inflater.inflate(R.layout.chat_custom_bar, null);
-        actionBar.setCustomView(viewCustomBar);
+            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View viewCustomBar = inflater.inflate(R.layout.chat_custom_bar, null);
+            actionBar.setCustomView(viewCustomBar);
 
-        //UI elements from custom toolbar
-        imageProfile = viewLayout.findViewById(R.id.imageToolbarChat);
-        usernameToolbarChat = viewLayout.findViewById(R.id.usernameToolbarChat);
-        lastSeenToolbarChat = viewLayout.findViewById(R.id.lastSeenChatToolbar);
-        onlineIcon = viewLayout.findViewById(R.id.onlineIcon);
+            //UI elements from custom toolbar
+            imageProfile = viewLayout.findViewById(R.id.imageToolbarChat);
+            usernameToolbarChat = viewLayout.findViewById(R.id.usernameToolbarChat);
+            lastSeenToolbarChat = viewLayout.findViewById(R.id.lastSeenChatToolbar);
+            onlineIcon = viewLayout.findViewById(R.id.onlineIcon);
 
-        //here we set info from bundles into the ui elements in custom toolbar
-        usernameToolbarChat.setText(contactUsername);
+            //here we set info from bundles into the ui elements in custom toolbar
+            usernameToolbarChat.setText(contactUsername);
 
-        //GLIDE
-        RequestOptions options = new RequestOptions()
-                .centerCrop()
-                .error(R.drawable.profile_image);
+            //GLIDE
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .error(R.drawable.profile_image);
 
-        Glide.with(getContext())
-                .setDefaultRequestOptions(options)
-                .load(contactProfPic)
-                .into(imageProfile);
-
-        //here we handle toolbar back button action
-
-
+            Glide.with(getContext())
+                    .setDefaultRequestOptions(options)
+                    .load(contactProfPic)
+                    .into(imageProfile);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -1407,6 +1409,10 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         navigateWithStack(viewLayout, R.id.locationFragment, bundle);
     }
 
+    private void drawerMode() {
+        DrawerStateHelper.drawerEnabled(getActivity(), false);
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -1419,4 +1425,5 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         retrieveUsersLocationFromDB( contactID );
         
     }
+
 }
