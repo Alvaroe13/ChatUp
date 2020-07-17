@@ -133,20 +133,27 @@ public class LocationService extends Service {
 
         String currentUserID = FirebaseAuth.getInstance().getUid();
 
-        mDb = FirebaseFirestore.getInstance();
-        userLocationRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
+        if (currentUserID != null){
+            mDb = FirebaseFirestore.getInstance();
+            userLocationRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
 
-        userLocationRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                User user = documentSnapshot.toObject(User.class);
-                GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                UserLocation userLocation = new UserLocation(user, geoPoint, null);
-                Log.d(TAG, "onSuccess: geopoint info: lat: " + location.getLatitude());
-                Log.d(TAG, "onSuccess: geopoint info: lon: " + location.getLongitude());
-                saveUserLocation(userLocation);
-            }
-        });
+            userLocationRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    User user = documentSnapshot.toObject(User.class);
+                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    UserLocation userLocation = new UserLocation(user, geoPoint, null);
+                    Log.d(TAG, "onSuccess: geopoint info: lat: " + location.getLatitude());
+                    Log.d(TAG, "onSuccess: geopoint info: lon: " + location.getLongitude());
+                    saveUserLocation(userLocation);
+                }
+            });
+        }
+        else{
+            //if user logged out stop service
+            stopSelf();
+        }
+
 
     }
 

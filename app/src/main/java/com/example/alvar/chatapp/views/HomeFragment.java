@@ -102,8 +102,6 @@ public class HomeFragment extends Fragment  {
         Log.d(TAG, "onViewCreated: called as well!");
         setToolbar("ChatUp", view, true);
         ui(view);
-        drawerMode();
-        
     }
 
     private void ui(View view) {
@@ -166,12 +164,6 @@ public class HomeFragment extends Fragment  {
         //this line sets the second fragment as default when app is launched.
         viewPager.setCurrentItem(1);
     }
-
-    private void drawerMode() {
-        DrawerStateHelper.drawerEnabled(getActivity(), true);
-    }
-
-
 
 
 }

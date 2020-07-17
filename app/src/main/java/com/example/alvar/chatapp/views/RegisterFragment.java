@@ -13,6 +13,7 @@ import androidx.navigation.Navigation;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -85,6 +86,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
         bindUI(view);
         setToolbar(getString(R.string.register), view, true);
         registerBtn.setOnClickListener(this);
+        toolBarClick();
     }
 
     /**
@@ -219,6 +221,16 @@ public class RegisterFragment extends Fragment implements View.OnClickListener{
     
     }
 
+    private void toolBarClick(){
+        toolbarRegister.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: back button toolbar clicked");
+                navigateWithOutStack(viewLayout, R.id.loginFragment, null);
+            }
+        });
+    }
+ 
 
     @Override
     public void onClick(View v) {
