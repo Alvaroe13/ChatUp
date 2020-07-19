@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-        <ImageButton
+  <!--      <ImageButton
             android:id="@+id/btn_close_map"
             android:layout_width="35dp"
             android:layout_height="35dp"
@@ -25,7 +25,7 @@
             android:background="@color/color_white"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp" />
+            android:layout_marginStart="10dp" />-->
 
     </FrameLayout>
 
@@ -41,7 +41,7 @@
             android:id="@+id/icon1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@mipmap/location_icon1"
+            android:src="@mipmap/location_icon_blue_dot"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
             />

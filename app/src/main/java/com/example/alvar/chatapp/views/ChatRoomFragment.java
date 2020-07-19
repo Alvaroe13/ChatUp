@@ -366,9 +366,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 messagesList.clear();
-
                 if (dataSnapshot.exists()) {
-
                     for (DataSnapshot info : dataSnapshot.getChildren()) {
 
                         Messages messages = info.getValue(Messages.class);
@@ -380,12 +378,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
                                 messagesList.add(messages);
                             }
+                            adapter.notifyDataSetChanged();
+                            recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                         }catch (Exception e){
-                            Log.e(TAG, "onDataChange: error: " + e.getMessage() );
+                            e.printStackTrace();
                         }
 
-                        adapter.notifyDataSetChanged();
-                        recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                     }
                 }
             }

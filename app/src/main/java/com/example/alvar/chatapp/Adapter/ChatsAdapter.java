@@ -79,6 +79,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
         return -1;
     }
 
+    public void updateChats(List<User> list){
+        userList.clear();
+        userList.addAll(list);
+        notifyDataSetChanged();
+    }
+
 
     /**
      * we init firebase services.

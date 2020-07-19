@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.views;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,9 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
-import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Adapter.ChatsAdapter;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
@@ -82,8 +79,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
     }
 
     /**
-     * method call right after the view's been created, is better to init ui elemtns here
-     *
+     * method call right after the view's been created, is better to init ui elements here
      * @param view
      * @param savedInstanceState
      */
@@ -101,6 +97,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
 
     }
 
+
     private void initFirebase() {
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
@@ -116,6 +113,9 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         chatRecyclerView.setHasFixedSize(true);
+        chatsAdapter = new ChatsAdapter(getContext(), new ArrayList<User>(), ChatsFragment.this);
+        chatRecyclerView.setAdapter(chatsAdapter);
+
 
     }
 
@@ -143,27 +143,24 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                     userList = users;
 
                     Log.d(TAG, "initObserver onChanged: called");
+                    chatRecyclerView.setVisibility(View.VISIBLE);
+                    chatsAdapter.updateChats(users);
 
-                    chatsAdapter = new ChatsAdapter(getContext(), users, ChatsFragment.this);
-                    chatRecyclerView.setAdapter(chatsAdapter);
-                    chatsAdapter.notifyDataSetChanged();
-                    chatsAdapter.onLongClickHandler(new ChatsAdapter.OnLongClick() {
-                        @Override
-                        public void onLongItemClick(int position, View view) {
-                            Log.d(TAG, "onLongItemClick: long click done again");
-                            contactID = users.get(position).getUserID();
-                            showPopUp(view);
-                        }
-                    });
+                    chatItemCLick(users);
 
                 }
 
-                else if (chatsAdapter.getItemCount() == -1){
-                    Log.d(TAG, "onChanged: enter this area");
-                    deleteChatRoom(currentUserID, contactID );
-                    chatsAdapter.notifyDataSetChanged();
-                }
+            }
+        });
+    }
 
+    private void chatItemCLick(final List<User> users) {
+        chatsAdapter.onLongClickHandler(new ChatsAdapter.OnLongClick() {
+            @Override
+            public void onLongItemClick(int position, View view) {
+                Log.d(TAG, "chatItemCLick: onLongItemClick: long click done again");
+                contactID = users.get(position).getUserID();
+                showPopUp(view);
 
             }
         });
@@ -189,8 +186,6 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         bundle.putString(CONTACT_IMAGE, image);
 
         navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
-
-        //it throws an error.
     }
 
     @Override
