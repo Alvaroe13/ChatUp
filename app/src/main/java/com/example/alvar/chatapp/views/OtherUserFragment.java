@@ -804,7 +804,7 @@ public class OtherUserFragment extends Fragment {
                     String title = "Chat Request";
                     String message = "You have a new chat request";
 
-                    RequestNotification notificationBody = new RequestNotification(title , message);
+                    RequestNotification notificationBody = new RequestNotification(title , message, currentUserID);
 
 
                     ChatRequestNotification notification =

@@ -138,12 +138,22 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
         String message =  remoteMessage.getData().get("message");
         String title =  remoteMessage.getData().get("title");
+        String contactID = remoteMessage.getData().get("contactID");
 
-        Log.d(TAG, "requestNotification: incoming message content: " + message);
-        Log.d(TAG, "requestNotification: incoming message title: " + title);
+        Log.d(TAG, "requestNotification: message: " + message  +
+             "\n" + "title :" + title  + "\n" + "contactID: " + contactID);
+
+        Bundle bundle = new Bundle();
+        bundle.putString("otherUserID", contactID);
+
+        PendingIntent pendingIntent = new NavDeepLinkBuilder(this)
+                .setGraph(R.navigation.nav_graph)
+                .setDestination(R.id.chatRequestFragment)
+                .setArguments(bundle)
+                .createPendingIntent();
 
         NotificationHandler handler = new NotificationHandler(this);
-        Notification.Builder builder = handler.createRequestNotification(title, message);
+        Notification.Builder builder = handler.createRequestNotification(title, message, pendingIntent);
         handler.getNotificationManager().notify(2 , builder.build() );
 
 

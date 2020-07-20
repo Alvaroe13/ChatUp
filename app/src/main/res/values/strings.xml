@@ -160,5 +160,7 @@
     <string name="insert_phone_number">Phone number including country code</string>
     <string name="name">Name</string>
     <string name="you">You</string>
+    <string name="request_decline">Request declined</string>
+
 
 </resources>

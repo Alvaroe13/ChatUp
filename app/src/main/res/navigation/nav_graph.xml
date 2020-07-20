@@ -141,15 +141,11 @@
         android:name="com.example.alvar.chatapp.views.RequestsFragment"
         android:label="fragment_requests"
         tools:layout="@layout/fragment_requests" >
+
         <action
-            android:id="@+id/action_requestsFragment_to_answerRequestActivity"
-            app:destination="@id/answerRequestActivity" />
+            android:id="@+id/action_requestsFragment_to_chatRequestFragment"
+            app:destination="@id/chatRequestFragment" />
     </fragment>
-    <activity
-        android:id="@+id/answerRequestActivity"
-        android:name="com.example.alvar.chatapp.Activities.AnswerRequestActivity"
-        android:label="activity_answer_request"
-        tools:layout="@layout/activity_answer_request" />
     <fragment
         android:id="@+id/chatsFragment"
         android:name="com.example.alvar.chatapp.views.ChatsFragment"
@@ -181,6 +177,15 @@
         tools:layout="@layout/fragment_phone_register" >
         <action
             android:id="@+id/action_phoneRegisterFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatRequestFragment"
+        android:name="com.example.alvar.chatapp.views.ChatRequestFragment"
+        android:label="fragment_chat_request"
+        tools:layout="@layout/fragment_chat_request" >
+        <action
+            android:id="@+id/action_chatRequestFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
 

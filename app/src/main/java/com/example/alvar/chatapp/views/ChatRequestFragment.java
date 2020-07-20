@@ -1,20 +1,22 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp.views;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,12 +26,20 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AnswerRequestActivity extends AppCompatActivity {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
-    private static final String TAG = "AnswerRequestPage";
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class ChatRequestFragment extends Fragment implements View.OnClickListener{
+
+    private static final String TAG = "ChatRequestFragment";
 
     //firebase
     private FirebaseAuth auth;
+    private FirebaseUser currentUser;
     private FirebaseDatabase database;
     private DatabaseReference dbUsersNodeRef , dbContactsNodeRef, dbRequestsNodeRef;
     //ui elements
@@ -39,60 +49,58 @@ public class AnswerRequestActivity extends AppCompatActivity {
     //vars
     private String currentUserID, otherUserID;
 
+    public ChatRequestFragment() {
+        // Required empty public constructor
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_answer_request);
+        Log.d(TAG, "onCreate: called");
 
-        //we get user id from "Request Fragment"
-        otherUserID = getIntent().getStringExtra("otherUserID");
-
-        bindUI();
         initFirebase();
-        fetchInfo();
-        
-        currentUserID = auth.getCurrentUser().getUid();
-        acceptOrDeclineRequest();
+        //we get user id from "Request Fragment"
+        if (getArguments()!= null){
+            otherUserID = getArguments().getString("otherUserID") ;
+        }
 
-        Log.i(TAG, "onCreate: other user ID: " + otherUserID);
+        if (currentUser != null){
+            currentUserID = auth.getCurrentUser().getUid();
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: called");
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_chat_request, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: called as well");
+        bindUI(view);
+        fetchInfo();
+        acceptButton.setOnClickListener(this);
+        declineButton.setOnClickListener(this);
 
     }
 
-    /**
-     * this method contains los click listener for accept and decline buttons
-     */
-    private void acceptOrDeclineRequest() {
+    private void bindUI(View view){
 
-        //if user press "accept" button
-        acceptButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                acceptChatRequest();
-            }
-        });
-
-        //if user press "decline" button
-        declineButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                declineChatRequest();
-            }
-        });
-    } 
-
-
-    private void bindUI(){
-
-        imageView = findViewById(R.id.requestImage);
-        otherUserName = findViewById(R.id.requestName);
-        acceptButton = findViewById(R.id.requestButtonAccept);
-        declineButton = findViewById(R.id.requestButtonDecline);
+        imageView = view.findViewById(R.id.requestImage);
+        otherUserName = view.findViewById(R.id.requestName);
+        acceptButton = view.findViewById(R.id.requestButtonAccept);
+        declineButton = view.findViewById(R.id.requestButtonDecline);
 
     }
 
     private void initFirebase(){
 
         auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser();
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
         dbContactsNodeRef = database.getReference().child("Contacts");
@@ -109,7 +117,6 @@ public class AnswerRequestActivity extends AppCompatActivity {
         dbUsersNodeRef.child(otherUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                 if (dataSnapshot.exists()){
 
                     String name = dataSnapshot.child("name").getValue().toString();
@@ -117,11 +124,21 @@ public class AnswerRequestActivity extends AppCompatActivity {
 
                     otherUserName.setText(name);
 
-                    if (image.equals("image")){
-                        imageView.setImageResource(R.drawable.profile_image);
-                    }else {
-                        Glide.with(getApplicationContext()).load(image).into(imageView);
+                    try {
+                        //GLIDE
+                        RequestOptions options = new RequestOptions()
+                                .centerCrop()
+                                .error(R.drawable.profile_image);
+
+                        Glide.with(getContext())
+                                .setDefaultRequestOptions(options)
+                                .load(image)
+                                .into(imageView);
+
+                    }catch (NullPointerException e){
+                        e.printStackTrace();
                     }
+
 
                 }
 
@@ -133,6 +150,8 @@ public class AnswerRequestActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     /**
      * method in charge of accepting chat request
@@ -152,7 +171,6 @@ public class AnswerRequestActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-
                         if (task.isSuccessful()) {
 
                             final Map<String, Object> hash2 = new HashMap<>();
@@ -164,7 +182,6 @@ public class AnswerRequestActivity extends AppCompatActivity {
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
-
                                             if (task.isSuccessful()) {
                                                     /*now from this point onward we remove request from request tab
                                                       by deleting such request from the "Chat_Requests" node
@@ -175,7 +192,6 @@ public class AnswerRequestActivity extends AppCompatActivity {
                                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
-
                                                                 if (task.isSuccessful()) {
 
                                                                     dbRequestsNodeRef.child(otherUserID).child(currentUserID)
@@ -184,10 +200,13 @@ public class AnswerRequestActivity extends AppCompatActivity {
                                                                                 @Override
                                                                                 public void onComplete(@NonNull Task<Void> task) {
                                                                                     if (task.isSuccessful()) {
+                                                                                        Log.d(TAG, "onComplete: friend added!");
+                                                                                        try {
+                                                                                            getActivity().onBackPressed();
+                                                                                        }catch (Exception e){
+                                                                                            e.printStackTrace();
+                                                                                        }
 
-                                                                                        Toast.makeText(AnswerRequestActivity.this,
-                                                                                                "friend added", Toast.LENGTH_SHORT).show();
-                                                                                        finish();
 
                                                                                     }
                                                                                 }
@@ -230,8 +249,13 @@ public class AnswerRequestActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<Void> task) {
 
                                             if (task.isSuccessful()){
-
-                                                finish();
+                                                Log.d(TAG, "onComplete: friendship request declined");
+                                                try {
+                                                    Toast.makeText(getActivity(), getString(R.string.request_decline), Toast.LENGTH_SHORT).show();
+                                                    getActivity().onBackPressed();
+                                                }catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
                                             }
                                         }
                                     });
@@ -244,4 +268,19 @@ public class AnswerRequestActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+            case R.id.requestButtonAccept:
+                Log.d(TAG, "onClick: accept chat request pressed");
+                acceptChatRequest();
+                break;
+            case R.id.requestButtonDecline:
+                Log.d(TAG, "onClick: decline request pressed");
+                declineChatRequest();
+                break;
+        }
+
+    }
 }

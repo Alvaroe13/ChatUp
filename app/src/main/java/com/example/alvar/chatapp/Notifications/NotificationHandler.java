@@ -115,7 +115,7 @@ public class NotificationHandler extends ContextWrapper {
 
     }
 
-    public Notification.Builder createRequestNotification(String title, String message){
+    public Notification.Builder createRequestNotification(String title, String message, PendingIntent pendingIntent){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
         //Lets create low channel
@@ -123,11 +123,6 @@ public class NotificationHandler extends ContextWrapper {
                 REQUEST_CHANEL_NAME, NotificationManager.IMPORTANCE_LOW);
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(requestChannel);
-
-            Intent intent = new Intent(this, MainActivity.class);
-           /* intent.putExtra("otherUserID", otherUserID);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);*/
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
 
             return  new Notification.Builder(getApplicationContext(), REQUEST_CHANNEL_ID)
