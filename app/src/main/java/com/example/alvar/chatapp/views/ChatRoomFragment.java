@@ -1310,11 +1310,11 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     }
 
 
-    // MessageAdapter click event handler related -------------------------------------//
+    // MessageAdapter click event handler related MAPS -------------------------------------//
 
 
     //this method is for when user clicks on a message sent by it's contact, for the time being this
-    //is handled in the messageAdapter, thats why this method is here but unused
+    //is handled in the messageAdapter, that's why this method is here but unused
     private void deployAlertDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -1416,6 +1416,41 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     private void drawerMode() {
         DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
+    
+    //------------------------ image layout click related -------------------------//
+
+    /**
+     * method in charge of launching file when clicked by user
+     * @param position
+     */
+    private void openFile(final String messageType, final int position) {
+
+        //here we store the "file" or "image" info to be fetched later on
+        final String message = messagesList.get(position).getMessage();
+
+        if (messageType.equals("image")) {
+            showImageRoom(message);
+        }
+        //if it's a "pdf" or "docx" we show option to download file.
+        else {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(message));
+          //  messageViewHolder.itemView.getContext().startActivity(i);
+        }
+
+    }
+
+
+    /**
+     * methos in charge of taking the user to the Big image room when image message is pressed
+     * @param messageContent
+     */
+    private void showImageRoom(String messageContent) {
+        Log.d(TAG, "showImageRoom: called!!");
+        Bundle bundle = new Bundle();
+        bundle.putString("messageContent", messageContent);
+
+        navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
+    }
 
     @Override
     public void onDestroyView() {
@@ -1424,11 +1459,33 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         DrawerStateHelper.drawerEnabled(getActivity(), true);
     }
 
+    /**
+     * this method handles single click event in chatRoom messages layouts (doc, image, map, etc...)
+     * @param position
+     * @param viewID
+     */
     @Override
-    public void onItemClick(int position) {
+    public void onItemClick(int position, int viewID) {
         Log.d(TAG, "onItemClick: clicked!");
-        retrieveUsersLocationFromDB( contactID );
-        
-    }
 
+        switch (viewID) {
+            case R.id.mapRight:
+                Log.d(TAG, "onItemClick: right side map layout clicked");
+                retrieveUsersLocationFromDB(contactID);
+                break;
+            case R.id.mapLeft:
+                Log.d(TAG, "onItemClick: left side map layout clicked");
+                deployAlertDialog();
+                break;
+            case R.id.imageLeft:
+                Log.d(TAG, "onItemClick: clicked image left layout");
+                openFile("image", position);
+                break;
+            case R.id.imageRight:
+                Log.d(TAG, "onItemClick: clicked image right layout");
+                openFile("image", position);
+                break;
+        }
+
+    }
 }

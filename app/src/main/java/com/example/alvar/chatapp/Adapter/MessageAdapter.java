@@ -48,6 +48,7 @@ import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -66,6 +67,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private String contactID;
     private String contactName;
     private OnClickListener clickListener;
+    private View view;
 
     public MessageAdapter(Context mContext, List<Messages> messagesList, OnClickListener clickListener, String contactName) {
         this.messagesList = messagesList;
@@ -79,6 +81,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         // we bind the layout with this controller and the sub class "MessageViewHolder"
         View viewChat = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.chat_layout, viewGroup, false);
+        view = viewChat;
         //init firebase services as soon as we inflate the view
         initFirebase();
         initFirestore();
@@ -284,14 +287,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
 
-            //if user clicks on the file it opens
-            messageViewHolder.sendImageRight.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openFile(messageViewHolder, messageType, position);
-                    Log.i(TAG, "onClick: short pressed right side");
-                }
-            });
             //if long pressed over layout
             messageViewHolder.sendImageRight.setLongClickable(true);
             messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
@@ -310,16 +305,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
 
-            //if user clicks on the file it opens
-            messageViewHolder.sendImageLeft.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openFile(messageViewHolder, messageType, position);
-                    Log.i(TAG, "onClick: short pressed left side");
-                }
-            });
             //if long pressed over layout
-          /*  messageViewHolder.sendImageLeft.setLongClickable(true);
+          /*messageViewHolder.sendImageLeft.setLongClickable(true);
             messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -503,7 +490,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final String message = messagesList.get(position).getMessage();
 
         if (messageType.equals("image")) {
-            showImageRoom(message, messageViewHolder);
+          //  showImageRoom(message, messageViewHolder);
         }
         //if it's a "pdf" or "docx" we show option to download file.
         else {
@@ -513,18 +500,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     }
 
-
-    /**
-     * methos in charge of taking the user to the Big image room when image message is pressed
-     * @param messageContent
-     * @param messageViewHolder
-     */
-    private void showImageRoom(String messageContent, MessageViewHolder messageViewHolder) {
-        Intent intentImage = new Intent(mContext, ImageActivity.class);
-        intentImage.putExtra("messageContent", messageContent);
-        messageViewHolder.itemView.getContext().startActivity(intentImage);
-
-    }
 
     //------ THIS ARE FEATURES FOR THE USER TO INTERACT WITH MESSAGES RECEIVED (UNFINISHED)------//
 
@@ -638,13 +613,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         else {
             messageViewHolder.sendMapLeft.setVisibility(View.VISIBLE);
             messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            messageViewHolder.sendMapLeft.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "onClick: map right side clicked");
-                    deployAlertDialog(v);
-                }
-            });
             //if long pressed over layout
           /*  messageViewHolder.sendMapLeft.setLongClickable(true);
             messageViewHolder.sendMapLeft.setOnLongClickListener(new View.OnLongClickListener() {
@@ -792,17 +760,24 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             sendMapLeft = itemView.findViewById(R.id.mapLeft);
             sendMapRight = itemView.findViewById(R.id.mapRight);
 
+            sendMapLeft.setOnClickListener(this);
             sendMapRight.setOnClickListener(this);
+            sendImageLeft.setOnClickListener(this);
+            sendImageRight.setOnClickListener(this);
 
         }
 
 
+        /**we'll pass as param position and view Id in order to be able to handle all event click listener
+         * in ChatroomFragment
+         * @param v
+         */
         @Override
         public void onClick(View v) {
             if (clickListener != null){
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION){
-                    clickListener.onItemClick(position); //onItemClick is coming from within the interface
+                    clickListener.onItemClick(position, v.getId()); //here we pass both params
                     Log.d(TAG, "onClick: contactID " );
                 }
             }
@@ -812,7 +787,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     //this interface will make possible to handle click event from ContactsFragment
     public interface OnClickListener{
-        void onItemClick(int position);
+        void onItemClick(int position, int viewID);
     }
 
 

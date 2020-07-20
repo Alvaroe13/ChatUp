@@ -154,17 +154,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         });
     }
 
-    private void chatItemCLick(final List<User> users) {
-        chatsAdapter.onLongClickHandler(new ChatsAdapter.OnLongClick() {
-            @Override
-            public void onLongItemClick(int position, View view) {
-                Log.d(TAG, "chatItemCLick: onLongItemClick: long click done again");
-                contactID = users.get(position).getUserID();
-                showPopUp(view);
 
-            }
-        });
-    }
 
 
     private void showPopUp(View view) {
@@ -188,29 +178,6 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         navigateWithStack(viewLayout, R.id.chatRoomFragment, bundle);
     }
 
-    @Override
-    public void onItemClick(int position) {
-
-        Log.d(TAG, "onItemClick: called button");
-
-        String contactID = userList.get(position).getUserID();
-        String image = userList.get(position).getImage();
-        String name = userList.get(position).getName();
-
-        goToChatRoom(contactID, image, name);
-
-    }
-
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.deleteChat) {
-            Log.d(TAG, "onMenuItemClick: delete chat clicked");
-            deleteChatRoom(currentUserID, contactID);
-            return true;
-        }
-        return false;
-    }
 
     /**
      * delete chatroom to make go away the chat from the chatList
@@ -274,5 +241,43 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                     }
                 });
 
+    }
+
+        //--------------------------- click event handling ------- //
+
+    private void chatItemCLick(final List<User> users) {
+        chatsAdapter.onLongClickHandler(new ChatsAdapter.OnLongClick() {
+            @Override
+            public void onLongItemClick(int position, View view) {
+                Log.d(TAG, "chatItemCLick: onLongItemClick: long click done again");
+                contactID = users.get(position).getUserID();
+                showPopUp(view);
+
+            }
+        });
+    }
+
+    @Override
+    public void onItemClick(int position) {
+
+        Log.d(TAG, "onItemClick: called button");
+
+        String contactID = userList.get(position).getUserID();
+        String image = userList.get(position).getImage();
+        String name = userList.get(position).getName();
+
+        goToChatRoom(contactID, image, name);
+
+    }
+
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        if (item.getItemId() == R.id.deleteChat) {
+            Log.d(TAG, "onMenuItemClick: delete chat clicked");
+            deleteChatRoom(currentUserID, contactID);
+            return true;
+        }
+        return false;
     }
 }
