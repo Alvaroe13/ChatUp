@@ -202,8 +202,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     private void initLocationProvider() {
         try {
             locationProvider = LocationServices.getFusedLocationProviderClient(getContext());
-        }catch (Exception e){
-            Log.e(TAG, "initLocationProvider: " + e.getMessage() );
+        } catch (Exception e) {
+            Log.e(TAG, "initLocationProvider: " + e.getMessage());
         }
 
     }
@@ -221,7 +221,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             Log.d(TAG, "getIncomingIntent: other user id: " + contactID);
             Log.d(TAG, "getIncomingIntent: contact name: " + contactName);
             Log.d(TAG, "getIncomingIntent: contact Image: " + contactImage);
-            setToolbar( contactName, contactImage, viewLayout);
+            setToolbar(contactName, contactImage, viewLayout);
         }
 
 
@@ -269,9 +269,9 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
         try {
             toolbarChat = viewLayout.findViewById(R.id.toolbarChat);
-            ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarChat);
+            ((AppCompatActivity) getActivity()).setSupportActionBar(toolbarChat);
 
-            ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowCustomEnabled(true);
 
@@ -297,7 +297,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                     .setDefaultRequestOptions(options)
                     .load(contactProfPic)
                     .into(imageProfile);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -307,7 +307,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
      * method oni charge of taking the user to other user's profile when toolbar pressed in the chat room
      */
     private void toolbarPressed() {
-
 
 
         toolbarChat.setOnClickListener(new View.OnClickListener() {
@@ -322,7 +321,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             }
         });
     }
-    private void toolBarClick(){
+
+    private void toolBarClick() {
         toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -368,14 +368,14 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
                         try {
 
-                            if(messages.getSenderID().equals(currentUserID) && messages.getReceiverID().equals(contactID) ||
-                                    messages.getSenderID().equals(contactID) && messages.getReceiverID().equals(currentUserID) ){
+                            if (messages.getSenderID().equals(currentUserID) && messages.getReceiverID().equals(contactID) ||
+                                    messages.getSenderID().equals(contactID) && messages.getReceiverID().equals(currentUserID)) {
 
                                 messagesList.add(messages);
                             }
                             adapter.notifyDataSetChanged();
                             recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
@@ -426,7 +426,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                                 onlineIcon.setVisibility(View.INVISIBLE);
                             }
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -491,7 +491,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(typingStateMap);
 
     }
-
 
 
     /**
@@ -595,7 +594,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 .setValue(contactID).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
 
                     dbChatList.child(contactID).child(currentUserID).child("id").setValue(currentUserID);
 
@@ -611,20 +610,20 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
      */
     private void seenMessage() {
 
-        seenListener =  dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
+        seenListener = dbChatsNodeRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()){
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Messages messages = snapshot.getValue(Messages.class);
                         try {
-                            if (messages.getReceiverID().equals(currentUserID) && messages.getSenderID().equals(contactID)){
+                            if (messages.getReceiverID().equals(currentUserID) && messages.getSenderID().equals(contactID)) {
                                 HashMap<String, Object> hashMap = new HashMap<>();
                                 hashMap.put("seen", true);
                                 snapshot.getRef().updateChildren(hashMap);
                             }
-                        }catch (Exception e){
-                            Log.e(TAG, "onDataChange: exception: " + e.getMessage() );
+                        } catch (Exception e) {
+                            Log.e(TAG, "onDataChange: exception: " + e.getMessage());
                         }
 
                     }
@@ -689,7 +688,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                         break;
                     case 3:
                         Log.d(TAG, "onClick: share location option pressed");
-                       if (getLocationPermission()) {
+                        if (getLocationPermission()) {
                             shareLocationPressed();
                         }
                         break;
@@ -727,8 +726,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 ActivityCompat.requestPermissions(getActivity(), permissions, READ_EXTERNAL_STORAGE_REQUEST_CODE);
                 return false;
             }
-        }catch (Exception e){
-            Log.e(TAG, "checkPermissions: error: " + e.getMessage() );
+        } catch (Exception e) {
+            Log.e(TAG, "checkPermissions: error: " + e.getMessage());
         }
 
         return false;
@@ -754,8 +753,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 ActivityCompat.requestPermissions(getActivity(), cameraPermissions, CAMERA_PERMISSION_REQUEST);
                 return false;
             }
-        }catch (Exception e){
-            Log.e(TAG, "checkCameraPermission: " + e.getMessage() );
+        } catch (Exception e) {
+            Log.e(TAG, "checkCameraPermission: " + e.getMessage());
         }
 
         return false;
@@ -785,7 +784,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CHAT_IMAGE_MENU_REQUEST || requestCode == CHAT_PDF_MENU_REQUEST ||
-                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE  ) {
+                requestCode == CHAT_DOCX_MENU_REQUEST || requestCode == OPEN_CAMERA_REQUEST_CODE) {
 
             if (resultCode == RESULT_OK) {
                 //we store the file (image, pdf, word) selected in this var of URI type.
@@ -797,17 +796,17 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                         case CHAT_IMAGE_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: photo selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            saveFileInStorage(file, PHOTO_FOLDER_REF , PHOTO_FILE_EXTENSION , PHOTO_MESSAGE_TYPE);
+                            saveFileInStorage(file, PHOTO_FOLDER_REF, PHOTO_FILE_EXTENSION, PHOTO_MESSAGE_TYPE);
                             break;
                         case CHAT_PDF_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: pdf file selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            saveFileInStorage(file, PDF_FOLDER_REF , PDF_FILE_EXTENSION , PDF_MESSAGE_TYPE );
+                            saveFileInStorage(file, PDF_FOLDER_REF, PDF_FILE_EXTENSION, PDF_MESSAGE_TYPE);
                             break;
                         case CHAT_DOCX_MENU_REQUEST:
                             Log.i(TAG, "onActivityResult: word document selected ready to upload in to firebase storage");
                             chatProgressBar.setVisibility(View.VISIBLE);
-                            saveFileInStorage(file, WORD_DOC_FOLDER_REF , WORD_DOC_FILE_EXTENSION , WORD_DOC_MESSAGE_TYPE);
+                            saveFileInStorage(file, WORD_DOC_FOLDER_REF, WORD_DOC_FILE_EXTENSION, WORD_DOC_MESSAGE_TYPE);
                             break;
                         case OPEN_CAMERA_REQUEST_CODE:
                             Log.d(TAG, "onActivityResult: photo taken, now we should redirect user to other fragment");
@@ -830,12 +829,13 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     /**
      * method in charge of saving file ( photo, pdf, document) in firebase storage
+     *
      * @param fileToUpload
      * @param folderRef
      * @param fileExtension
      * @param messageType
      */
-    private void saveFileInStorage(final Uri fileToUpload, final String folderRef, final String fileExtension, final String messageType ){
+    private void saveFileInStorage(final Uri fileToUpload, final String folderRef, final String fileExtension, final String messageType) {
 
         Log.d(TAG, "saveFileInStorage: TRIGGERED!!!!!!!!!!!!!");
         // We create an Android storage instance called "photo_for_chat" in order to save the photos there.
@@ -846,7 +846,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         String messagePushKey = messagePushID.getKey();
 
         //we store file inside "pdf_for_chat" folder and add extension ".pdf" to convert it into an pdf file.
-        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + fileExtension );
+        final StorageReference fileLocation = storageFolderRef.child(messagePushKey + fileExtension);
         // we upload file to the firebase storage using UploadTask
         uploadTask = fileLocation.putFile(fileToUpload);
 
@@ -874,10 +874,10 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                     notify = true;
                     //upload message in db
                     //createChatListDB();
-                    uploadMessageToDb(fileURLInFirebase, messageType );
+                    uploadMessageToDb(fileURLInFirebase, messageType);
 
                 } else {
-                    Toast.makeText(getContext(), "Error: " + task.getException().toString() , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error: " + task.getException().toString(), Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -899,7 +899,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true;
                     Log.d(TAG, "onRequestPermissionsResult: permission granted Manually ");
-                   // getUserDetails();
+                    // getUserDetails();
                     //  uploadMessageToDb(getString(R.string.sharing_location), "map");
                 } else {
                     Toast.makeText(getContext(), getString(R.string.location_permission_requiered), Toast.LENGTH_LONG).show();
@@ -1130,7 +1130,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     }
 
 
-
     /**
      * location permission for the app
      */
@@ -1140,7 +1139,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        try{
+        try {
             if (ContextCompat.checkSelfPermission(getActivity(),
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -1155,7 +1154,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                         PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
             return false;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1182,10 +1181,9 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                             Log.d(TAG, "onComplete: user: " + user.getName());
                             userLocation.setUser(user);
                             getUserLastKnownLocation();
-                        }catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
-
 
 
                     }
@@ -1209,7 +1207,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 Log.d(TAG, "getUserLastKnowLocation: permissions not granted");
                 return;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1277,12 +1275,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 //  this.startService(serviceIntent);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     Log.d(TAG, "startLocationService: service called ");
-                    getActivity().startForegroundService(serviceIntent);                    
+                    getActivity().startForegroundService(serviceIntent);
                 } else {
                     Log.d(TAG, "startLocationService: service called ");
                     getActivity().startService(serviceIntent);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -1301,8 +1299,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             }
             Log.d(TAG, "isLocationServiceRunning: location service is not running.");
             return false;
-        }catch (Exception e){
-            Log.e(TAG, "isLocationServiceRunning: " + e.getMessage() );
+        } catch (Exception e) {
+            Log.e(TAG, "isLocationServiceRunning: " + e.getMessage());
         }
 
         return false;
@@ -1326,7 +1324,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         builder.setPositiveButton(getContext().getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                retrieveUsersLocationFromDB( contactID );
+                retrieveUsersLocationFromDB(contactID);
             }
         });
         builder.show();
@@ -1335,6 +1333,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     /**
      * method will be the one fetching users location fro the DB
+     *
      * @param contactID
      */
     private void retrieveUsersLocationFromDB(final String contactID) {
@@ -1347,17 +1346,16 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                if (documentSnapshot.exists()){
+                if (documentSnapshot.exists()) {
 
-                    final  UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
+                    final UserLocation locationUser1 = documentSnapshot.toObject(UserLocation.class);
 
                     double lat1 = locationUser1.getGeo_point().getLatitude();
                     double lon1 = locationUser1.getGeo_point().getLongitude();
 
-                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1 );
-                    retrieveOtherUserLocation( lat1, lon1 , contactID);
-                }
-                else {
+                    Log.d(TAG, "onSuccess: location current user1 (user authenticated): " + lat1 + " , " + lon1);
+                    retrieveOtherUserLocation(lat1, lon1, contactID);
+                } else {
                     Log.d(TAG, "onSuccess: user1 location is not in db");
                 }
             }
@@ -1368,7 +1366,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     /**
      * this methos retrieves contact's location
      */
-    private void retrieveOtherUserLocation(final double lat1, final double lon1 , final String contactID) {
+    private void retrieveOtherUserLocation(final double lat1, final double lon1, final String contactID) {
 
         DocumentReference locationRefUser2 = mDb.collection(getContext().getString(R.string.collection_user_location))
                 .document(contactID);
@@ -1376,16 +1374,16 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         locationRefUser2.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()){
+                if (documentSnapshot.exists()) {
 
-                    final  UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
+                    final UserLocation locationUser2 = documentSnapshot.toObject(UserLocation.class);
 
                     double lat2 = locationUser2.getGeo_point().getLatitude();
                     double lon2 = locationUser2.getGeo_point().getLongitude();
-                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2 );
+                    Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2);
 
 
-                    inflateLocationFragment(lat1, lon1, lat2, lon2 );
+                    inflateLocationFragment(lat1, lon1, lat2, lon2);
 
                 } else {
                     Log.d(TAG, "onSuccess: user2 location is not in db");
@@ -1397,18 +1395,18 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         });
     }
 
-    private void inflateLocationFragment(double lat1, double lon1 , double lat2, double lon2 ) {
+    private void inflateLocationFragment(double lat1, double lon1, double lat2, double lon2) {
         // double lat1, double lon1 , double lat2, double lon2
 
         Log.d(TAG, "inflateLocationFragment: called");
 
         Bundle bundle = new Bundle();
         bundle.putDouble(LOCATION_USER_LAT, lat1);
-        bundle.putDouble(LOCATION_USER_LON, lon1 );
-        bundle.putDouble(LOCATION_CONTACT_LAT, lat2 );
-        bundle.putDouble(LOCATION_CONTACT_LON, lon2 );
+        bundle.putDouble(LOCATION_USER_LON, lon1);
+        bundle.putDouble(LOCATION_CONTACT_LAT, lat2);
+        bundle.putDouble(LOCATION_CONTACT_LON, lon2);
         bundle.putString(CONTACT_ID, contactID);
-        bundle.putString(CONTACT_NAME,contactName);
+        bundle.putString(CONTACT_NAME, contactName);
 
         navigateWithStack(viewLayout, R.id.locationFragment, bundle);
     }
@@ -1416,11 +1414,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     private void drawerMode() {
         DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
-    
+
     //------------------------ image / Doc layout click related -------------------------//
 
     /**
      * method in charge of launching file when clicked by user
+     *
      * @param position
      */
     private void openFile(final String messageType, final int position) {
@@ -1444,6 +1443,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     /**
      * method in charge of taking the user to the Big image room when image message is pressed
+     *
      * @param messageContent
      */
     private void showImageRoom(String messageContent) {
@@ -1455,14 +1455,14 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     }
 
     /**
-     *  method shows pop up window with options to delete messages sent by current user
+     * method shows pop up window with options to delete messages sent by current user
      */
     private void longPressedOptionsRightSide(final int position) {
 
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
         builder.setTitle(R.string.Delete);
 
-        CharSequence deleteOptions[] = new CharSequence[]{  getContext().getString(R.string.Delete_message), getContext().getString(R.string.cancel)};
+        CharSequence deleteOptions[] = new CharSequence[]{getContext().getString(R.string.Delete_message), getContext().getString(R.string.cancel)};
 
         builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
             @Override
@@ -1485,11 +1485,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     /**
      * method in charge of deleting message for both sender and receiver.
+     *
      * @param position
      */
-    private void deleteMessageForEveryone(int position){
+    private void deleteMessageForEveryone(int position) {
 
-        try{
+        try {
             final String messageID = messagesList.get(position).getMessageID();
 
             //lets first of all erase from the current user side
@@ -1497,29 +1498,28 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
-                    if (task.isSuccessful()){
+                    if (task.isSuccessful()) {
                         //lets first of all erase from the other user side
                         dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
 
-                                if (task.isSuccessful()){
+                                if (task.isSuccessful()) {
                                     Log.i(TAG, "onComplete: message deleted for everyone ");
-                                }
-                                else{
+                                } else {
                                     Log.i(TAG, "onComplete: Error, something failed ");
                                 }
                             }
                         });
 
-                    } else{
+                    } else {
                         Log.i(TAG, "onComplete: Error, something failed ");
                     }
                 }
             });
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
-        }catch (IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException e) {
             Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
         }
 
@@ -1532,8 +1532,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         DrawerStateHelper.drawerEnabled(getActivity(), true);
     }
 
-    /**
-     * this method handles single click event in chatRoom messages layouts (doc, image, map, etc...)
+    /**  this method handles single click event in chatRoom messages layouts (doc, image, map, etc...)
      * @param position
      * @param viewID
      */
@@ -1564,19 +1563,123 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     }
 
+    /**
+     * here we handle the long click event of layouts(image,map and text), right side only for the time being.
+     * @param position
+     * @param viewID
+     */
     @Override
     public void onItemLongClick(int position, int viewID) {
 
-        switch (viewID){
-            case R.id.textLeft:
-                Log.d(TAG, "onItemLongClick: long click left side");
-                break;
+        switch (viewID) {
             case R.id.textRight:
                 Log.d(TAG, "onItemLongClick: long click right side");
                 longPressedOptionsRightSide(position);
                 break;
+            case R.id.textLeft:
+                Log.d(TAG, "onItemLongClick: left side long pressed");
+                break;
+            case R.id.imageRight:
+                Log.d(TAG, "onItemLongClick: long click right side image layout");
+                longPressedOptionsRightSide(position);
+                break;
+            case R.id.imageLeft:
+                Log.d(TAG, "onItemLongClick: left side long pressed image layout");
+                break;
+            case R.id.mapRight:
+                Log.d(TAG, "onItemLongClick: long click right side map layout");
+                longPressedOptionsRightSide(position);
+                break;
+            case R.id.mapLeft:
+                Log.d(TAG, "onItemLongClick: left side long pressed map layout");
+                break;
         }
 
 
+    }
+
+    //------ THIS ARE FEATURES FOR THE USER TO INTERACT WITH MESSAGES RECEIVED (UNFINISHED)------//
+
+
+    /**
+     *  method shows pop up window with options to delete message sent by the other user
+     */
+    private void longPressedOptionsLeftSide(final int position) {
+
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.Delete);
+
+        CharSequence deleteOptions[] = new CharSequence[]{ getContext().getString(R.string.Delete_for_me) , getContext().getString(R.string.cancel)};
+
+        builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int options) {
+
+                switch (options) {
+                    case 0:
+                        // deleteLeftSideMessage(position);
+                        Log.i(TAG, "onClick: delete for me option pressed");
+                        break;
+                    default:
+                        Log.i(TAG, "onClick: cancel option pressed");
+                }
+            }
+        });
+
+        builder.show();
+    }
+
+    /**
+     * This method deletes message sent by current user
+     * @param position
+     */
+    private void deleteRightSideMessage(int position) {
+
+        try{
+            String senderID = messagesList.get(position).getSenderID();
+            String receiverID = messagesList.get(position).getReceiverID();
+            String messageID = messagesList.get(position).getMessageID();
+
+            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
+                    if (task.isSuccessful()){
+                        Log.i(TAG, "onComplete:message deleted right side");
+                    }
+                    else{
+                        Log.i(TAG, "onComplete:something failed");
+                    }
+                }
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
+    }
+
+    /**
+     * method deletes messages sent by other user
+     * @param position
+     */
+    private void deleteLeftSideMessage(int position) {
+
+        String senderID = messagesList.get(position).getSenderID();
+        String receiverID = messagesList.get(position).getReceiverID();
+        String messageID = messagesList.get(position).getMessageID();
+
+        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+                    Log.i(TAG, "onComplete: message deleted left side ");
+                }
+                else{
+                    Log.i(TAG, "onComplete: Error, something failed");
+                }
+            }
+        });
     }
 }

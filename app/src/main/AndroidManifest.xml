@@ -26,7 +26,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Activities.ImageActivity"></activity>
         <activity android:name=".Activities.MainActivity">
 
             <!-- Let's make the Main activity the default one to be open first when app launched -->

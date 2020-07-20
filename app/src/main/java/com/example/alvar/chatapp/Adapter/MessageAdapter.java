@@ -37,7 +37,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     // firebase services
     private FirebaseAuth auth;
     private FirebaseDatabase database;
-    private DatabaseReference dbUsersNodeRef , dbChatsNodeRef;
+    private DatabaseReference dbUsersNodeRef, dbChatsNodeRef;
     // List to contain the messages
     private List<Messages> messagesList;
     private String currentUserID;
@@ -48,7 +48,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private OnLongClickListener longClickListener;
 
     public MessageAdapter(Context mContext, List<Messages> messagesList, OnClickListener clickListener,
-                                                        String contactName, OnLongClickListener longClickListener) {
+                          String contactName, OnLongClickListener longClickListener) {
         this.messagesList = messagesList;
         this.mContext = mContext;
         this.clickListener = clickListener;
@@ -68,6 +68,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * here in this method lies the logic to fill the recyclerView
+     *
      * @param messageViewHolder
      * @param position
      */
@@ -86,10 +87,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String messageInfo = messages.getMessage();
         String messageTime = messages.getMessageTime();
 
-        if ( !messageSenderID.equals(currentUserID)){
+        if (!messageSenderID.equals(currentUserID)) {
             contactID = messageSenderID;
             Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
-        } else if (!messageReceiverID.equals(currentUserID)){
+        } else if (!messageReceiverID.equals(currentUserID)) {
             contactID = messageReceiverID;
             Log.d(TAG, "onBindViewHolder: contactId= " + contactID);
         }
@@ -99,17 +100,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         //here's where fun with the layouts starts
         layoutToShow(messageType, messageSenderID, messageInfo, messageTime, messageViewHolder, position);
 
-       
+
     }
 
 
     /**
      * this method is the one in charge of establishing the number of items to be shown in the recyclerView
+     *
      * @return
      */
     @Override
     public int getItemCount() {
-        if (messagesList != null ){
+        if (messagesList != null) {
             //get the size of the List is is not null
             return messagesList.size();
         }
@@ -125,6 +127,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * here we fetch info from db and fill the fields with it
+     *
      * @param messageSenderID
      * @param messageViewHolder
      */
@@ -138,13 +141,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 if (dataSnapshot.exists()) {
                     //fetch image info from db
                     String imageThumbnail = dataSnapshot.child("imageThumbnail").getValue().toString();
-                    //if user has not uploaded a pic from  device it means within the db it's values is "imgThumbnail" as default
-                    if (imageThumbnail.equals("imgThumbnail")) {
-                        messageViewHolder.imageContact.setImageResource(R.drawable.profile_image);
-                    } else {
-                        //if user has uploaded a pic from device into ChatUp profile settings we retrieve it and show it here
-                        Glide.with(mContext.getApplicationContext()).load(imageThumbnail).into(messageViewHolder.imageContact);
-                    }
+
+                    //GLIDE
+                    RequestOptions options = new RequestOptions()
+                            .centerCrop()
+                            .error(R.drawable.profile_image);
+
+                    //if user has uploaded a pic from device into ChatUp profile settings we retrieve it and show it here
+                    Glide.with(mContext.getApplicationContext())
+                            .setDefaultRequestOptions(options)
+                            .load(imageThumbnail)
+                            .into(messageViewHolder.imageContact);
                 }
             }
 
@@ -157,6 +164,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * this method is in charge of showing the correct layout in chat room according to the situation
+     *
      * @param messageType
      * @param messageSenderID
      * @param messageInfo
@@ -164,7 +172,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
      * @param messageViewHolder
      */
     private void layoutToShow(String messageType, String messageSenderID, String messageInfo,
-                                String messageTime, MessageViewHolder messageViewHolder, int position) {
+                              String messageTime, MessageViewHolder messageViewHolder, int position) {
 
         // they're all gone by default
         layoutVisibilityGone(messageViewHolder);
@@ -173,17 +181,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         switch (messageType) {
             case "text":
                 //we show layout accordingly
-                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder, position);
+                showTextLayout(messageSenderID, messageInfo, messageTime, messageViewHolder );
                 break;
             case "image":
                 //we show layout accordingly
-                showImageLayout(messageSenderID, messageInfo, messageViewHolder, messageType, position);
+                showImageLayout(messageSenderID, messageInfo, messageViewHolder );
                 break;
             case "map":
-                showMapLayout(messageSenderID, messageInfo, messageViewHolder, position);
+                showMapLayout(messageSenderID,  messageViewHolder );
                 break;
             default: //if message type is either pdf or docx.
-                showDocumentLayout(messageSenderID, messageViewHolder, messageType, position);
+                showDocumentLayout(messageSenderID, messageViewHolder );
         }
 
     }
@@ -204,13 +212,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     /**
      * method in charge of showing layout only when it comes to a message "text" type.
+     *
      * @param messageSenderID
      * @param messageInfo
      * @param messageTime
      * @param messageViewHolder
      */
     private void showTextLayout(String messageSenderID, String messageInfo, String messageTime,
-                                MessageViewHolder messageViewHolder, final int position) {
+                                MessageViewHolder messageViewHolder ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
@@ -226,43 +235,24 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.textLeftSide.setBackgroundResource(R.drawable.left_message_layout);
             messageViewHolder.textLeftSide.setText(messageInfo + "  " + messageTime);
             messageViewHolder.textLeftSide.setTextSize(15);
-            //if long pressed over layout
-            /*messageViewHolder.textLeftSide.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide(position);
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });*/
         }
 
     }
 
     /**
      * method in charge of showing layout only when it comes to a message "image" type.
+     *
      * @param messageSenderID
      * @param messageInfo
      * @param messageViewHolder
      */
     private void showImageLayout(String messageSenderID, String messageInfo,
-                                       final MessageViewHolder messageViewHolder,  final String messageType, final int position) {
+                                 final MessageViewHolder messageViewHolder  ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the image)
         if (currentUserID.equals(messageSenderID)) {
             messageViewHolder.sendImageRight.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageRight);
-
-            //if long pressed over layout
-            messageViewHolder.sendImageRight.setLongClickable(true);
-            messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide(position);
-                    Log.i(TAG, "onLongClick: long pressed right side");
-                    return true;
-                }
-            });
 
         }
         //if the other user is the one sending the image
@@ -271,28 +261,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.sendImageLeft.setVisibility(View.VISIBLE);
             Glide.with(mContext.getApplicationContext()).load(messageInfo).into(messageViewHolder.sendImageLeft);
 
-            //if long pressed over layout
-          /*messageViewHolder.sendImageLeft.setLongClickable(true);
-            messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide(position);
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });*/
         }
     }
 
 
     /**
      * method in charge of showing file (pdf/docx) when sent by any user
+     *
      * @param messageSenderID
      * @param messageViewHolder
-     * @param position
      */
-    private void showDocumentLayout(String messageSenderID, final MessageViewHolder messageViewHolder,
-                                                            final String messageType, final int position) {
+    private void showDocumentLayout(String messageSenderID, final MessageViewHolder messageViewHolder ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the file)
         if (currentUserID.equals(messageSenderID)) {
@@ -309,16 +288,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     .setDefaultRequestOptions(options)
                     .load("")
                     .into(messageViewHolder.sendImageRight);
-            //if long pressed over layout
-            messageViewHolder.sendImageRight.setLongClickable(true);
-            messageViewHolder.sendImageRight.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide(position);
-                    Log.i(TAG, "onLongClick: long pressed right side");
-                    return true;
-                }
-            });
 
         }
         //if the other user is the one sending the file
@@ -336,226 +305,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     .setDefaultRequestOptions(options)
                     .load("")
                     .into(messageViewHolder.sendImageLeft);
-            //if long pressed over layout
-           /* messageViewHolder.sendImageLeft.setLongClickable(true);
-            messageViewHolder.sendImageLeft.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide(position);
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });*/
 
 
         }
     }
-
-    /**
-     *  method shows pop up window with options to delete messages sent by current user
-     */
-    private void longPressedOptionsRightSide(final int position) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle(R.string.Delete);
-
-        CharSequence deleteOptions[] = new CharSequence[]{  mContext.getString(R.string.Delete_message), mContext.getString(R.string.cancel)};
-
-        builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int options) {
-
-                switch (options) {
-                    case 0:
-                        deleteMessageForEveryone(position);
-                        Log.i(TAG, "onClick: delete for everyone option pressed");
-                        break;
-                    default:
-                        Log.i(TAG, "onClick: cancel option pressed");
-                }
-            }
-        });
-
-        builder.show();
-    }
-
-
-    /**
-     * method in charge of deleting message for both sender and receiver.
-     * @param position
-     */
-    private void deleteMessageForEveryone(int position){
-
-        try{
-            final String senderID = messagesList.get(position).getSenderID();
-            final String receiverID = messagesList.get(position).getReceiverID();
-            final String messageID = messagesList.get(position).getMessageID();
-
-            //lets first of all erase from the current user side
-            dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-
-                    if (task.isSuccessful()){
-                        //lets first of all erase from the other user side
-                        dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-
-                                if (task.isSuccessful()){
-                                    Log.i(TAG, "onComplete: message deleted for everyone ");
-                                }
-                                else{
-                                    Log.i(TAG, "onComplete: Error, something failed ");
-                                }
-                            }
-                        });
-
-                    } else{
-                        Log.i(TAG, "onComplete: Error, something failed ");
-                    }
-                }
-            });
-        }catch (NullPointerException e){
-            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
-        }catch (IndexOutOfBoundsException e){
-            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
-        }
-
-
-
-
-
-    }
-
-
-    //------ THIS ARE FEATURES FOR THE USER TO INTERACT WITH MESSAGES RECEIVED (UNFINISHED)------//
-
-
-    /**
-     *  method shows pop up window with options to delete message sent by the other user
-     */
-    private void longPressedOptionsLeftSide(final int position) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle(R.string.Delete);
-
-        CharSequence deleteOptions[] = new CharSequence[]{ mContext.getString(R.string.Delete_for_me) , mContext.getString(R.string.cancel)};
-
-        builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int options) {
-
-                switch (options) {
-                    case 0:
-                        // deleteLeftSideMessage(position);
-                        Log.i(TAG, "onClick: delete for me option pressed");
-                        break;
-                    default:
-                        Log.i(TAG, "onClick: cancel option pressed");
-                }
-            }
-        });
-
-        builder.show();
-    }
-
-    /**
-     * This method deletes message sent by current user
-     * @param position
-     */
-    private void deleteRightSideMessage(int position) {
-
-        try{
-            String senderID = messagesList.get(position).getSenderID();
-            String receiverID = messagesList.get(position).getReceiverID();
-            String messageID = messagesList.get(position).getMessageID();
-
-            dbChatsNodeRef.child(senderID).child(receiverID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-
-                    if (task.isSuccessful()){
-                        Log.i(TAG, "onComplete:message deleted right side");
-                    }
-                    else{
-                        Log.i(TAG, "onComplete:something failed");
-                    }
-                }
-            });
-        }catch (NullPointerException e){
-            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
-        }catch (IndexOutOfBoundsException e){
-            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
-        }
-    }
-
-    /**
-     * method deletes messages sent by other user
-     * @param position
-     */
-    private void deleteLeftSideMessage(int position) {
-
-        String senderID = messagesList.get(position).getSenderID();
-        String receiverID = messagesList.get(position).getReceiverID();
-        String messageID = messagesList.get(position).getMessageID();
-
-        dbChatsNodeRef.child(receiverID).child(senderID).child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
-                if (task.isSuccessful()){
-                    Log.i(TAG, "onComplete: message deleted left side ");
-                }
-                else{
-                    Log.i(TAG, "onComplete: Error, something failed");
-                }
-            }
-        });
-    }
-
-
 
     // -------------------------------------------- maps related -------------------------------
 
-    private void showMapLayout(String messageSenderID, String messageInfo, final MessageViewHolder messageViewHolder , final int position) {
+    private void showMapLayout(String messageSenderID , final MessageViewHolder messageViewHolder ) {
 
         //if the current user ID matches with the user id saved in "senderByID" (it means that we are the one sending the message)
         if (currentUserID.equals(messageSenderID)) {
             messageViewHolder.sendMapRight.setVisibility(View.VISIBLE);
             messageViewHolder.sendMapRight.setClickable(true);
-            //if long pressed over layout
-            messageViewHolder.sendMapRight.setLongClickable(true);
-            messageViewHolder.sendMapRight.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsRightSide(position);
-                    Log.i(TAG, "onLongClick: long pressed layout");
-                    return true;
-                }
-            });
 
         }
         //if the other user is the one sending the message
         else {
             messageViewHolder.sendMapLeft.setVisibility(View.VISIBLE);
             messageViewHolder.imageContact.setVisibility(View.VISIBLE);
-            //if long pressed over layout
-          /*  messageViewHolder.sendMapLeft.setLongClickable(true);
-            messageViewHolder.sendMapLeft.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    longPressedOptionsLeftSide(position);
-                    Log.i(TAG, "onLongClick: long pressed left side");
-                    return true;
-                }
-            });*/
         }
 
     }
 
 
-    public static class MessageViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener,View.OnLongClickListener {
+    public static class MessageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         //UI elements
         TextView textRightSide, textLeftSide;
@@ -582,35 +356,48 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             sendImageLeft.setOnClickListener(this);
             sendImageRight.setOnClickListener(this);
             //long click listeners
-            textLeftSide.setLongClickable(false);
+            //text
+            textLeftSide.setLongClickable(true);
             textRightSide.setLongClickable(true);
             textLeftSide.setOnLongClickListener(this);
             textRightSide.setOnLongClickListener(this);
+            //map type
+            sendMapLeft.setLongClickable(true);
+            sendMapRight.setLongClickable(true);
+            sendMapLeft.setOnLongClickListener(this);
+            sendMapRight.setOnLongClickListener(this);
+            //image/doc type
+            sendImageLeft.setLongClickable(true);
+            sendImageRight.setLongClickable(true);
+            sendImageLeft.setOnLongClickListener(this);
+            sendImageRight.setOnLongClickListener(this);
         }
 
 
-        /**we'll pass as param position and view Id in order to be able to handle all event click listener
+        /**
+         * we'll pass as param position and view Id in order to be able to handle all event click listener
          * in ChatroomFragment
+         *
          * @param v
          */
         @Override
         public void onClick(View v) {
-            if (clickListener != null){
+            if (clickListener != null) {
                 int position = getAdapterPosition();
                 int viewID = v.getId();
-                if (position != RecyclerView.NO_POSITION){
-                    clickListener.onItemClick(position, viewID ); //here we pass both params
-                    Log.d(TAG, "onClick: contactID " );
+                if (position != RecyclerView.NO_POSITION) {
+                    clickListener.onItemClick(position, viewID); //here we pass both params
+                    Log.d(TAG, "onClick: contactID ");
                 }
             }
         }
 
         @Override
         public boolean onLongClick(View v) {
-            if(longClickListener != null){
+            if (longClickListener != null) {
                 int position = getAdapterPosition();
                 int viewID = v.getId();
-                if (position != RecyclerView.NO_POSITION){
+                if (position != RecyclerView.NO_POSITION) {
                     longClickListener.onItemLongClick(position, viewID);
                     return true;
                 }
@@ -621,11 +408,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
     //this interface will make possible to handle single click event from ChatRoomFragment
-    public interface OnClickListener{
+    public interface OnClickListener {
         void onItemClick(int position, int viewID);
     }
+
     //with this one we can control long click events in ChatRoomFragment
-    public interface OnLongClickListener{
+    public interface OnLongClickListener {
         void onItemLongClick(int position, int viewID);
     }
 
