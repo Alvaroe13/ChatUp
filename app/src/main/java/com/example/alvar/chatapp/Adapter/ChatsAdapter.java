@@ -297,10 +297,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
         public ChatsViewHolder(@NonNull View layout,  final OnClickListener clickListener, final OnLongClick onLongClickListener) {
             super(layout);
-
-            this.clickListener = clickListener;
-            this.onLongClickListener = onLongClickListener;
-
             chatLayout = layout.findViewById(R.id.cardViewAllUsers);
             chatImageContact = layout.findViewById(R.id.imageChat);
             username = layout.findViewById(R.id.usernameChat);
@@ -309,21 +305,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
             onlineIcon = layout.findViewById(R.id.onlineIcon);
             smallIcon = layout.findViewById(R.id.smallIcon);
 
+            this.clickListener = clickListener;
+            this.onLongClickListener = onLongClickListener;
+
             itemView.setOnClickListener(this);
             itemView.setLongClickable(true);
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (onLongClickListener != null){
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION){
-                            onLongClickListener.onLongItemClick(position, v); //onItemClick is coming from within the interface
-                            Log.d(TAG, "onClick: contactID " );
-                        }
-                    }
-                    return false;
-                }
-            });
+            itemView.setOnLongClickListener(this);
         }
 
         @Override

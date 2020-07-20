@@ -131,14 +131,14 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         viewLayout = view;
         UI(view);
         user2.setText(contactName);
-        //closeMapBtn.setOnClickListener(this);
+        closeMapBtn.setOnClickListener(this);
         initGoogleMap(savedInstanceState);
         locationState("On");
     }
 
     private void UI(View view) {
         mMapView = view.findViewById(R.id.user_list_map);
-      //  closeMapBtn = view.findViewById(R.id.btn_close_map);
+        closeMapBtn = view.findViewById(R.id.btn_close_map);
         user1 = view.findViewById(R.id.text1);
         user2 = view.findViewById(R.id.text2);
     }
@@ -372,8 +372,14 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         builder.setPositiveButton(getContext().getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                container.removeView(layout);
-                locationState("Off");
+               // container.removeView(layout);
+                try {
+                    getActivity().onBackPressed();
+                    locationState("Off");
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
             }
         });
         builder.show();
@@ -382,11 +388,11 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
 
     @Override
     public void onClick(View v) {
-/*  this handles the click to close the map window (unfinished)
+       //this handles the click to close the map window (unfinished)
         if (v.getId() == R.id.btn_close_map){
             Log.d(TAG, "onClick: close window button pressed");
             deployAlertDialog( viewGroup, viewLayout);
-        }*/
+        }
 
 
     }

@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp.Activities;
+package com.example.alvar.chatapp;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.R;
 import com.example.alvar.chatapp.Utils.DrawerLocker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -40,8 +39,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static androidx.navigation.Navigation.findNavController;
