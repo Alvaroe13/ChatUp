@@ -3,14 +3,14 @@ package com.example.alvar.chatapp.Service;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
-import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
 import com.example.alvar.chatapp.Notifications.Token;
+import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,6 +24,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.NavDeepLinkBuilder;
 
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_ID;
 import static com.example.alvar.chatapp.Utils.Constant.CONTACT_IMAGE;
@@ -129,6 +130,10 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
     }
 
+    /**
+     * here we created push notification for chat request
+     * @param remoteMessage
+     */
     private void requestNotification(RemoteMessage remoteMessage) {
 
         String message =  remoteMessage.getData().get("message");
@@ -223,20 +228,21 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         String messageID = remoteMessage.getData().get("messageID");
         String senderPhoto = remoteMessage.getData().get("senderPhoto");
 
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED senderID: " + senderID);
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED message: " + message);
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED senderUsername: " + senderUsername);
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED messageID: " + messageID);
-        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED image: " + senderPhoto);
+        Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED bundle :" + "\n" + "senderID: " + senderID +
+                "\n" + "message: " + message + "\n" + "senderUsername: " + senderUsername +
+                "\n" + "messageID: " + messageID  + "\n" + "image: " + senderPhoto );
 
+        Bundle bundle = new Bundle();
+        bundle.putString(CONTACT_ID, senderID);
+        bundle.putString(CONTACT_NAME, senderUsername);
+        bundle.putString(CONTACT_IMAGE, senderPhoto);
 
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra( CONTACT_ID, senderID);
-        intent.putExtra( CONTACT_NAME, senderUsername);
-        intent.putExtra( CONTACT_IMAGE, senderPhoto);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = new NavDeepLinkBuilder(this)
+                .setGraph(R.navigation.nav_graph)
+                .setDestination(R.id.chatRoomFragment)
+                .setArguments(bundle)
+                .createPendingIntent();
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationHandler notificationHandler = new NotificationHandler(this);
         Notification.Builder builder = notificationHandler.createNotification(senderUsername, message, pendingIntent, true);
