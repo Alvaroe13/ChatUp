@@ -1,7 +1,6 @@
 package com.example.alvar.chatapp.views;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Activities.AnswerRequestActivity;
 import com.example.alvar.chatapp.Model.Contacts;
 import com.example.alvar.chatapp.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -174,7 +172,7 @@ public class RequestsFragment extends Fragment {
                                                     }
 
 
-                                                    //here we take the user from request fragment to "AnswerRequestActivity"
+                                                    //here we take the user from request fragment to "ChatRequestFragment"
                                                     holder.cardViewRequest.setOnClickListener(new View.OnClickListener() {
                                                         @Override
                                                         public void onClick(View v) {
@@ -222,11 +220,9 @@ public class RequestsFragment extends Fragment {
                     @Override
                     public RequestsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
                         //we bind the "request_individual_layout" to it's controller
-                        View requestIndividualView = LayoutInflater.from(viewGroup.getContext())
-                                .inflate(R.layout.request_individual_layout, viewGroup, false);
+                        View requestIndividualView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.request_individual_layout, viewGroup, false);
 
-                        RequestsViewHolder viewHolder = new RequestsViewHolder(requestIndividualView);
-                        return viewHolder;
+                        return new RequestsViewHolder(requestIndividualView);
                     }
                 };
 
@@ -236,14 +232,14 @@ public class RequestsFragment extends Fragment {
     }
 
     /**
-     * method takes the user to AnswerRequestActivity
+     * method takes the user to ChatRequestFragment
      * @param contactID
      */
     private void requestAnswer(String contactID) {
         Bundle bundle = new Bundle();
         bundle.putString("otherUserID", contactID);
 
-        navigateWithStack(viewLayout, R.id.answerRequestActivity, bundle);
+        navigateWithStack(viewLayout, R.id.chatRequestFragment, bundle);
     }
 
 

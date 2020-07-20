@@ -19,10 +19,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -46,7 +42,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Activities.ChatActivity;
 import com.example.alvar.chatapp.Adapter.MessageAdapter;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Model.User;
@@ -117,6 +112,7 @@ import static com.example.alvar.chatapp.Utils.Constant.WORD_DOCUMENT_OPTION;
 import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_FILE_EXTENSION;
 import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_FOLDER_REF;
 import static com.example.alvar.chatapp.Utils.Constant.WORD_DOC_MESSAGE_TYPE;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
@@ -192,6 +188,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         otherUserState();
         UIElements(viewLayout);
         toolbarPressed();
+        toolBarClick();
         drawerMode();
         initRecycleView(viewLayout);
         editTextStatus();
@@ -275,7 +272,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarChat);
 
             ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowCustomEnabled(true);
 
             LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -325,6 +322,15 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             }
         });
     }
+    private void toolBarClick(){
+        toolbarChat.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: back button toolbar clicked");
+                navigateWithOutStack(viewLayout, R.id.homeFragment, null);
+            }
+        });
+    }
 
     /**
      * init recyclerView
@@ -355,9 +361,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 messagesList.clear();
-
                 if (dataSnapshot.exists()) {
-
                     for (DataSnapshot info : dataSnapshot.getChildren()) {
 
                         Messages messages = info.getValue(Messages.class);
@@ -369,12 +373,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
                                 messagesList.add(messages);
                             }
+                            adapter.notifyDataSetChanged();
+                            recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                         }catch (Exception e){
-                            Log.e(TAG, "onDataChange: error: " + e.getMessage() );
+                            e.printStackTrace();
                         }
 
-                        adapter.notifyDataSetChanged();
-                        recyclerViewChat.smoothScrollToPosition(recyclerViewChat.getAdapter().getItemCount());
                     }
                 }
             }
@@ -1228,7 +1232,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                         startLocationService();
 
                     } else {
-                        //  Toast.makeText(ChatActivity.this, "location retrieving null", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onComplete: db retrieving null again");
                     }
                 }
@@ -1267,10 +1270,11 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     private void startLocationService() {
         Log.d(TAG, "startLocationService: method called");
         if (!isLocationServiceRunning()) {
-            Intent serviceIntent = new Intent(getContext(), LocationService.class);
-//        this.startService(serviceIntent);
+
 
             try {
+                Intent serviceIntent = new Intent(getContext(), LocationService.class);
+                //  this.startService(serviceIntent);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     Log.d(TAG, "startLocationService: service called ");
                     getActivity().startForegroundService(serviceIntent);                    
@@ -1417,6 +1421,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     public void onDestroyView() {
         super.onDestroyView();
         dbChatsNodeRef.removeEventListener(seenListener);
+        DrawerStateHelper.drawerEnabled(getActivity(), true);
     }
 
     @Override

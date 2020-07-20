@@ -41,8 +41,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static androidx.navigation.Navigation.findNavController;
 import static com.example.alvar.chatapp.Utils.Constant.TOKEN_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_ID_PREFS;
 import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (currentUser != null){
             Log.d(TAG, "onCreate: user logged in");
             currentUserID = mAuth.getCurrentUser().getUid();
+
             bindUI();
             drawerOptionsListener();
             drawerUnlocked();
@@ -436,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (Navigation.findNavController(this, R.id.fragment).getCurrentDestination().getId() == R.id.homeFragment){
+        } else if (findNavController(this, R.id.fragment).getCurrentDestination().getId() == R.id.homeFragment){
             finish();
         } else if (currentUser != null){
             Log.d(TAG, "onBackPressed: currentUser =! null");

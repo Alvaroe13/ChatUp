@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.NavHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -54,6 +55,8 @@ import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Utils.Constant.MAPVIEW_BUNDLE_KEY;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -128,14 +131,14 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         viewLayout = view;
         UI(view);
         user2.setText(contactName);
-        closeMapBtn.setOnClickListener(this);
+        //closeMapBtn.setOnClickListener(this);
         initGoogleMap(savedInstanceState);
         locationState("On");
     }
 
     private void UI(View view) {
         mMapView = view.findViewById(R.id.user_list_map);
-        closeMapBtn = view.findViewById(R.id.btn_close_map);
+      //  closeMapBtn = view.findViewById(R.id.btn_close_map);
         user1 = view.findViewById(R.id.text1);
         user2 = view.findViewById(R.id.text2);
     }
@@ -239,8 +242,8 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         gMaps.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
 
         showMarkersOnMap();
-        gMaps.addMarker(markerUser());
-      //gMaps.addMarker(markerContact());
+        //gMaps.addMarker(markerUser());
+        gMaps.addMarker(markerContact());
 
     }
 
@@ -379,11 +382,11 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
 
     @Override
     public void onClick(View v) {
-
+/*  this handles the click to close the map window (unfinished)
         if (v.getId() == R.id.btn_close_map){
             Log.d(TAG, "onClick: close window button pressed");
             deployAlertDialog( viewGroup, viewLayout);
-        }
+        }*/
 
 
     }

@@ -1,8 +1,6 @@
 package com.example.alvar.chatapp.views;
 
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.icu.text.RelativeDateTimeFormatter;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,8 +8,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavOptions;
-import androidx.navigation.Navigation;
 import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,8 +22,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Activities.ChatActivity;
-import com.example.alvar.chatapp.Activities.ImageActivity;
 import com.example.alvar.chatapp.Model.Messages;
 import com.example.alvar.chatapp.Notifications.ChatRequestNotification;
 import com.example.alvar.chatapp.Notifications.NotificationAPI;
@@ -810,7 +804,7 @@ public class OtherUserFragment extends Fragment {
                     String title = "Chat Request";
                     String message = "You have a new chat request";
 
-                    RequestNotification notificationBody = new RequestNotification(title , message);
+                    RequestNotification notificationBody = new RequestNotification(title , message, currentUserID);
 
 
                     ChatRequestNotification notification =

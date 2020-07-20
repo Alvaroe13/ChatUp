@@ -162,6 +162,7 @@
     <string name="insert_phone_number">Numero de telefono con codigo país </string>
     <string name="name">Nombre</string>
     <string name="you">Tu</string>
+    <string name="request_decline">Solicitud rechazada</string>
 
 
 </resources>

@@ -26,6 +26,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 
+import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -42,6 +44,7 @@ public class RecoverPasswordFragment extends Fragment implements View.OnClickLis
     private Toolbar toolbarRecovery;
     private ProgressBar progressBar;
     private CoordinatorLayout coordinatorLayout;
+    private View viewLayout;
 
     public RecoverPasswordFragment() {
         // Required empty public constructor
@@ -65,10 +68,13 @@ public class RecoverPasswordFragment extends Fragment implements View.OnClickLis
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        viewLayout = view;
         Log.d(TAG, "onViewCreated: called");
         bindUI(view);
         setToolbar(getString(R.string.toolbarRecoveryPasswordTitle), view);
         recoverPasswordBtn.setOnClickListener(this);
+        toolBarClick();
     }
 
     private void bindUI(View view){
@@ -87,6 +93,15 @@ public class RecoverPasswordFragment extends Fragment implements View.OnClickLis
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    private void toolBarClick(){
+        toolbarRecovery.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: back button toolbar clicked");
+                navigateWithOutStack(viewLayout, R.id.loginFragment, null);
+            }
+        });
+    }
     /**
      * method in charge of sending to the user an email to recover password
      */
