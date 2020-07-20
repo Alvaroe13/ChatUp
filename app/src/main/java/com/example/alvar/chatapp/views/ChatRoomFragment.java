@@ -118,7 +118,7 @@ import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClickListener  {
+public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClickListener, MessageAdapter.OnLongClickListener {
 
     private static final String TAG = "ChatRoomFragment";
     private static final int OPEN_CAMERA_REQUEST_CODE = 55;
@@ -346,7 +346,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         linearLayoutManager.setStackFromEnd(true);
         recyclerViewChat.setLayoutManager(linearLayoutManager);
 
-        adapter = new MessageAdapter(getContext(), messagesList, ChatRoomFragment.this, contactName);
+        adapter = new MessageAdapter(getContext(), messagesList, ChatRoomFragment.this, contactName, ChatRoomFragment.this);
         recyclerViewChat.setAdapter(adapter);
 
     }
@@ -1417,7 +1417,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         DrawerStateHelper.drawerEnabled(getActivity(), false);
     }
     
-    //------------------------ image layout click related -------------------------//
+    //------------------------ image / Doc layout click related -------------------------//
 
     /**
      * method in charge of launching file when clicked by user
@@ -1429,19 +1429,21 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         final String message = messagesList.get(position).getMessage();
 
         if (messageType.equals("image")) {
+            Log.d(TAG, "openFile: open photo");
             showImageRoom(message);
         }
         //if it's a "pdf" or "docx" we show option to download file.
         else {
+            Log.d(TAG, "openFile: open document");
             Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(message));
-          //  messageViewHolder.itemView.getContext().startActivity(i);
+            startActivity(i);
         }
 
     }
 
 
     /**
-     * methos in charge of taking the user to the Big image room when image message is pressed
+     * method in charge of taking the user to the Big image room when image message is pressed
      * @param messageContent
      */
     private void showImageRoom(String messageContent) {
@@ -1450,6 +1452,77 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         bundle.putString("messageContent", messageContent);
 
         navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
+    }
+
+    /**
+     *  method shows pop up window with options to delete messages sent by current user
+     */
+    private void longPressedOptionsRightSide(final int position) {
+
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.Delete);
+
+        CharSequence deleteOptions[] = new CharSequence[]{  getContext().getString(R.string.Delete_message), getContext().getString(R.string.cancel)};
+
+        builder.setItems(deleteOptions, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int options) {
+
+                switch (options) {
+                    case 0:
+                        deleteMessageForEveryone(position);
+                        Log.i(TAG, "onClick: delete for everyone option pressed");
+                        break;
+                    default:
+                        Log.i(TAG, "onClick: cancel option pressed");
+                }
+            }
+        });
+
+        builder.show();
+    }
+
+
+    /**
+     * method in charge of deleting message for both sender and receiver.
+     * @param position
+     */
+    private void deleteMessageForEveryone(int position){
+
+        try{
+            final String messageID = messagesList.get(position).getMessageID();
+
+            //lets first of all erase from the current user side
+            dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
+                    if (task.isSuccessful()){
+                        //lets first of all erase from the other user side
+                        dbChatsNodeRef.child(messageID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                                if (task.isSuccessful()){
+                                    Log.i(TAG, "onComplete: message deleted for everyone ");
+                                }
+                                else{
+                                    Log.i(TAG, "onComplete: Error, something failed ");
+                                }
+                            }
+                        });
+
+                    } else{
+                        Log.i(TAG, "onComplete: Error, something failed ");
+                    }
+                }
+            });
+        }catch (NullPointerException e){
+            Log.d(TAG, "deleteMessageForEveryone: exception" + e.getMessage());
+        }catch (IndexOutOfBoundsException e){
+            Log.d(TAG, "deleteMessageForEveryone: error" + e.getMessage());
+        }
+
     }
 
     @Override
@@ -1468,6 +1541,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     public void onItemClick(int position, int viewID) {
         Log.d(TAG, "onItemClick: clicked!");
 
+        String messageType = messagesList.get(position).getType();
+
         switch (viewID) {
             case R.id.mapRight:
                 Log.d(TAG, "onItemClick: right side map layout clicked");
@@ -1479,13 +1554,29 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 break;
             case R.id.imageLeft:
                 Log.d(TAG, "onItemClick: clicked image left layout");
-                openFile("image", position);
+                openFile(messageType, position);
                 break;
             case R.id.imageRight:
                 Log.d(TAG, "onItemClick: clicked image right layout");
-                openFile("image", position);
+                openFile(messageType, position);
                 break;
         }
+
+    }
+
+    @Override
+    public void onItemLongClick(int position, int viewID) {
+
+        switch (viewID){
+            case R.id.textLeft:
+                Log.d(TAG, "onItemLongClick: long click left side");
+                break;
+            case R.id.textRight:
+                Log.d(TAG, "onItemLongClick: long click right side");
+                longPressedOptionsRightSide(position);
+                break;
+        }
+
 
     }
 }
