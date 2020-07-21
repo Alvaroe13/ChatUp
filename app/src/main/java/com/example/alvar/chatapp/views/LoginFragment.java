@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
 import android.util.Log;
@@ -19,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.Utils.DrawerStateHelper;
+import com.example.alvar.chatapp.Utils.DrawerLayoutHelper;
 import com.example.alvar.chatapp.Utils.ProgressBarHelper;
 import com.example.alvar.chatapp.Utils.SnackbarHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -203,6 +202,12 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
 
                 if (task.isSuccessful()){
                     navigateWithOutStack(viewLayout , R.id.homeFragment, null);
+                    try {
+                        ((DrawerLayoutHelper)getActivity()).passUserID(currentUserID);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
                 }
             }
         });

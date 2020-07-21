@@ -105,12 +105,8 @@ public class OtherUserFragment extends Fragment {
         manageChatRequest();
         imageProfilePressed();
         retrofit();
-        drawerMode();
     }
 
-    private void drawerMode() {
-        DrawerStateHelper.drawerEnabled(getActivity(), false);
-    }
 
     private void incomingBundle() {
 
