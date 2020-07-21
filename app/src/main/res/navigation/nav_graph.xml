@@ -56,9 +56,6 @@
         android:label="ContactsFragment"
         tools:layout="@layout/fragment_contacts">
         <action
-            android:id="@+id/action_contactsFragment_to_otherUserFragment"
-            app:destination="@id/otherUserFragment" />
-        <action
             android:id="@+id/action_contactsFragment_to_chatRoomFragment"
             app:destination="@id/chatRoomFragment" />
 
@@ -162,6 +159,9 @@
         <action
             android:id="@+id/action_chatRoomFragment_to_locationFragment"
             app:destination="@id/locationFragment" />
+        <action
+            android:id="@+id/action_chatRoomFragment_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
 
 
     </fragment>

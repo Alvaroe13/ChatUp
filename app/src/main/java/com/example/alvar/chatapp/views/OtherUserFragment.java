@@ -754,7 +754,7 @@ public class OtherUserFragment extends Fragment {
         bundle.putString(CONTACT_IMAGE, imageThumbnail);
         
         
-        navigateWithOutStack(viewLayout, R.id.chatsFragment, bundle);
+        navigateWithOutStack(viewLayout, R.id.chatRoomFragment, bundle);
     }
 
     private void imageProfilePressed() {
