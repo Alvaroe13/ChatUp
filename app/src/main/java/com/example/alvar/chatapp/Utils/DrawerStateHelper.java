@@ -11,7 +11,7 @@ public class DrawerStateHelper {
      */
     public static void drawerEnabled(Activity activity, boolean enabled){
         try {
-            ((DrawerLocker)activity).setDrawerLocker(enabled);
+            ((DrawerLayoutHelper)activity).setDrawerLocker(enabled);
         }catch (Exception e){
             e.printStackTrace();
         }

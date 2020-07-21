@@ -199,7 +199,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         UIElements(viewLayout);
         toolbarPressed();
         toolBarClick();
-        drawerMode();
         initRecycleView(viewLayout);
         editTextStatus();
         sendButtonPressed();
@@ -1421,9 +1420,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
         navigateWithStack(viewLayout, R.id.locationFragment, bundle);
     }
 
-    private void drawerMode() {
-        DrawerStateHelper.drawerEnabled(getActivity(), false);
-    }
 
     //------------------------ image / Doc layout click related -------------------------//
 
@@ -1539,7 +1535,6 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     public void onDestroyView() {
         super.onDestroyView();
         dbChatsNodeRef.removeEventListener(seenListener);
-        DrawerStateHelper.drawerEnabled(getActivity(), true);
     }
 
     /**  this method handles single click event in chatRoom messages layouts (doc, image, map, etc...)

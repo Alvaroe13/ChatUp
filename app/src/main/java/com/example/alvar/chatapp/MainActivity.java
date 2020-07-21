@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.alvar.chatapp.Utils.DrawerLocker;
+import com.example.alvar.chatapp.Utils.DrawerLayoutHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -48,7 +48,7 @@ import static com.example.alvar.chatapp.Utils.Constant.USER_INFO_PREFS;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStackActivity;
 import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStackActivity;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, DrawerLocker {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DrawerLayoutHelper {
 
     private static final String TAG = "MainPage";
 
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private View navViewHeader;
     private ActionBarDrawerToggle burgerIcon;
     //vars
-    private String currentUserID, imageProfile;
+    private String currentUserID, imageProfile, userIDFromLogin;
     private String deviceToken;
 
     @Override
@@ -79,41 +79,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         initFirebase();
         currentUser = mAuth.getCurrentUser();
-
-
         if (currentUser != null){
-            Log.d(TAG, "onCreate: user logged in");
             currentUserID = mAuth.getCurrentUser().getUid();
-
-            bindUI();
-            drawerOptionsListener();
-            drawerUnlocked();
+            Log.d(TAG, "onCreate: user logged in: " + currentUserID);
             getToken();
-            fetchInfoFromDb();
-            //when image within drawer is clicked by the user
-            image.setOnClickListener(this);
-            //we set "no" as typing state in the db as soon as the app is launched
+            fetchInfoFromDb(currentUserID);
             typingState("no");
 
         }
 
-        else{
-            Log.d(TAG, "onCreate: user NOT logged in");
-            //by doing this we make sure user can't open drawer in login screen
-            bindUI();
-            drawerLock();
-        }
+        bindUI();
+        drawerOptionsListener();
+        //we lock the drawer in the whole app and open it only in HomeFragment
+        drawerLock();
+        image.setOnClickListener(this);
+
+        Log.d(TAG, "onCreate: user not logged in");
+
 
     }
 
     private void drawerLock() {
+        Log.d(TAG, "drawerLock: called!!!!");
        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
-
-    private void drawerUnlocked(){
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-    }
-
 
     /**
      * this methods handles the action taken in the drawer menu
@@ -282,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * this method is in charge of fetching info from the db and set it into the drawer layout
      */
-    private void fetchInfoFromDb() {
+    private void fetchInfoFromDb(final String currentUserID) {
 
         dbUsersNodeRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
@@ -441,7 +430,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (currentUser != null){
             Log.d(TAG, "onBackPressed: currentUser =! null");
             super.onBackPressed();
-            drawerUnlocked();
         } else{
             Log.d(TAG, "onBackPressed: ");
             super.onBackPressed();
@@ -458,7 +446,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (currentUser != null){
             //this method will pass "Online" to the database as soon as the user is using the app
             updateDateTime("Online");
-            drawerUnlocked();
         }
     }
 
@@ -486,4 +473,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int lockMode = enabled ? DrawerLayout.LOCK_MODE_UNLOCKED : DrawerLayout.LOCK_MODE_LOCKED_CLOSED;
         drawerLayout.setDrawerLockMode(lockMode);
     }
+
+    /**
+     * we used this method from interface DrawerLayoutHelper to pass the userID from LoginFragment and set
+     * the right info in the drawer layout
+     * @param userID
+     */
+    @Override
+    public void passUserID(String userID) {
+        Log.d(TAG, "passUserID: this interface method has been called" + "\n" + "userID: " + userID);
+        fetchInfoFromDb(currentUserID);
+    }
+
+
 }

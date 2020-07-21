@@ -98,7 +98,11 @@ public class RecoverPasswordFragment extends Fragment implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: back button toolbar clicked");
-                navigateWithOutStack(viewLayout, R.id.loginFragment, null);
+                try {
+                    getActivity().onBackPressed();
+                }catch (NullPointerException e){
+                    e.printStackTrace();
+                }
             }
         });
     }

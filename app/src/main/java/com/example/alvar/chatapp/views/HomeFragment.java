@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.example.alvar.chatapp.Adapter.ViewPagerAdapter;
 import com.example.alvar.chatapp.R;
+import com.example.alvar.chatapp.Utils.DrawerStateHelper;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,7 +45,6 @@ public class HomeFragment extends Fragment  {
     private Toolbar toolbarMain;
     private ViewPager viewPager;
     private TabLayout tabLayout;
-    private ActionBarDrawerToggle burgerIcon;
     //vars
     private String currentUserID;
 
@@ -57,13 +57,6 @@ public class HomeFragment extends Fragment  {
         super.onCreate(savedInstanceState);
 
         Log.d(TAG, "onCreate: called");
-
-        initFirebase();
-        if (currentUser != null){
-            currentUserID = mAuth.getCurrentUser().getUid();
-        }
-        initFirestore();
-
     }
 
     @Override
@@ -77,9 +70,28 @@ public class HomeFragment extends Fragment  {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d(TAG, "onViewCreated: called as well!");
-        setToolbar("ChatUp", view, true);
-        ui(view);
+
+
+        initFirebase();
+        if (currentUser != null){
+            Log.d(TAG, "onViewCreated: currentUser != null");
+            currentUserID = mAuth.getCurrentUser().getUid();
+            initFirestore();
+            setToolbar("ChatUp", view, true);
+            ui(view);
+            drawerMode();
+        }
+
+
+
+    }
+
+    /**
+     * by doing this we allow HomeFragment to open drawer
+     */
+    private void drawerMode() {
+        Log.d(TAG, "drawerMode: called");
+        DrawerStateHelper.drawerEnabled(getActivity(), true);
     }
 
     private void ui(View view) {
@@ -143,5 +155,10 @@ public class HomeFragment extends Fragment  {
         viewPager.setCurrentItem(1);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+         DrawerStateHelper.drawerEnabled(getActivity(), false);
+    }
 
 }

@@ -98,7 +98,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
         bindUI(view);
         retrieveDataFromDb();
-        drawerMode();
 
         fabImage.setOnClickListener(this);
         fabStatus.setOnClickListener(this);
@@ -411,11 +410,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         navigateWithStack(viewLayout, R.id.imageLargeFragment, bundle);
 
     }
-
-    private void drawerMode() {
-        DrawerStateHelper.drawerEnabled(getActivity(), false);
-    }
-
 
 
     @Override

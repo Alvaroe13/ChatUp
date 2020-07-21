@@ -90,7 +90,7 @@ public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickLi
         initRecyclerView(view);
         setToolbar(getString(R.string.allUsers), view, false);
         showAllUsers();
-        drawerMode();
+        //drawerMode();
 
     }
 
@@ -264,11 +264,6 @@ public class AllUsersFragment extends Fragment implements UsersAdapter.OnClickLi
         navigateWithStack(viewLayout, R.id.otherUserFragment, bundle);
 
     }
-
-    private void drawerMode() {
-        DrawerStateHelper.drawerEnabled(getActivity(), false);
-    }
-
 
     //here we user our customer method to handle click events from the fragment rather
     // than inside of the adapter class
