@@ -26,6 +26,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -43,9 +49,14 @@ public class LocationService extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private final static long UPDATE_INTERVAL = 4 * 1000;  /* 4 secs */
     private final static long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private String currentUserID;
     //Firestore
     private FirebaseFirestore mDb;
     private DocumentReference userLocationRef;
+    //Firebase
+    private FirebaseAuth mAtuh;
+    private FirebaseDatabase database;
+    private DatabaseReference dbUsersNodeRef;
 
     @Nullable
     @Override
@@ -57,9 +68,20 @@ public class LocationService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        Log.d(TAG, "onCreate: called");
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        showNotification();
+    }
+
+    /**
+     * this one shows the push notification
+     */
+    private void showNotification() {
 
         if (Build.VERSION.SDK_INT >= 26) {
+
+            Log.d(TAG, "showNotification: notification shown");
+
             String CHANNEL_ID = "my_channel_01";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     "My Channel",
@@ -68,7 +90,7 @@ public class LocationService extends Service {
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle(getString(R.string.working_background))
+                    .setContentTitle(getString(R.string.sharing_current_location))
                     .setContentText(getString(R.string.updating_location))
                     .setSmallIcon(R.drawable.icon_location_notification)
                     .setColor(getColor(R.color.color_blue_light))
@@ -89,6 +111,8 @@ public class LocationService extends Service {
      * method retrieves user's location every 4 secs
      */
     private void getLocation() {
+
+        Log.d(TAG, "getLocation: entered in here ");
 
         // ---------------------------------- LocationRequest ------------------------------------
         // Create the location request to start receiving updates
@@ -111,17 +135,15 @@ public class LocationService extends Service {
                     public void onLocationResult(LocationResult locationResult) {
 
                         Log.d(TAG, "onLocationResult: got location result.");
-
                         Location location = locationResult.getLastLocation();
 
                         if (location != null) {
-
                             retrieveUserLocation(location);
-
                         }
                     }
                 },
-                Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
+
+        Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
 
     /**
@@ -131,25 +153,35 @@ public class LocationService extends Service {
      */
     private void retrieveUserLocation(final Location location) {
 
-        String currentUserID = FirebaseAuth.getInstance().getUid();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (currentUserID != null){
-            mDb = FirebaseFirestore.getInstance();
-            userLocationRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
+        if (currentUser != null) {
 
-            userLocationRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    User user = documentSnapshot.toObject(User.class);
-                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    UserLocation userLocation = new UserLocation(user, geoPoint, null);
-                    Log.d(TAG, "onSuccess: geopoint info: lat: " + location.getLatitude());
-                    Log.d(TAG, "onSuccess: geopoint info: lon: " + location.getLongitude());
-                    saveUserLocation(userLocation);
-                }
-            });
-        }
-        else{
+            currentUserID = FirebaseAuth.getInstance().getUid();
+
+            Log.d(TAG, "retrieveUserLocation: current user ID: " + currentUserID);
+
+            if (currentUserID != null) {
+                initFirebase();
+
+                mDb = FirebaseFirestore.getInstance();
+                userLocationRef = mDb.collection(getString(R.string.users_ref)).document(currentUserID);
+
+                userLocationRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        User user = documentSnapshot.toObject(User.class);
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        UserLocation userLocation = new UserLocation(user, geoPoint, null);
+                        Log.d(TAG, "onSuccess: geopoint info: lat: " + location.getLatitude());
+                        Log.d(TAG, "onSuccess: geopoint info: lon: " + location.getLongitude());
+
+                        checkLocationState(userLocation);
+
+                    }
+                });
+            }
+        } else {
             //if user logged out stop service
             stopSelf();
         }
@@ -161,9 +193,9 @@ public class LocationService extends Service {
      * saved location updated every 4 secs in firestore
      * @param userLocation
      */
-    private void saveUserLocation(final UserLocation userLocation){
+    private void saveUserLocation(final UserLocation userLocation) {
 
-        try{
+        try {
             DocumentReference locationRef = FirebaseFirestore.getInstance()
                     .collection(getString(R.string.collection_user_location))
                     .document(FirebaseAuth.getInstance().getUid());
@@ -171,22 +203,64 @@ public class LocationService extends Service {
             locationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
-                        Log.d(TAG, "onComplete: \ninserted user location into database." +
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "onComplete: \n inserted user location into database." +
                                 "\n latitude: " + userLocation.getGeo_point().getLatitude() +
                                 "\n longitude: " + userLocation.getGeo_point().getLongitude());
                     }
                 }
             });
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             Log.e(TAG, "saveUserLocation: User instance is null, stopping location service.");
-            Log.e(TAG, "saveUserLocation: NullPointerException: "  + e.getMessage() );
+            Log.e(TAG, "saveUserLocation: NullPointerException: " + e.getMessage());
             stopSelf();
         }
 
     }
 
 
+    //--------------- testing------------- //
 
+    /**
+     * method updates in real time if user is in fragment MAp therefore wants to share current location
+     * with other user
+     */
+    private void initFirebase() {
+        mAtuh = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        dbUsersNodeRef = database.getReference().child("Users").child(currentUserID).child("userState");
+    }
+
+
+    /**
+     * this method stops saving user's location in db when user decides to stop sharing location
+     * @param userLocation
+     */
+    private void checkLocationState(final UserLocation userLocation) {
+
+        Log.d(TAG, "checkLocationState: entered here");
+
+        dbUsersNodeRef.child("location").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    String sharingLocationState = dataSnapshot.getValue().toString();
+                    Log.d(TAG, "onDataChange: sharingLocationState: " + sharingLocationState);
+
+                    if (sharingLocationState.equals("On")) {
+                        Log.d(TAG, "onSuccess: sharingLocationState called: it's on ");
+                        saveUserLocation(userLocation);
+                    } else {
+                        Log.d(TAG, "onSuccess: sharingLocationState called: it's off");
+                        stopSelf();
+                        Thread.interrupted();
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
 
 }

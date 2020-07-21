@@ -163,6 +163,7 @@
     <string name="name">Nombre</string>
     <string name="you">Tu</string>
     <string name="request_decline">Solicitud rechazada</string>
+    <string name="sharing_current_location">Compartiendo ubicación</string>
 
 
 </resources>
