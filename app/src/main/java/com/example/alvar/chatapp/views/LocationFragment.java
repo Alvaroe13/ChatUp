@@ -3,6 +3,7 @@ package com.example.alvar.chatapp.views;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.alvar.chatapp.R;
-import com.example.alvar.chatapp.Utils.NavHelper;
+import com.example.alvar.chatapp.Service.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -38,9 +39,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,8 +54,6 @@ import static com.example.alvar.chatapp.Utils.Constant.LOCATION_CONTACT_LON;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LAT;
 import static com.example.alvar.chatapp.Utils.Constant.LOCATION_USER_LON;
 import static com.example.alvar.chatapp.Utils.Constant.MAPVIEW_BUNDLE_KEY;
-import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithOutStack;
-import static com.example.alvar.chatapp.Utils.NavHelper.navigateWithStack;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -108,7 +105,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
             Log.d(TAG, "onCreate: location contact: " + lat2 + " , " + lon2);
             Log.d(TAG, "onCreateView: contactID: " + contactID);
         } else {
-            Toast.makeText(getActivity(), "info null", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "onCreate: info null");
         }
 
         initFirebase();
@@ -353,15 +350,13 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         HashMap<String, Object> userState = new HashMap<>();
         userState.put("location", locationState);
 
-        dbUsersNodeRef.child(currentUserID).child((getString(R.string.user_state_db))).updateChildren(userState);
+        dbUsersNodeRef.child(currentUserID).child("userState").updateChildren(userState);
     }
 
     /**
      * alert notifies user is about to stop sharing location when bin image is pressed in mapView
-     * @param container
-     * @param layout
      */
-    private void deployAlertDialog(final ViewGroup container , final View layout) {
+    private void launchAlertDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(getContext().getString(R.string.close_location));
@@ -372,10 +367,9 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         builder.setPositiveButton(getContext().getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-               // container.removeView(layout);
                 try {
                     getActivity().onBackPressed();
-                    locationState("Off");
+                    stopService();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -385,13 +379,28 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback, Vi
         builder.show();
     }
 
+    /**
+     * method stops service in charge of sharing user's location when app is not in the foreground
+     */
+    private void stopService(){
+        Intent serviceIntent = new Intent(getContext(), LocationService.class);
+        try {
+            locationState("Off");
+            getActivity().stopService(serviceIntent);
+            Log.d(TAG, "onClick: service stop");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
 
     @Override
     public void onClick(View v) {
        //this handles the click to close the map window (unfinished)
         if (v.getId() == R.id.btn_close_map){
             Log.d(TAG, "onClick: close window button pressed");
-            deployAlertDialog( viewGroup, viewLayout);
+            launchAlertDialog();
         }
 
 

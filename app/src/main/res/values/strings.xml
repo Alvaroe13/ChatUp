@@ -142,7 +142,7 @@
     <string name="maps_API_KEY">AIzaSyCTmwtkbw81CCk0fV8thEdue73pVZ9akck</string>
     <string name="location_permission_requiered">Permission denied, it\'s required in order to share your location</string>
     <string name="share_location">Share location</string>
-    <string name="other_user_location_off">Other user\'s location is off</string>
+    <string name="other_user_location_off">Contact is not sharing location</string>
     <string name="open_location">Open location</string>
     <string name="open_location_message">You must provide your location in order to open this message, do you agree?</string>
     <string name="sharing_location">Location</string>
@@ -161,6 +161,7 @@
     <string name="name">Name</string>
     <string name="you">You</string>
     <string name="request_decline">Request declined</string>
+    <string name="sharing_current_location">Sharing current location.</string>
 
 
 </resources>

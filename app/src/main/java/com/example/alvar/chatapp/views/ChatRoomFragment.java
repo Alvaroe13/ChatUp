@@ -62,6 +62,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -164,8 +165,17 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: called");
-        initFirebase();
-        initFirestore();
+
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = auth.getCurrentUser();
+
+        if (currentUser != null){
+            currentUserID = auth.getCurrentUser().getUid();
+            initFirebase();
+            initFirestore();
+        }
+
+
     }
 
     @Override
@@ -232,14 +242,13 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
      * init firebase services
      */
     private void initFirebase() {
-        auth = FirebaseAuth.getInstance();
-        //we get current user ID
-        currentUserID = auth.getCurrentUser().getUid();
+
         database = FirebaseDatabase.getInstance();
         dbUsersNodeRef = database.getReference().child("Users");
         dbChatsNodeRef = database.getReference().child(getString(R.string.chats_ref)).child(getString(R.string.messages_ref));
         dbTokensNodeRef = database.getReference().child("Tokens");
         dbChatList = database.getReference().child("ChatList");
+        dbUsersNodeRef = database.getReference().child("Users");
     }
 
     private void initFirestore() {
@@ -1080,6 +1089,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
             getUserDetails();
             uploadMessageToDb(getString(R.string.sharing_location), "map");
 
+
         } else {
             //if the app doesn't have the user permission we ask for it
             getLocationPermission();
@@ -1227,7 +1237,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                         userLocation.setGeo_point(geoPoint);
                         userLocation.setTimeStamp(null);
                         saveUserLocation();
-                        startLocationService();
+                    //  startLocationService();
 
                     } else {
                         Log.d(TAG, "onComplete: db retrieving null again");
@@ -1313,7 +1323,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
 
     //this method is for when user clicks on a message sent by it's contact, for the time being this
     //is handled in the messageAdapter, that's why this method is here but unused
-    private void deployAlertDialog() {
+    private void launchAlertDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(getContext().getString(R.string.open_location));
@@ -1382,7 +1392,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                     double lon2 = locationUser2.getGeo_point().getLongitude();
                     Log.d(TAG, "onSuccess: location current user2 (contact user in chat room): " + lat2 + " , " + lon2);
 
-
+                    startLocationService();
                     inflateLocationFragment(lat1, lon1, lat2, lon2);
 
                 } else {
@@ -1549,7 +1559,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.OnClick
                 break;
             case R.id.mapLeft:
                 Log.d(TAG, "onItemClick: left side map layout clicked");
-                deployAlertDialog();
+                launchAlertDialog();
                 break;
             case R.id.imageLeft:
                 Log.d(TAG, "onItemClick: clicked image left layout");

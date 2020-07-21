@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         userState.put(getString(R.string.state_db), state);
         userState.put(getString(R.string.date_db), currentDate);
         userState.put(getString(R.string.time_db), currentTime);
-        userState.put( "location", "Off");
+       // userState.put( "location", "Off");
 
         dbUsersNodeRef.child(currentUserID).child(getString(R.string.user_state_db)).updateChildren(userState);
 
@@ -466,12 +466,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-
         if (currentUser != null) {
-            updateDateTime("Offline");
+             updateDateTime("Offline");
         }
+        
     }
-
 
     @Override
     public void onClick(View v) {
