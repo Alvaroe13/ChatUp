@@ -1,4 +1,4 @@
-package com.example.alvar.chatapp;
+package com.example.alvar.chatapp.repositories;
 
 import android.util.Log;
 
@@ -8,16 +8,16 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public class FirebaseConnection {
+public class ChatsRepository {
 
     private static final String TAG = "FirebaseDatabaseNodes";
 
@@ -25,32 +25,25 @@ public class FirebaseConnection {
     private List<User> userList;
     private MutableLiveData<List<User>> chats;
 
+    public static ChatsRepository instance;
 
-    private static FirebaseConnection instance;
     //firebase
     private DatabaseReference dbUsersNodeRef, dbChatListRef ;
 
-
-    public static FirebaseConnection getFirebaseConnection(){
+    public static ChatsRepository getRepository(){
         if (instance == null){
-            instance = new FirebaseConnection();
+            instance = new ChatsRepository();
         }
         return instance;
-    }
-
-    public FirebaseConnection() {
-        initFirebase();
-        chats = new MutableLiveData<>();
     }
 
     /**
      * this pass the chatList
      * @return
      */
-    public LiveData<List<User>> getChatList(){
+    public MutableLiveData<List<User>> getChatList(){
         return chats;
     }
-
 
     /**
      * we init firebase services.
@@ -64,7 +57,12 @@ public class FirebaseConnection {
         dbChatListRef.keepSynced(true);
     }
 
+
+
     public void setConnectionToUsersNode(String userID){
+
+        initFirebase();
+        chats = new MutableLiveData<>();
 
         Log.d(TAG, "setConnectionToUsersNode:  called");
 
@@ -104,27 +102,28 @@ public class FirebaseConnection {
 
         userList = new ArrayList<>();
 
-        dbUsersNodeRef.addValueEventListener(new ValueEventListener() {
+        Query query = dbUsersNodeRef;
+        query.keepSynced(true);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 userList.clear();
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                     User user = snapshot.getValue(User.class);
-
                     for (ChatList chatList : chatListList){
                         try{
                             if (user.getUserID() != null && user.getUserID().equals(chatList.getId())){
                                 userList.add(user);
-                                chats.setValue(userList);
-                                break;
                             }
                         }catch (NullPointerException e){
-                            Log.e(TAG, "showChatList: onDataChange error: " + e.getMessage() );
+                            e.printStackTrace();
                         }
-
                     }
-
                 }
+
+                chats.postValue(userList);
             }
 
             @Override
@@ -134,10 +133,5 @@ public class FirebaseConnection {
         });
 
     }
-
-
-
-
-
 
 }

@@ -3,7 +3,7 @@ package com.example.alvar.chatapp.viewModels;
 import android.util.Log;
 
 import com.example.alvar.chatapp.Model.Contacts;
-import com.example.alvar.chatapp.repositories.ContactsRepo;
+import com.example.alvar.chatapp.repositories.ContactsRepository;
 
 import java.util.List;
 
@@ -13,11 +13,11 @@ import androidx.lifecycle.ViewModel;
 public class ContactsViewModel extends ViewModel {
 
     private static final String TAG = "ContactsViewModel";
-    private ContactsRepo repo;
+    private ContactsRepository repo;
  
 
     public void init(){
-        repo = ContactsRepo.getInstance();
+        repo = ContactsRepository.getInstance();
         Log.d(TAG, "init: called");
     }
 

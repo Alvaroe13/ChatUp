@@ -16,19 +16,19 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
-public class ContactsRepo {
+public class ContactsRepository {
 
-    private static final String TAG = "ContactsRepo";
+    private static final String TAG = "ContactsRepository";
 
 
-    public static ContactsRepo instance;
+    public static ContactsRepository instance;
     private MutableLiveData<List<Contacts>> contacts = new MutableLiveData<>();
     private List<Contacts> contactList = new ArrayList<>();
 
 
-    public static ContactsRepo getInstance(){
+    public static ContactsRepository getInstance(){
         if (instance == null){
-            instance = new ContactsRepo();
+            instance = new ContactsRepository();
         }
         return instance;
     }

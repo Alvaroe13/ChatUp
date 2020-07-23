@@ -90,7 +90,6 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         viewLayout = view;
 
         initRecyclerView(view);
-        // viewModel stuff
         initViewModel();
         connectionWithViewModel(currentUserID);
         initObserver();
@@ -115,14 +114,13 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         chatRecyclerView.setHasFixedSize(true);
         chatsAdapter = new ChatsAdapter(getContext(), new ArrayList<User>(), ChatsFragment.this);
         chatRecyclerView.setAdapter(chatsAdapter);
-
-
     }
 
     //viewModel area
     private void initViewModel() {
         Log.d(TAG, "initViewModel: called");
         viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+        viewModel.init();
     }
 
     private void connectionWithViewModel(String userID) {
@@ -134,7 +132,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
      * show conversations in the fragment
      */
     private void initObserver() {
- 
+
         viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
             public void onChanged(final List<User> users) {
@@ -142,7 +140,6 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                     userList = users;
 
                     Log.d(TAG, "initObserver onChanged: called");
-                    chatRecyclerView.setVisibility(View.VISIBLE);
                     chatsAdapter.updateChats(users);
 
                     chatItemCLick(users);
@@ -153,9 +150,10 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         });
     }
 
-
-
-
+    /**
+     * pop up to delete chat
+     * @param view
+     */
     private void showPopUp(View view) {
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
         popupMenu.setOnMenuItemClickListener(ChatsFragment.this);

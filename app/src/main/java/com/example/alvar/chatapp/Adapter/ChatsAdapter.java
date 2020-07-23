@@ -80,8 +80,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     }
 
     public void updateChats(List<User> list){
-        userList.clear();
-        userList.addAll(list);
+        Log.d(TAG, "updateChats: called");
+        this.userList = list;
         notifyDataSetChanged();
     }
 
