@@ -134,8 +134,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
      * show conversations in the fragment
      */
     private void initObserver() {
-
-        Log.d(TAG, "initObserver: called");
+ 
         viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
             public void onChanged(final List<User> users) {
