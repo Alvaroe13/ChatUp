@@ -121,9 +121,11 @@ public class ChatsRepository {
                             e.printStackTrace();
                         }
                     }
+
+                    chats.postValue(userList);
                 }
 
-                chats.postValue(userList);
+
             }
 
             @Override

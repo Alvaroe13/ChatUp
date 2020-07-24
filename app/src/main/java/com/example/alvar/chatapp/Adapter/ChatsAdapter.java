@@ -24,6 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -42,9 +43,8 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
 
 
-    public ChatsAdapter(Context context, List<User> userList, OnClickListener clickListener) {
+    public ChatsAdapter(Context context, OnClickListener clickListener) {
         this.context = context;
-        this.userList = userList;
         this.clickListener = clickListener;
     }
 
@@ -73,13 +73,16 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     @Override
     public int getItemCount() {
         if (userList != null ){
-            //get the size of the List is is not null
+            Log.d(TAG, "getItemCount: inner part triggered");
             return userList.size();
+        }{
+            Log.d(TAG, "getItemCount: outter triggered");
+            //this makes possible to erase the first item in recycler when user's click delete conversation
+            return -1;
         }
-        return -1;
     }
 
-    public void updateChats(List<User> list){
+    public void updateChats(@Nullable List<User> list){
         Log.d(TAG, "updateChats: called");
         this.userList = list;
         notifyDataSetChanged();
@@ -134,11 +137,16 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
 
-                final String typingState = dataSnapshot.child("userState").child("typing").getValue().toString();
+                    typingState(typingState, contactID , holder );
+                    otherUserState(dataSnapshot, holder);
+                }else{
+                    Log.d(TAG, "This is null now!!! ");
+                }
 
-                typingState(typingState, contactID , holder );
-                otherUserState(dataSnapshot, holder);
+
 
             }
 
@@ -163,7 +171,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                 holder.lastMessageField.setTextColor(context.getResources().getColor(R.color.color_green));
             }
             catch (Exception e){
-                Log.i(TAG, "onDataChange: error: " + e.getMessage() );
+                Log.i(TAG, "typingState: onDataChange: error: " + e.getMessage() );
             }
         }   else {
             //this method show last message in the fragment list with conversations started
@@ -175,7 +183,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                 holder.lastMessageField.setTextColor(context.getResources().getColor(R.color.color_grey));
             }
             catch (Exception ex){
-                Log.i(TAG, "onDataChange: error: " + ex.getMessage());
+                Log.i(TAG, "typingState1: onDataChange: error: " + ex.getMessage());
             }
         }
 
@@ -235,10 +243,9 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
 
                             }
                         }catch (Exception e){
-                            Log.e(TAG, "onDataChange: error" + e.getMessage());
+                            e.printStackTrace();
+                            Log.d(TAG, "onDataChange: lastMessage called ERROR");
                         }
-
-
 
                     }
 
