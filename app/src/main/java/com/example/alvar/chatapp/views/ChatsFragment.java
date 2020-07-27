@@ -90,7 +90,6 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         viewLayout = view;
 
         initRecyclerView(view);
-        // viewModel stuff
         initViewModel();
         connectionWithViewModel(currentUserID);
         initObserver();
@@ -113,16 +112,15 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         chatRecyclerView.setHasFixedSize(true);
-        chatsAdapter = new ChatsAdapter(getContext(), new ArrayList<User>(), ChatsFragment.this);
+        chatsAdapter = new ChatsAdapter(getContext(), ChatsFragment.this);
         chatRecyclerView.setAdapter(chatsAdapter);
-
-
     }
 
     //viewModel area
     private void initViewModel() {
         Log.d(TAG, "initViewModel: called");
         viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+        viewModel.init();
     }
 
     private void connectionWithViewModel(String userID) {
@@ -135,28 +133,22 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
      */
     private void initObserver() {
 
-        Log.d(TAG, "initObserver: called");
         viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
             public void onChanged(final List<User> users) {
-                if (users != null) {
-                    userList = users;
-
-                    Log.d(TAG, "initObserver onChanged: called");
-                    chatRecyclerView.setVisibility(View.VISIBLE);
-                    chatsAdapter.updateChats(users);
-
-                    chatItemCLick(users);
-
-                }
-
+                userList = users;
+                Log.d(TAG, "onChanged: list size" + userList.size());
+                Log.d(TAG, "initObserver onChanged: called");
+                chatsAdapter.updateChats(users);
+                chatItemCLick(users);
             }
         });
     }
 
-
-
-
+    /**
+     * pop up to delete chat
+     * @param view
+     */
     private void showPopUp(View view) {
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
         popupMenu.setOnMenuItemClickListener(ChatsFragment.this);
@@ -197,6 +189,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         deleteChat(currentUserID, contactID);
+                                        setItNull();
                                     }
                                 }
                             });
@@ -204,6 +197,28 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                     }
                 });
 
+    }
+
+    /**
+     * this method makes possible to auto delete the first item in the recyclerView when conversation
+     * it's deleted
+     */
+    private void setItNull() {
+        Log.d(TAG, "setItNull: called");
+        dbChatListRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d(TAG, "setItNull: onDataChange: here its called");
+                if (!dataSnapshot.exists()){
+                    Log.d(TAG, "setItNull: onDataChange: delete the first item in recyclerView");
+                    chatsAdapter.updateChats(null);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     /**
@@ -227,7 +242,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                                     ds.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
-                                            dbChatsNodeRef.removeEventListener(removeListener);
+                                             dbChatsNodeRef.removeEventListener(removeListener);
                                         }
                                     });
                                 }

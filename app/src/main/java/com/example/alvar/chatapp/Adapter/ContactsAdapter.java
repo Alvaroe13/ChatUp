@@ -41,6 +41,12 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Contac
         this.clickListener = clickListener;
     }
 
+    public void setContacts(List<Contacts> contactsListUpdated){
+        Log.d(TAG, "setContacts: called!!");
+        this.contactsList = contactsListUpdated;
+        notifyDataSetChanged();
+    }
+
 
     @NonNull
     @Override

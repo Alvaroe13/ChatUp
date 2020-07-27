@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 
 import com.example.alvar.chatapp.MainActivity;
@@ -73,20 +74,20 @@ public class NotificationHandler extends ContextWrapper {
 
 
 
-    public Notification.Builder createNotification(String title, String message, PendingIntent pendingIntent, Boolean isHighImportance ){
+    public Notification.Builder createNotification(String title, String message, PendingIntent pendingIntent, Bitmap image, Boolean isHighImportance  ){
 
         //lets first check what OS version is running in user's device
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
             if (isHighImportance){
-                return this.createNotificationWithChannel(title, message, pendingIntent, CHANNEL_HIGH_ID);
+                return this.createNotificationWithChannel(title, message, pendingIntent, image, CHANNEL_HIGH_ID);
             }
-            return  this.createNotificationWithChannel(title, message, pendingIntent, CHANNEL_LOW_ID);
+            return  this.createNotificationWithChannel(title, message, pendingIntent, image, CHANNEL_LOW_ID);
         }
         return this.createNotificationWithOutChannel(title, message, pendingIntent);
     }
 
 
-    private Notification.Builder createNotificationWithChannel(String title, String message, PendingIntent pendingIntent, String channelID){
+    private Notification.Builder createNotificationWithChannel(String title, String message, PendingIntent pendingIntent, Bitmap image, String channelID){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
@@ -95,6 +96,7 @@ public class NotificationHandler extends ContextWrapper {
                     .setContentText(message)
                     .setContentIntent(pendingIntent)
                     .setSmallIcon(R.drawable.icon_message_notification)
+                    .setLargeIcon(image)
                     .setColor(getColor(R.color.color_blue_light))
                     .setGroup(GROUP_NAME)
                     .setAutoCancel(true);

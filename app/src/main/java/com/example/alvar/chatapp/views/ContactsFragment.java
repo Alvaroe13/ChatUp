@@ -106,7 +106,7 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnClic
 
 
     private void setToolbar(String title, View layout, Boolean backOption){
-         Toolbar toolbarContacts = layout.findViewById(R.id.toolbarContacts);
+        Toolbar toolbarContacts = layout.findViewById(R.id.toolbarContacts);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarContacts);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(backOption);
