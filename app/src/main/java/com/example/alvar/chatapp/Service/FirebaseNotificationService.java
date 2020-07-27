@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.alvar.chatapp.Notifications.NotificationHandler;
+import com.example.alvar.chatapp.Notifications.NotificationThread;
 import com.example.alvar.chatapp.Notifications.Token;
 import com.example.alvar.chatapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,6 +23,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavDeepLinkBuilder;
@@ -42,7 +45,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     private DatabaseReference tokensNodeRef;
     //vars
     private String userIDPrefs;
-    private  String userID2;
+    private String userID2;
 
     /**
      * method triggered whenever there's a new instance of this app therefore a new token is generated
@@ -54,7 +57,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
         userFirebase = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (userFirebase !=null){
+        if (userFirebase != null) {
             saveTokenOnPreferences(token);
             getUserIDPrefs();
             initFirebase();
@@ -63,36 +66,37 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
     }
 
-    private void saveTokenOnPreferences( String token) {
+    private void saveTokenOnPreferences(String token) {
         SharedPreferences prefs = getSharedPreferences("user_info", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(TOKEN_PREFS, token);
         editor.apply();
     }
 
-    private String getUserIDPrefs(){
+    private String getUserIDPrefs() {
         SharedPreferences userID = getSharedPreferences(USER_INFO_PREFS, Context.MODE_PRIVATE);
         userID.getString(USER_ID_PREFS, "no userID saved in prefs");
         userIDPrefs = userID.toString();
         return userIDPrefs;
     }
 
-    private void initFirebase(){
+    private void initFirebase() {
         //firebase db init
         database = FirebaseDatabase.getInstance();
         //get access to "Users" branch of db
         tokensNodeRef = database.getReference().child("Tokens");
     }
 
-    private void saveNewTokenInRemoteDB(String newToken){
+    private void saveNewTokenInRemoteDB(String newToken) {
 
         Token token = new Token(newToken);
 
         tokensNodeRef.child(userIDPrefs).setValue(token).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (!task.isSuccessful()){
-                    Log.d(TAG, "onComplete: error saving new token in firebase " + task.getException()); ;
+                if (!task.isSuccessful()) {
+                    Log.d(TAG, "onComplete: error saving new token in firebase " + task.getException());
+                    ;
                     return;
                 }
                 Log.d(TAG, "onComplete: done successfully");
@@ -113,19 +117,18 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
         userFirebase = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (userFirebase !=null){
+        if (userFirebase != null) {
             getUserIDPrefs();
             initFirebase();
             userID2 = userFirebase.getUid();
         }
 
-        if (remoteMessage.getData().get("messageID") != null){
+        if (remoteMessage.getData().get("messageID") != null) {
             chatNotification(remoteMessage);
-        } else{
+        } else {
             requestNotification(remoteMessage);
             Log.d(TAG, "onMessageReceived: chat Request notification received");
         }
-
 
 
     }
@@ -136,12 +139,12 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
      */
     private void requestNotification(RemoteMessage remoteMessage) {
 
-        String message =  remoteMessage.getData().get("message");
-        String title =  remoteMessage.getData().get("title");
+        String message = remoteMessage.getData().get("message");
+        String title = remoteMessage.getData().get("title");
         String contactID = remoteMessage.getData().get("contactID");
 
-        Log.d(TAG, "requestNotification: message: " + message  +
-             "\n" + "title :" + title  + "\n" + "contactID: " + contactID);
+        Log.d(TAG, "requestNotification: message: " + message +
+                "\n" + "title :" + title + "\n" + "contactID: " + contactID);
 
         Bundle bundle = new Bundle();
         bundle.putString("otherUserID", contactID);
@@ -154,7 +157,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
         NotificationHandler handler = new NotificationHandler(this);
         Notification.Builder builder = handler.createRequestNotification(title, message, pendingIntent);
-        handler.getNotificationManager().notify(2 , builder.build() );
+        handler.getNotificationManager().notify(2, builder.build());
 
 
     }
@@ -171,13 +174,13 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         String messageID = remoteMessage.getData().get("messageID");
 
 
-        if (userFirebase != null && !senderID.equals(userID2) ){
+        if (userFirebase != null && !senderID.equals(userID2)) {
             if (!getUserIDPrefs().equals(userID)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                     messageSeenState(remoteMessage, messageID);
 
-                }else{
+                } else {
 
                     messageSeenState(remoteMessage, messageID);
 
@@ -193,7 +196,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
      * @param remoteMessage
      * @param messageID
      */
-    private void messageSeenState(final RemoteMessage remoteMessage, final String messageID){
+    private void messageSeenState(final RemoteMessage remoteMessage, final String messageID) {
 
         Log.d(TAG, "messageSeenState: enters here");
 
@@ -203,11 +206,11 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.exists()){
-                    if (dataSnapshot.getValue().equals(false)){
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.getValue().equals(false)) {
                         Log.d(TAG, "messageSeenState: seen false ");
-                        showNotification(remoteMessage);
-                    }else{
+                            fetchNotificationInfo(remoteMessage);
+                    } else {
                         Log.d(TAG, "messageSeenState: seen true ");
                     }
                 }
@@ -224,43 +227,40 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
 
     /**
-     * this method is in charge of pushing the pop up notification for an incoming notification ONLY.
+     * this method is in charge of fetching the info coming from the server.
      * @param remoteMessage
      */
-    private void showNotification(RemoteMessage remoteMessage) {
+    private void fetchNotificationInfo(RemoteMessage remoteMessage)  {
 
         /*Random random = new Random();
         int notificationID = random.nextInt();*/
 
-        String senderID = remoteMessage.getData().get("senderID");
-        String message = remoteMessage.getData().get("message");
-        String senderUsername = remoteMessage.getData().get("senderUsername");
-        String messageID = remoteMessage.getData().get("messageID");
-        String senderPhoto = remoteMessage.getData().get("senderPhoto");
+        final String senderID = remoteMessage.getData().get("senderID");
+        final String message = remoteMessage.getData().get("message");
+        final String senderUsername = remoteMessage.getData().get("senderUsername");
+        final String messageID = remoteMessage.getData().get("messageID");
+        final String senderPhoto = remoteMessage.getData().get("senderPhoto");
 
         Log.d(TAG, "sendNotification: NOTIFICATION RECEIVED bundle :" + "\n" + "senderID: " + senderID +
                 "\n" + "message: " + message + "\n" + "senderUsername: " + senderUsername +
-                "\n" + "messageID: " + messageID  + "\n" + "image: " + senderPhoto );
+                "\n" + "messageID: " + messageID + "\n" + "image: " + senderPhoto);
 
         Bundle bundle = new Bundle();
         bundle.putString(CONTACT_ID, senderID);
         bundle.putString(CONTACT_NAME, senderUsername);
         bundle.putString(CONTACT_IMAGE, senderPhoto);
 
-        PendingIntent pendingIntent = new NavDeepLinkBuilder(this)
+        final PendingIntent pendingIntent = new NavDeepLinkBuilder(this)
                 .setGraph(R.navigation.nav_graph)
                 .setDestination(R.id.chatRoomFragment)
                 .setArguments(bundle)
                 .createPendingIntent();
 
-
-        NotificationHandler notificationHandler = new NotificationHandler(this);
-        Notification.Builder builder = notificationHandler.createNotification(senderUsername, message, pendingIntent, true);
-
-        notificationHandler.getNotificationManager().notify(1, builder.build());
-     // notificationHandler.showGroupNotification(true);
+       //Here we create a background thread to process incoming image with Glide and push the notification
+        NotificationThread backgroundThread = new NotificationThread( senderUsername, message, pendingIntent, senderPhoto, getApplicationContext());
+        new Thread(backgroundThread).start();
+        
     }
-
 
 
 }
