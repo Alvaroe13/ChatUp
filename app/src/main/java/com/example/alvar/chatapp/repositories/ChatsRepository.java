@@ -21,9 +21,9 @@ public class ChatsRepository {
 
     private static final String TAG = "FirebaseDatabaseNodes";
 
-    private List<ChatList> chatListList;
-    private List<User> userList;
-    private MutableLiveData<List<User>> chats;
+    private List<ChatList> listOfChats;
+    private List<User> userIdList;
+    private MutableLiveData<List<User>> listOfUsersId;
 
     public static ChatsRepository instance;
 
@@ -41,8 +41,8 @@ public class ChatsRepository {
      * this pass the chatList
      * @return
      */
-    public MutableLiveData<List<User>> getChatList(){
-        return chats;
+    public MutableLiveData<List<User>> getUserIdList(){
+        return listOfUsersId;
     }
 
     /**
@@ -59,27 +59,27 @@ public class ChatsRepository {
 
 
 
-    public void setConnectionToUsersNode(String userID){
+    public void connectionToChatListNode(String userID){
 
         initFirebase();
-        chats = new MutableLiveData<>();
+        listOfUsersId = new MutableLiveData<>();
 
         Log.d(TAG, "setConnectionToUsersNode:  called");
 
-        chatListList = new ArrayList<>();
+        listOfChats = new ArrayList<>();
 
         dbChatListRef.child(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                chatListList.clear();
+                listOfChats.clear();
                 if (dataSnapshot.exists()){
 
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                         final ChatList chatList = snapshot.getValue(ChatList.class);
-                        chatListList.add(chatList);
+                        listOfChats.add(chatList);
                     }
 
-                    showChatList();
+                    showChatList(listOfChats);
                 }
 
             }
@@ -96,11 +96,11 @@ public class ChatsRepository {
     /**
      * show conversations in the fragment
      */
-    private void showChatList() {
+    private void showChatList(final List<ChatList> listOfChats) {
 
         Log.d(TAG, "showChatList: called");
 
-        userList = new ArrayList<>();
+        userIdList = new ArrayList<>();
 
         Query query = dbUsersNodeRef;
         query.keepSynced(true);
@@ -108,21 +108,21 @@ public class ChatsRepository {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userList.clear();
+                userIdList.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                     User user = snapshot.getValue(User.class);
-                    for (ChatList chatList : chatListList){
+                    for (ChatList chatList : listOfChats){
                         try{
                             if (user.getUserID() != null && user.getUserID().equals(chatList.getId())){
-                                userList.add(user);
+                                userIdList.add(user);
                             }
                         }catch (NullPointerException e){
                             e.printStackTrace();
                         }
                     }
 
-                    chats.postValue(userList);
+                    listOfUsersId.postValue(userIdList);      //user id added if it matches
                 }
 
 

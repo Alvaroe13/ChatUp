@@ -133,13 +133,13 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
      */
     private void initObserver() {
 
-        viewModel.getChats().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
+        viewModel.getUserIdList().observe(getViewLifecycleOwner(), new Observer<List<User>>() {
             @Override
             public void onChanged(final List<User> users) {
                 userList = users;
                 Log.d(TAG, "onChanged: list size" + userList.size());
                 Log.d(TAG, "initObserver onChanged: called");
-                chatsAdapter.updateChats(users);
+                chatsAdapter.submitList(users);
                 chatItemCLick(users);
             }
         });
@@ -211,7 +211,7 @@ public class ChatsFragment extends Fragment implements ChatsAdapter.OnClickListe
                 Log.d(TAG, "setItNull: onDataChange: here its called");
                 if (!dataSnapshot.exists()){
                     Log.d(TAG, "setItNull: onDataChange: delete the first item in recyclerView");
-                    chatsAdapter.updateChats(null);
+                    chatsAdapter.submitList(null);
                 }
             }
 

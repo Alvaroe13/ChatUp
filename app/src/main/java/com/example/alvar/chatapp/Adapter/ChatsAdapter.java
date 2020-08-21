@@ -21,34 +21,29 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.List;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHolder> {
+public class ChatsAdapter extends ListAdapter<User,ChatsAdapter.ChatsViewHolder> {
 
      private static final String TAG = "ChatsAdapter";
      //firebase
      private  DatabaseReference dbUsersNodeRef, dbChatsNodeRef;
      //ui
-     private Context context;
-     private List<User> userList;
+     private Context context; 
      private String currentUserID;
      private OnClickListener clickListener;
      private OnLongClick onLongClickListener;
 
-
-
     public ChatsAdapter(Context context, OnClickListener clickListener) {
+        super(DIFF_CALLBACK);
         this.context = context;
         this.clickListener = clickListener;
-    }
-
-
+    } 
 
     @NonNull
     @Override
@@ -64,30 +59,26 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
     @Override
     public void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position) {
 
-        final User user = userList.get(position);
+        final User user = getItem(position);
 
         setUI(user, holder);
         fetchInfoDB(user.getUserID(), holder);
     }
 
-    @Override
-    public int getItemCount() {
-        if (userList != null ){
-            Log.d(TAG, "getItemCount: inner part triggered");
-            return userList.size();
-        }{
-            Log.d(TAG, "getItemCount: outter triggered");
-            //this makes possible to erase the first item in recycler when user's click delete conversation
-            return -1;
+
+    private static final DiffUtil.ItemCallback<User> DIFF_CALLBACK = new DiffUtil.ItemCallback<User>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull User oldItem, @NonNull User newItem) {
+            Log.d(TAG, "areItemsTheSame: called");
+            return oldItem.getUserID() == newItem.getUserID();
         }
-    }
 
-    public void updateChats(@Nullable List<User> list){
-        Log.d(TAG, "updateChats: called");
-        this.userList = list;
-        notifyDataSetChanged();
-    }
-
+        @Override
+        public boolean areContentsTheSame(@NonNull User oldItem, @NonNull User newItem) {
+            return oldItem.getUserID().equals(newItem.getUserID()) && oldItem.getImage().equals(newItem.getImage()) &&
+                    oldItem.getImageThumbnail().equals(newItem.getImageThumbnail());
+        }
+    };
 
     /**
      * we init firebase services.
@@ -203,13 +194,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                if (dataSnapshot.exists()) {
 
-                    if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                         //we bind the Message node in firebase database with the JAVA model "Messages"
                         Messages message = snapshot.getValue(Messages.class);
-
 
                         try{
                             if (message.getSenderID().equals(currentUserID) && message.getReceiverID().equals(otherUserID) ||
@@ -248,9 +238,9 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatsViewHol
                         }
 
                     }
-
-
                 }
+
+
             }
 
             @Override

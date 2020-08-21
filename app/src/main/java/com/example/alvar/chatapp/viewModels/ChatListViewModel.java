@@ -18,11 +18,11 @@ public class ChatListViewModel extends ViewModel {
 
 
     public void connectionWithRepo(String userID){
-         chatsRepository.setConnectionToUsersNode(userID);
+         chatsRepository.connectionToChatListNode(userID);
     }
 
-    public LiveData<List<User>> getChats(){
-        return  chatsRepository.getChatList();
+    public LiveData<List<User>> getUserIdList(){
+        return  chatsRepository.getUserIdList();
     }
 
 }
